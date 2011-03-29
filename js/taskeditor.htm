@@ -1,0 +1,69 @@
+<!--{panel}-->
+<div class='hd'>Редактор задачи</div>
+<div class='bd aw-botask'>
+
+	<div class="taskedit ui-form">
+
+		<div id="{i#navtask}" class="navtask" style="display: none">
+			<a id="{i#bnavtask}" href="#app=botask/tasklist/showTaskListPanel/{v#pid}/">{v#ptitle}</a>
+		</div>
+	
+		<h3 id="{i#tlnew}">Создание новой задачи</h3>
+		<h3 id="{i#tledit}">Редактирование задачи</h3>
+		
+		<dl style=" background-color: #F8EEC0;">
+			<dt>
+				<label for="{i#tl}">Задача</label>
+			</dt>
+			<dd>
+				<input id="{i#tl}" type="text" class="input-text font-large" style="width: 90%;" />
+			</dd>
+		</dl>
+		
+		<dl>
+			<dt>
+				<label>Описание задачи</label>
+			</dt>
+			<dd>
+				<textarea id="{i#editor}" style="width: 740px; height: 200px"></textarea>
+			</dd>
+		</dl>
+
+		<dl>
+			<dt>
+				<label>Срок</label>
+			</dt>
+			<dd>
+				<input id="{i#ddl}" class="ddl" value="" />
+				<input id="{i#ddltime}" class="ddltime" value="" style="display: none;"/>
+				
+				<a id="{i#ddlclear}" class="icon-clear" href="#"></a>
+				<a id="{i#ddltimeshow}" class="clickable" href="#">уточнить время</a>
+				<a id="{i#ddltimehide}" class="clickable" href="#"style="display: none;">убрать время</a>
+				
+			</dd>
+		</dl>
+		
+		<dl>
+			<dt><label>Участники</label></dt>
+			<dd>
+				<div id="{i#users}"></div>
+			</dd>
+		</dl>
+		
+		<dl>
+			<dt></dt>
+			<dd>
+				<div class="field">
+					<div class="buttons">
+						<input type="button" value="Сохранить" id="{i#bsave}" class="btn" />
+						<input type="button" value="Отмена" id="{i#bcancel}" class="btn" />
+					</div>
+				</div>
+			</dd>
+		</dl>
+		
+	</div>
+	
+	<div class="clear: both;"></div>
+</div>

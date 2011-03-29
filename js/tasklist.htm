@@ -1,0 +1,52 @@
+<!--{panel}-->
+<div class='hd'>{v#tl}</div>
+<div class='bd aw-botask'>
+	<div class="taskview">
+		
+		<h3>{v#tl}</h3>
+		<div id="{i#taskbody}" class="taskbody aw-page-content">{v#bd}</div>
+		
+		<div class="manbuttons">
+			<a id="{i#beditor}" class="beditor btkbt" href="#app=botask/taskeditor/showTaskEditorPanel/{v#id}/">Редактировать</a>
+		</div>
+		
+		<div class="ptbuttons">
+			<a id="{i#ptlistsh}" class="ptlistsh btkbt" href="#">Подзадачи</a>
+			<a id="{i#ptappend}" class="ptappend btkbt" href="#app=botask/taskeditor/showCreateTaskPanel/{v#id}/">Добавить подзадачу</a>
+		</div>
+		<div class="ptlist">
+			<div id="{i#ptlist}">
+			</div>
+		</div>
+		
+	</div>
+</div>
+
+<!--{table}-->
+<table>
+	<thead>
+		<tr>
+			<th class="tname"><span>Задачи</span></th>
+			<th class="tddl"><span>Срок</span></th>
+			<th class="tautor"><span>Автор</span></th>
+			<th class="texec"><span>Исполнитель</span></th>
+		</tr>
+	</thead>
+	<tbody>{v#rows}</tbody>
+</table>
+
+<!--{row}-->
+<tr class="row">
+	<td>
+		<a href="#app=botask/tasklist/showTaskListPanel/{v#id}/">{v#tl}</a>
+	</td>
+	<td>
+	
+	</td>
+	<td>
+		<a href="#">{v#unm}</a>
+	</td>
+	<td>
+	
+	</td>
+</tr>

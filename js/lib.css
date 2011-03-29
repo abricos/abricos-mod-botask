@@ -1,0 +1,26 @@
+.aw-botask .navtask {
+	font-size: 1.5em;
+	margin-bottom: 0.6em;
+}
+
+.aw-botask .ui-form dl {
+    margin: 0 0 0.3em;
+    padding: 0;
+}
+.aw-botask .ui-form dt {
+    clear: left;
+    float: left;
+    padding: 0.5em 0 0.5em 0.5em;
+    width: 10em;
+}
+.aw-botask .ui-form dd {
+    float: none;
+    margin-left: 10em;
+    padding: 0.5em 2em;
+}
+.aw-botask .ui-form .font-large {
+	font-size: 140%;
+}
+.aw-botask .ui-form .input-text {
+	border: 1px solid #CCCCCC;	
+}

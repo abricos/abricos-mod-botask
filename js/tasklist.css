@@ -1,0 +1,62 @@
+.aw-botask .taskview a {
+	text-decoration: none;
+}
+
+.aw-botask .taskview .taskbody {
+	background-color: #F9F5DF;
+	padding: 0.5em 1em;
+}
+.aw-botask .taskview .manbuttons,
+.aw-botask .taskview .ptbuttons {
+	margin: 1em 0;
+}
+.aw-botask .taskview .btkbt {
+	border-bottom: 1px dotted;
+	margin-right: 1em;
+}
+.aw-botask .taskview .beditor {
+	color: #006699;
+}
+.aw-botask .taskview .ptlistsh {
+	color: #006699;
+	font-size: 1.4em;
+}
+.aw-botask .taskview .ptappend {
+	color: #006699;
+}
+.aw-botask .taskview .ptlist {
+	clear: both;
+	margin-top: 0.5em;
+	display: block;
+}
+.aw-botask .taskview .ptlist table {
+	table-layout: fixed;
+	border-collapse: collapse;
+	width: 100%;
+}
+.aw-botask .taskview .ptlist table th {
+	background-color: #F4F4EE;
+	font-weight: normal;
+	padding: 0;
+	white-space: nowrap;
+	text-align: left;
+	height: 1.8em;	
+	padding: 0.4em 0.5em;
+}
+.aw-botask .taskview .ptlist table th.tname {
+	width: 50%;
+}
+.aw-botask .taskview .ptlist table th.tddl {
+	width: 9em;
+} 
+.aw-botask .taskview .ptlist table th.tautor, 
+.aw-botask .taskview .ptlist table th.texec {
+	width: 25%;
+}
+
+.aw-botask .taskview .ptlist tr.row:hover {
+	background: none repeat scroll 0 0 #FFF0C6;
+}
+.aw-botask .taskview .ptlist tr.row td {
+	padding: 0.7em 0.3em;
+}

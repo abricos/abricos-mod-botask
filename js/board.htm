@@ -1,0 +1,61 @@
+<!--{panel}-->
+<div class='hd'>Доска задач</div>
+<div class='bd'>
+</div>
+
+<!--{widget}-->
+<div class="aw-botask" id="{i#id}">
+	<table style="width: 100%"><tbody><tr>
+		<td>
+			<a href="#app=botask/taskeditor/showTaskEditorPanel/0/" id="{i#bappend}" title="Эта функция позволяет Вам создать задачу">Добавить задачу</a>
+		</td>
+		<td style="text-align: right;">
+			<a href="#" id="{i#brefresh}">Обновить</a>
+		</td>
+	</tr></tbody></table>
+	<div id="{i#container}" class="board">
+		<div id="{i#table}" class="list">
+			Идет загрузка задач. Пожалуйста, подождите...
+		</div>
+	</div>
+</div>
+
+<!--{empty}-->
+<div class="aw-page-content" style="margin: 10px;">
+	<h3>Добро пожаловать!</h3>
+	<p>
+		У вас пока нет задач. Нажмите на кнопку <a href="#app=botask/taskeditor/showTaskEditorPanel/0/" id="{i#bappend}">Добавить задачу</a>. 
+	</p>
+</div>
+
+<!--{table}-->
+{v#rows}
+<div style="clear: both;"></div>
+
+<!--{rowwait}-->
+Идет загрузка данных...
+
+<!--{row}-->
+<div id="{i#id}-{v#id}" class="node">
+	<div class="r1">
+		<div class="title"><a id="{i#task}-{v#id}" href="#app=botask/tasklist/showTaskListPanel/{v#id}/">{v#tl}</a></div>
+	</div>
+	<div class="r2">
+		<div class="info">
+			<div class="line">
+				Развитие проекта по сопровождению комплексных задач
+				<div class="shadow"></div>
+			</div>
+			<div class="line">
+				Модернизация бизнес плана
+				<div class="shadow"></div>
+			</div>
+			<div class="line">
+				Увеличение производительности
+				<div class="shadow"></div>
+			</div>
+		</div>
+	</div>
+	<div class="fade"></div>
+</div>
+
