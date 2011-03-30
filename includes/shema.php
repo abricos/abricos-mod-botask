@@ -38,7 +38,10 @@ if ($updateManager->isInstall()){
 		  `deldate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата удаления',
 
 		  `statusid` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Статус задачи',
+		  
 		  `execuserid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Исполнитель на текущий статус',
+		  `execdate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Время принятия на исполнение',
+		  
 		  `deadline` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Срок выполнения',
 		  `deadlinebytime` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Срок выполнения - уточнение времени',
 		  

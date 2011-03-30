@@ -3,10 +3,7 @@
 <div class='bd aw-botask'>
 
 	<div class="taskedit ui-form">
-
-		<div id="{i#navtask}" class="navtask" style="display: none">
-			<a id="{i#bnavtask}" href="#app=botask/tasklist/showTaskListPanel/{v#pid}/">{v#ptitle}</a>
-		</div>
+		<div id="{i#nav}"></div>
 	
 		<h3 id="{i#tlnew}">Создание новой задачи</h3>
 		<h3 id="{i#tledit}">Редактирование задачи</h3>
@@ -34,13 +31,7 @@
 				<label>Срок</label>
 			</dt>
 			<dd>
-				<input id="{i#ddl}" class="ddl" value="" />
-				<input id="{i#ddltime}" class="ddltime" value="" style="display: none;"/>
-				
-				<a id="{i#ddlclear}" class="icon-clear" href="#"></a>
-				<a id="{i#ddltimeshow}" class="clickable" href="#">уточнить время</a>
-				<a id="{i#ddltimehide}" class="clickable" href="#"style="display: none;">убрать время</a>
-				
+				<div id="{i#ddl}"></div>
 			</dd>
 		</dl>
 		

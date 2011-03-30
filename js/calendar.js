@@ -24,50 +24,12 @@ Component.entryPoint = function(){
 		TMG = this.template,
 		API = NS.API;
 	
+	var buildTemplate = function(w, templates){ w._TM = TMG.build(templates); w._T = w._TM.data; w._TId = w._TM.idManager; };
+	
 	var YDate = YAHOO.widget.DateMath;
 
-	NS.getDate = function(){ return new Date(); };
 	NS.isCurrentDay = function(date){
 		return YDate.clearTime(date).getTime() == YDate.clearTime(NS.getDate()).getTime(); 
-	};
-
-	var lz = function(num){
-		var snum = num+'';
-		return snum.length == 1 ? '0'+snum : snum; 
-	};
-	
-	var TZ_OFFSET = NS.getDate().getTimezoneOffset(); 
-	
-	NS.dateToServer = function(date){
-		var tz = TZ_OFFSET*60*1000;
-		return (date.getTime()-tz)/1000; 
-	};
-	NS.dateToClient = function(unix){
-		unix = unix * 1;
-		var tz = TZ_OFFSET*60;
-		return new Date((tz+unix)*1000);
-	};
-	
-	NS.dateToTime = function(date){
-		return lz(date.getHours())+':'+lz(date.getMinutes());
-	};
-
-	var DPOINT = '.';
-	NS.dateToString = function(date){
-		if (L.isNull(date)){ return ''; }
-		var day = date.getDate();
-		var month = date.getMonth()+1;
-		var year = date.getFullYear();
-		return lz(day)+DPOINT+lz(month)+DPOINT+year;
-	};
-	NS.stringToDate = function(str){
-		str = str.replace(/,/g, '.').replace(/\//g, '.');
-		var aD = str.split(DPOINT);
-		if (aD.length != 3){ return null; }
-		var day = aD[0]*1, month = aD[1]*1-1, year = aD[2]*1;
-		if (day > 31 || day < 0){ return null; }
-		if (month > 11 || month < 0) { return null; }
-		return new Date(year, month, day);
 	};
 	
 	NS.dateToKey = function(date){
@@ -148,4 +110,99 @@ Component.entryPoint = function(){
 			}
 		});
 	};
+	
+	var DateInputWidget = function(container, config){
+		this.init(container, config);
+	};
+	DateInputWidget.prototype = {
+		init: function(container, cfg){
+			
+			cfg = L.merge({
+				'date': null,
+				'showTime': false
+			}, cfg || {});
+			this.cfg = cfg;
+		
+			buildTemplate(this, 'input');
+			container.innerHTML = this._TM.replace('input');
+			var __self = this;
+			E.on(container, 'click', function(e){
+                var el = E.getTarget(e);
+                if (__self.onClick(el)){ E.preventDefault(e); }
+	        });
+			
+			if (!L.isNull(cfg.date)){
+				this.setDate(cfg.date);
+			}
+		},
+		getValue: function(){
+			var ret = {'date': null, 'showTime': false };
+			var date = NS.stringToDate(this._TM.getEl('input.date').value),
+				st = this.cfg.showTime,
+				time = NS.parseTime(this._TM.getEl('input.time').value);
+
+			if (st && L.isNull(time)){ st = false; }
+			if (L.isNull(date)){ return ret; }
+			
+			if (st){
+				date.setHours(time[0]);
+				date.setMinutes(time[1]);
+			}
+			return { 'date': date, 'showTime': st};
+		},
+		setDate: function(date){
+			if (L.isNull(date)){
+				this.clear();
+				return;
+			}
+			
+			var TM = this._TM,
+				elTime = TM.getEl('input.time');
+			
+			TM.getEl('input.date').value = NS.dateToString(date);
+			if (this.cfg.showTime){
+				this.showTime();
+				elTime.value = NS.timeToString(date);
+			}else{
+				elTime.value = "";
+				this.hideTime();
+			}
+		},
+		onClick: function(el){
+			var tp = this._TId['input'];
+			switch(el.id){
+			case tp['date']: this.showCalendar(); return true;
+			case tp['clear']: this.clear(); return true;
+			case tp['timeshow']: this.showTime(); return true;
+			case tp['timehide']: this.hideTime(); return true;
+			}
+			return false;
+		},
+		showCalendar: function(){
+			__self = this;
+			NS.showCalendar(this._TM.getEl('input.date'), function(dt){
+				__self.setDate(dt);
+			});
+		},
+		showTime: function(){ this._shTime(false); },
+		hideTime: function(){ this._shTime(true); },
+		_shTime: function(hide){
+			var TM = this._TM, hide = hide || false;
+			this.cfg.showTime = !hide;
+			var txtTime = TM.getEl('input.time');
+			if (!hide && txtTime.value.length == 0){
+				txtTime.value = "12:00";
+			}
+			Dom.setStyle(txtTime, 'display', !hide ? '' : 'none');
+			Dom.setStyle(TM.getEl('input.timeshow'), 'display', hide ? '' : 'none');
+			Dom.setStyle(TM.getEl('input.timehide'), 'display', !hide ? '' : 'none');
+		},
+		clear: function(){
+			var TM = this._TM;
+			TM.getEl('input.date').value = "";
+			TM.getEl('input.time').value = "";
+		}
+	};
+	
+	NS.DateInputWidget = DateInputWidget;
 };

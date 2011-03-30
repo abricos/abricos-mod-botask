@@ -1,3 +1,19 @@
+.aw-botask .taskview table.maintable {
+	width: 100%;
+}
+.aw-botask .taskview td.leftcol {
+	width: 90%;
+}
+.aw-botask .taskview .leftcol .colbody {
+	padding-right: 0.7em;
+}
+.aw-botask .taskview td.rightcol {
+	background-color: #F2F2F1;
+}
+.aw-botask .taskview .rightcol .colbody {
+	padding: 0 0.6em;
+}
+
 .aw-botask .taskview a {
 	text-decoration: none;
 }
@@ -17,6 +33,14 @@
 .aw-botask .taskview .beditor {
 	color: #006699;
 }
+.aw-botask .taskview .bsetexec {
+	color: #73A110;
+	font-size: 1.5em;
+}
+.aw-botask .taskview .bremove {
+	color: #D6583F;
+}
+
 .aw-botask .taskview .ptlistsh {
 	color: #006699;
 	font-size: 1.4em;
@@ -59,4 +83,8 @@
 }
 .aw-botask .taskview .ptlist tr.row td {
 	padding: 0.7em 0.3em;
+}
+
+.aw-botask .taskview .author {
+	width: 220px;
 }

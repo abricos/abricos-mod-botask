@@ -56,6 +56,8 @@ Component.entryPoint = function(){
 			var TM = this._TM,
 				task = this.task;
 			
+			this.navigate = new NS.TaskNavigateWidget(TM.getEl('panel.nav'), task);
+			
 			Dom.setStyle(TM.getEl('panel.tl'+(task.id*1 > 0 ? 'new' : 'edit')), 'display', 'none');
 			
 			if (!L.isNull(task.parent)){
@@ -73,15 +75,14 @@ Component.entryPoint = function(){
 			var users = task.id*1==0 && !L.isNull(task.parent) ? task.parent.users : task.users;
 			
 			this.usersWidget = new UP.UserSelectWidget(TM.getEl('panel.users'), users);
+			this.ddlDateTime = new NS.DateInputWidget(TM.getEl('panel.ddl'), {
+				'date': task.deadline,
+				'showTime': task.ddlTime
+			});
 		},
 		onClick: function(el){
 			var tp = this._TId['panel'];
 			switch(el.id){
-			
-			case tp['ddl']: this.showDeadlineCalendar(); return true;
-			case tp['ddlclear']: this.deadlineClear(); return true;
-			case tp['ddltimeshow']: this.showDeadlineTime(); return true;
-			case tp['ddltimehide']: this.showDeadlineTime(true); return true;
 			
 			case tp['bsave']: 
 			case tp['bsavepub']: this.saveTask(); return true;
@@ -90,27 +91,6 @@ Component.entryPoint = function(){
 			}
 			return false;
 		},
-		showDeadlineCalendar: function(){
-			var el = this._TM.getEl('panel.ddl');
-			NS.showCalendar(el, function(dt){
-				el.value = NS.dateToString(dt);
-			});
-		},
-		showDeadlineTime: function(hide){
-			var TM = this._TM, hide = hide || false;
-			var txtDdltime = TM.getEl('panel.ddltime');
-			if (!hide && txtDdltime.value.length == 0){
-				txtDdltime.value = "12:00";
-			}
-			Dom.setStyle(txtDdltime, 'display', !hide ? '' : 'none');
-			Dom.setStyle(TM.getEl('panel.ddltimeshow'), 'display', hide ? '' : 'none');
-			Dom.setStyle(TM.getEl('panel.ddltimehide'), 'display', !hide ? '' : 'none');
-		},
-		deadlineClear: function(){
-			var TM = this._TM;
-			TM.getEl('panel.ddl').value = "";
-			TM.getEl('panel.ddltime').value = "";
-		},
 		saveTask: function(){
 			var TM = this._TM,
 				task = this.task,
@@ -118,11 +98,15 @@ Component.entryPoint = function(){
 			
 			users[users.length] = Brick.env.user.id;
 			
+			var ddl =  this.ddlDateTime.getValue();
+
 			var newdata = {
 				'title': TM.getEl('panel.tl').value,
 				'descript': this.editor.getContent(),
 				'users': users,
-				'parentid': L.isNull(task.parent) ? 0 : task.parent.id
+				'parentid': L.isNull(task.parent) ? 0 : task.parent.id,
+				'deadline': ddl['date'],
+				'ddlTime': ddl['showTime']
 			};
 			
 			var __self = this;

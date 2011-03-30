@@ -3,21 +3,45 @@
 <div class='bd aw-botask'>
 	<div class="taskview">
 		
-		<h3>{v#tl}</h3>
-		<div id="{i#taskbody}" class="taskbody aw-page-content">{v#bd}</div>
+		<div id="{i#nav}"></div>
 		
-		<div class="manbuttons">
-			<a id="{i#beditor}" class="beditor btkbt" href="#app=botask/taskeditor/showTaskEditorPanel/{v#id}/">Редактировать</a>
-		</div>
-		
-		<div class="ptbuttons">
-			<a id="{i#ptlistsh}" class="ptlistsh btkbt" href="#">Подзадачи</a>
-			<a id="{i#ptappend}" class="ptappend btkbt" href="#app=botask/taskeditor/showCreateTaskPanel/{v#id}/">Добавить подзадачу</a>
-		</div>
-		<div class="ptlist">
-			<div id="{i#ptlist}">
-			</div>
-		</div>
+		<table class="maintable"><tbody><tr>
+			<td class="leftcol">
+				<div class="colbody">
+					<div id="{i#taskbody}" class="taskbody aw-page-content">{v#bd}</div>
+					
+					<div class="manbuttons">
+						
+						<a id="{i#bsetexec}" class="bsetexec btkbt" href="#" title="Стать ответственным за выполнение данной задачи">Принять</a>
+						<a id="{i#bclose}" class="bsetexec btkbt" href="#" title="Завершить задачу">Завершить</a>
+						
+						<a id="{i#beditor}" class="beditor btkbt" href="#app=botask/taskeditor/showTaskEditorPanel/{v#id}/">Редактировать</a>
+						<a id="{i#bremove}" class="bremove btkbt" href="#">Удалить</a>
+					</div>
+					
+					<div class="sepline"></div>
+					
+					<div class="ptbuttons">
+						<a id="{i#ptlistsh}" class="ptlistsh btkbt" href="#">Подзадачи</a>
+						<a id="{i#ptappend}" class="ptappend btkbt" href="#app=botask/taskeditor/showCreateTaskPanel/{v#id}/">Добавить подзадачу</a>
+					</div>
+					<div class="ptlist">
+						<div id="{i#ptlist}">
+						</div>
+					</div>
+				</div>
+			</td>
+			<td class="rightcol">
+				<div class=colbody>
+				
+					<div class="author">
+						<div style="font-weight: bold; line-height: 2em;">Автор</div>
+						<div id="{i#execuser}" ></div>
+					</div>
+			
+				</div>
+			</td>
+		</tr></tbody></table>
 		
 	</div>
 </div>
@@ -29,7 +53,7 @@
 			<th class="tname"><span>Задачи</span></th>
 			<th class="tddl"><span>Срок</span></th>
 			<th class="tautor"><span>Автор</span></th>
-			<th class="texec"><span>Исполнитель</span></th>
+			<th class="texec"><span>Ответственный</span></th>
 		</tr>
 	</thead>
 	<tbody>{v#rows}</tbody>
@@ -41,10 +65,12 @@
 		<a href="#app=botask/tasklist/showTaskListPanel/{v#id}/">{v#tl}</a>
 	</td>
 	<td>
-	
+		{v#ddl}
 	</td>
 	<td>
-		<a href="#">{v#unm}</a>
+		<a href="#" class="show-user-profile user-{v#auid}">
+			{v#aunm}
+		</a>
 	</td>
 	<td>
 	

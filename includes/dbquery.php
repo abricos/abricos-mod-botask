@@ -17,13 +17,15 @@ class BotaskQuery {
 	 * @param integer $userid
 	 */
 	public static function Board(CMSDatabase $db, $userid){
-		// задачи доступные этому пользователю
 		$sql = "
 			SELECT
 				p.taskid as id,
 				p.parenttaskid as pid,
 				p.userid as uid,
-				p.title as tl
+				p.title as tl,
+				p.dateline as dl,
+				p.deadline as ddl,
+				p.deadlinebytime as ddlt
 			FROM ".$db->prefix."btk_userrole ur
 			INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
 			WHERE ur.userid=".bkint($userid)." AND p.deldate=0
@@ -56,21 +58,46 @@ class BotaskQuery {
 		return $db->query_read($sql);
 	}
 	
+	/**
+	 * Список пользователей участвующих на доске проектов
+	 * 
+	 * @param CMSDatabase $db
+	 * @param unknown_type $userid
+	 */
+	public static function BoardUsers(CMSDatabase $db, $userid){
+		$sql = "
+			SELECT
+				DISTINCT
+				u.userid as id,
+				u.username as unm,
+				u.firstname as fnm,
+				u.lastname as lnm,
+				u.avatar as avt
+			FROM (
+				SELECT DISTINCT ur.taskid
+				FROM ".$db->prefix."btk_userrole ur
+				INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
+				WHERE ur.userid=".bkint($userid)." AND p.deldate=0
+			) ps
+			LEFT JOIN ".$db->prefix."btk_userrole ur1 ON ps.taskid=ur1.taskid
+			INNER JOIN ".$db->prefix."user u ON ur1.userid=u.userid
+		";
+		return $db->query_read($sql);
+	}
+	
 	public static function Task(CMSDatabase $db, $taskid, $retarray = false){
 		$sql = "
 			SELECT
 				p.taskid as id,
 				p.userid as uid,
-				u.username as unm,
-				u.firstname as fnm,
-				u.lastname as lnm,
 				p.title as tl,
 				c.body as bd,
 				p.contentid as ctid,
+				p.deadline as ddl,
+				p.deadlinebytime as ddlt,
 				p.dateline as dl
 			FROM ".$db->prefix."btk_task p
 			INNER JOIN ".$db->prefix."content c ON p.contentid=c.contentid
-			LEFT JOIN ".$db->prefix."user u ON p.userid=u.userid
 			WHERE p.taskid=".bkint($taskid)."
 			LIMIT 1
 		";
@@ -81,12 +108,16 @@ class BotaskQuery {
 		$contentid = CoreQuery::ContentAppend($db, $tk->bd, 'botask');
 		
 		$sql = "
-			INSERT INTO ".$db->prefix."btk_task (userid, parenttaskid, title, pubkey, contentid, dateline) VALUES (
+			INSERT INTO ".$db->prefix."btk_task (
+				userid, parenttaskid, title, pubkey, contentid, 
+				deadline, deadlinebytime, dateline) VALUES (
 				".bkint($tk->uid).",
 				".bkint($tk->pid).",
 				'".bkstr($tk->tl)."',
 				'".bkstr($pubkey)."',
 				".$contentid.",
+				".bkint($td->ddl).",
+				".bkint($td->ddlt).",
 				".TIMENOW."
 			)
 		";
@@ -101,7 +132,9 @@ class BotaskQuery {
 			UPDATE ".$db->prefix."btk_task
 			SET
 				title='".bkstr($tk->tl)."',
-				parenttaskid=".bkint($tk->pid)."
+				parenttaskid=".bkint($tk->pid).",
+				deadline=".bkint($tk->ddl).",
+				deadlinebytime=".bkint($tk->ddlt)."
 			WHERE taskid=".bkint($tk->id)."
 		";
 		$db->query_write($sql);

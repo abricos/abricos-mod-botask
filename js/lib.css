@@ -1,4 +1,9 @@
-.aw-botask .navtask {
+.aw-botask .sepline {
+	height: 5px;
+	background-color: #CEDC8D;
+}
+
+.aw-botask .navigate {
 	font-size: 1.5em;
 	margin-bottom: 0.6em;
 }

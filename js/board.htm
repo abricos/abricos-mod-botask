@@ -7,7 +7,7 @@
 <div class="aw-botask" id="{i#id}">
 	<table style="width: 100%"><tbody><tr>
 		<td>
-			<a href="#app=botask/taskeditor/showTaskEditorPanel/0/" id="{i#bappend}" title="Эта функция позволяет Вам создать задачу">Добавить задачу</a>
+			<a href="#app=botask/taskeditor/showCreateTaskPanel/0/" id="{i#bappend}" title="Эта функция позволяет Вам создать задачу">Добавить задачу</a>
 		</td>
 		<td style="text-align: right;">
 			<a href="#" id="{i#brefresh}">Обновить</a>
@@ -42,20 +42,14 @@
 	</div>
 	<div class="r2">
 		<div class="info">
-			<div class="line">
-				Развитие проекта по сопровождению комплексных задач
-				<div class="shadow"></div>
-			</div>
-			<div class="line">
-				Модернизация бизнес плана
-				<div class="shadow"></div>
-			</div>
-			<div class="line">
-				Увеличение производительности
-				<div class="shadow"></div>
-			</div>
+			{v#childs}
 		</div>
 	</div>
 	<div class="fade"></div>
 </div>
 
+<!--{child}-->
+<div class="line">
+	<a href="#app=botask/tasklist/showTaskListPanel/{v#id}/">{v#tl}</a>
+	<div class="shadow"></div>
+</div>

@@ -113,6 +113,13 @@ class BotaskManager extends ModuleManager {
 		while (($row = $this->db->fetch_array($rows))){
 			array_push($ret->board[$row['tid']]['users'], $row['uid']);
 		}
+
+		$ret->users = array();
+		$rows = BotaskQuery::BoardUsers($this->db, $this->userid);
+		while (($row = $this->db->fetch_array($rows))){
+			$ret->users[$row['id']] = $row;
+		}
+		
 		return $ret;
 	}
 	
@@ -154,7 +161,7 @@ class BotaskManager extends ModuleManager {
 			$pubkey = md5(time().$this->userid);
 			$tk->id = BotaskQuery::TaskAppend($this->db, $tk, $pubkey);
 		}else{
-			// является ли пользователь вледельцем данной задачи
+			// есть ли права пользователя на изменение данной задачи
 			$info = BotaskQuery::Task($this->db, $tk->id, true);
 			if (empty($info) || $info['uid'] != $this->userid){ return null; }
 			BotaskQuery::TaskUpdate($this->db, $tk);
@@ -189,8 +196,7 @@ class BotaskManager extends ModuleManager {
 			}
 		}
 		
-		$task = $this->Task($tk->id);
-		return $task; 
+		return $this->Task($tk->id);
 	}
 	
 	

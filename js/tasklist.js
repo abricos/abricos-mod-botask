@@ -58,12 +58,31 @@ Component.entryPoint = function(){
 				lst = "",
 				TM = this._TM;
 			
+			this.navigate = new NS.TaskNavigateWidget(TM.getEl('panel.nav'), task);
+			
+			// исполнитель
+			var eUser = NS.taskManager.users[task.userid];
+			this.execUsers = new UP.UserBlockWidget(TM.getEl('panel.execuser'), eUser, {
+				'info': Brick.dateExt.convert(task.date.getTime()/1000, 0, false)
+			});
+
 			task.childs.foreach(function(tk){
+
+				var ddl = "";
+				if (!L.isNull(tk.deadline)){
+					ddl = Brick.dateExt.convert(tk.deadline.getTime()/1000, 0, !tk.ddlTime);
+				}
+				
+				var author = NS.taskManager.users[tk.userid];
+
 				lst += TM.replace('row', {
 					'id': tk.id,
-					'tl': tk.title
+					'tl': tk.title,
+					'aunm': UP.builder.getUserName(author),
+					'auid': author.id,
+					'ddl': ddl
 				});
-			});
+			}, true);
 			TM.getEl('panel.ptlist').innerHTML = TM.replace('table', {'rows': lst});
 		},
 		onClick: function(el){
