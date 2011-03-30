@@ -85,6 +85,28 @@ class BotaskQuery {
 		return $db->query_read($sql);
 	}
 	
+	public static function HistoryAppend(CMSDatabase $db, BotaskHistory $h) {
+		$sql = "
+			INSERT INTO ".$db->prefix."btk_history (
+				hitype, taskid, userid, dateline, parenttaskid, title, body, deadline, deadlinebytime, useradded, userremoved) VALUES (
+				
+				".bkint($h->hitype).",
+				".bkint($h->taskid).",
+				".bkint($h->userid).",
+				".TIMENOW.",
+				".bkint($h->parenttaskid).",
+				'".bkstr($h->title)."',
+				'".bkstr($h->body)."',
+				".bkint($h->deadline).",
+				".bkint($h->deadlinebytime).",
+				'".bkstr($h->useradded)."',
+				'".bkstr($h->userremoved)."'
+			)
+		";
+		$db->query_write($sql);
+		return $db->insert_id();
+	}
+	
 	public static function Task(CMSDatabase $db, $taskid, $retarray = false){
 		$sql = "
 			SELECT

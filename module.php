@@ -34,22 +34,39 @@ class BotaskModule extends CMSModule {
 	
 }
 
+class BotaskHistoryType {
+	
+	const TASK_OPEN = 0;
+	
+	const TASK_ACCEPT = 1;
+	
+	const TASK_CLOSE = 2;
+	
+	const TASK_REMOVE = 3;
+	
+	const TASK_UPDATE = 4; // Обновлена задача
+	
+}
+
+/**
+ * Статус задачи
+ */
 class BotaskStatus {
 	
 	/**
-	 * Новая/Открытая задача
+	 * Новая
 	 * @var integer
 	 */
 	const OPEN = 0;
 
 	/**
-	 * Принятая на исполнение задача
+	 * Принята
 	 * @var integer
 	 */
 	const ACCEPT = 1;
 	
 	/**
-	 * Закрытая задача
+	 * Завершена
 	 * @var integer
 	 */
 	const CLOSE = 9;
