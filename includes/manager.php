@@ -17,11 +17,19 @@ class BotaskHistory {
 	public $taskid = 0;
 	
 	public $parenttaskid = 0;
+	public $parenttaskidc = false;
+	
 	public $title = "";
+	public $titlec = false;
+	
 	public $body = "";
+	public $bodyc = false;
 	
 	public $deadline = 0;
+	public $deadlinec = false;
+	
 	public $deadlinebytime = 0;
+	public $deadlinebytimec = false;
 	
 	public $useradded = "";
 	public $userremoved = "";
@@ -40,22 +48,27 @@ class BotaskHistory {
 		
 		if ($nt->tl != $ot['tl']){
 			$this->title = $ot['tl'];
+			$this->titlec = true;
 			$this->change = true;
 		}
 		if ($nt->bd != $ot['bd']){
 			$this->body = $ot['bd'];
+			$this->bodyc = true;
 			$this->change = true;
 		}
 		if (intval($nt->pid) != intval($ot['pid'])){
 			$this->parenttaskid = $ot['pid'];
+			$this->parenttaskidc = true;
 			$this->change = true;
 		}
 		if (intval($nt->ddl) != intval($ot['ddl'])){
 			$this->deadline = $ot['ddl'];
+			$this->deadlinec = true;
 			$this->change = true;
 		}
 		if (intval($nt->ddlt) != intval($ot['ddlt'])){
 			$this->deadlinebytime = $ot['ddlt'];
+			$this->deadlinebytimec = true;
 			$this->change = true;
 		}
 	}
@@ -146,9 +159,6 @@ class BotaskManager extends ModuleManager {
 	public function AJAX($d){
 		switch($d->do){
 			case 'init': return $this->InitializeData();
-			case 'taskdata': return $this->TaskData($d->taskid);
-			
-			
 			case 'task': return $this->Task($d->taskid);
 			case 'tasksave': return $this->TaskSave($d->task);
 		}
@@ -188,16 +198,32 @@ class BotaskManager extends ModuleManager {
 			$ret->users[$row['id']] = $row;
 		}
 		
+		// история изменений, последнии 10 записей
+
+		$rows = BotaskQuery::BoardHistory($this->db, $this->userid);
+		$ret->hst = array();
+		while (($row = $this->db->fetch_array($rows))){
+			array_push($ret->hst, $row);
+		}
+		
 		return $ret;
+	}
+
+	public function TaskUserList($taskid, $retarray = false){
+		if (!$this->IsViewRole()){ return null; }
+		$rows = BotaskQuery::TaskUserList($this->db, $taskid);
+		if (!$retarray){ return $rows; }
+		return $this->ToArray($rows);
 	}
 	
 	/**
-	 * Получить полные данные по задаче
+	 * Есть ли доступ пользователя к задаче?
+	 * @param unknown_type $taskid
 	 */
-	public function TaskData($taskid){
-		if (!$this->IsViewRole()){ return null; }
+	public function TaskAccess($taskid){
+		$row = BotaskQuery::UserRole($this->db, $taskid, $this->userid, true);
+		return !empty($row);
 	}
-	
 	
 	/**
 	 * Сохранить задачу
@@ -217,10 +243,7 @@ class BotaskManager extends ModuleManager {
 		
 		// родительская задача, есть ли доступ сохранения в нее
 		if ($tk->pid*1 > 0){
-			$row = BotaskQuery::UserRole($this->db, $tk->pid, $this->userid, true);
-			if (empty($row)){
-				return null; // нет ролей для сохранения в родительскую задачу
-			}
+			if (!$this->TaskAccess($tk->pid)){ return null; }
 		}
 
 		$history = new BotaskHistory($this->userid);
@@ -237,8 +260,7 @@ class BotaskManager extends ModuleManager {
 		}else{
 			
 			// является ли пользователь участником этой задача, если да, то он может делать с ней все что хошь
-			$row = BotaskQuery::UserRole($this->db, $tk->id, $this->userid, true);
-			if (empty($row)){ return null; }
+			if (!$this->TaskAccess($tk->id)){ return null; }
 			
 			$info = BotaskQuery::Task($this->db, $tk->id, true);
 			BotaskQuery::TaskUpdate($this->db, $tk);
@@ -282,112 +304,20 @@ class BotaskManager extends ModuleManager {
 		return $this->Task($tk->id);
 	}
 	
-	
-	/**
-	 * Получить структуру всех задач, доступных этому пользователю
-	 */
-	public function Board($retarray = false){
-		if (!$this->IsViewRole()){ return null; }
-		$rows = BotaskQuery::Board($this->db, $this->userid);
-		return $retarray ? $this->ToArray($rows) : $rows; 
-	}
-	
-	
-	
-	/**
-	 * Список пользователей участвующих на доске задач этого пользователя
-	 */
-	public function BoardUsers($retarray = false){
-		if (!$this->IsViewRole()){ return null; }
-		$rows = BotaskQuery::BoardUsers($this->db, $this->userid);
-		return $retarray ? $this->ToArray($rows) : $rows;
-	}
-	
-	/**
-	 * Роль текущего пользователя в задаче 
-	 * @param integer $taskid
-	 */
-	public function TaskUserRole($taskid){
-		/*
-		$w = 0; $r = 0; 
-		$rows = BotaskQuery::UserRole($this->db, $taskid, $this->userid);
-		while (($row = $this->db->fetch_array($rows))){
-			$r = $row['r'] || $r;
-			$w = $row['w'] || $w;
-		}
-		return array('r'=>$r, 'w'=>$w);
-		/**/
-	}
-
-	public function TaskUserList($taskid, $retarray = false){
-		if (!$this->IsViewRole()){ return null; }
-		$rows = BotaskQuery::TaskUserList($this->db, $taskid);
-		if (!$retarray){ return $rows; }
-		return $this->ToArray($rows);
-	}
-	
 	public function Task($taskid){
-		$taskid = intval($taskid);
 		if (!$this->IsViewRole()){ return null; }
 		
-		$task = new stdClass();
-		// идентификатор проекта
-		$task->id = $taskid;
-		// заголовок проекта
-		$task->tl = "";
-		// контент проекта
-		$task->bd = "";
-		// идентификатор контента
-		$task->ctid = 0;
-
-		// автор проекта
-		$projec->unm = '';
-		$projec->fnm = '';
-		$projec->lnm = '';
-
-		// дата создания проекта
-		$projec->dl = 0;
+		if (!$this->TaskAccess($taskid)){ return null; }
 		
-		$task->users = array();
-		
-		if ($taskid > 0){
-			$pbd = BotaskQuery::Task($this->db, $taskid, true);
-			
-			if ($pbd['uid'] != $this->userid){
-				return null;
-				/*
-				$role = $this->ProjectUserRole($taskid);
-				if ($role['w'] == 0 && $role['r'] == 0){ return null; }
-				$task->r = $role['r'];
-				$task->w = $role['w'];
-				/**/
-			}
-			$task->users = array();
-			$users = $this->TaskUserList($taskid, true);
-			foreach ($users as $user){
-				array_push($task->users, $user['id']);
-			}
-			//  = $this->ToArray(BotaskQuery::ProjectUserList($this->db, $taskid));
-			// $task->groups = $this->ToArray(BotaskQuery::ProjectGroupList($this->db, $taskid));
-			
-			$task->tl = $pbd['tl'];
-			$task->bd = $pbd['bd'];
-			$task->ctid = $pbd['ctid'];
-			$task->unm = $pbd['unm'];
-			$task->fnm = $pbd['fnm'];
-			$task->lnm = $pbd['lnm'];
-			$task->dl = $pbd['dl'];
-		}else{
-			// попытка получить проект по шаблону, а есть ли права?
-			if (!$this->IsWriteRole()){ return null; }
-			// $task->users = $this->ToArray(BotaskQuery::ProjectUserListDefault($this->db, $taskid));
-			// $task->groups = $this->ToArray(BotaskQuery::ProjectGroupListDefault($this->db, $taskid));
-			$task->users = array();
+		$task = BotaskQuery::Task($this->db, $taskid, true);
+		$task['users'] = array();
+		$users = $this->TaskUserList($taskid, true);
+		foreach ($users as $user){
+			array_push($task['users'], $user['id']);
 		}
 		
 		return $task;
 	}
-	
 
 }
 

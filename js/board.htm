@@ -1,23 +1,32 @@
 <!--{panel}-->
 <div class='hd'>Доска задач</div>
-<div class='bd'>
-</div>
+<div class='bd aw-botask'>
 
-<!--{widget}-->
-<div class="aw-botask" id="{i#id}">
-	<table style="width: 100%"><tbody><tr>
-		<td>
-			<a href="#app=botask/taskeditor/showCreateTaskPanel/0/" id="{i#bappend}" title="Эта функция позволяет Вам создать задачу">Добавить задачу</a>
-		</td>
-		<td style="text-align: right;">
-			<a href="#" id="{i#brefresh}">Обновить</a>
-		</td>
-	</tr></tbody></table>
-	<div id="{i#container}" class="board">
-		<div id="{i#table}" class="list">
-			Идет загрузка задач. Пожалуйста, подождите...
-		</div>
+	<div class="board" id="{i#id}">
+	
+		<div id="{i#nav}"></div>
+		
+		<table class="maintable"><tbody><tr>
+			<td class="leftcol">
+				<div class="colbody">
+				
+					<div id="{i#container}" class="board">
+						<div id="{i#table}" class="list">
+							Идет загрузка задач. Пожалуйста, подождите...
+						</div>
+					</div>
+					
+				</div>
+			</td>
+			<td class="rightcol">
+				<div class=colbody>
+					<a href="#" id="{i#brefresh}">Обновить</a>
+				</div>
+			</td>
+		</tr></tbody></table>
+		
 	</div>
+
 </div>
 
 <!--{empty}-->

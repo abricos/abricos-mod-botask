@@ -23,7 +23,7 @@ Component.entryPoint = function(){
 
 	Brick.util.CSS.update(Brick.util.CSS['botask']['lib']);
 	
-	var buildTemplate = function(w, templates){var TM = TMG.build(templates), T = TM.data, TId = TM.idManager; w._TM = TM; w._T = T; w._TId = TId; };
+	var buildTemplate = function(w, ts){w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;};
 	
 	NS.getDate = function(){ return new Date(); };
 	
@@ -81,16 +81,16 @@ Component.entryPoint = function(){
 	}
 	
 	var TaskNavigateWidget = function(container, task){
+		task = task || null;
 		this.init(container, task);
 	};
 	TaskNavigateWidget.prototype = {
 		init: function(container, task){
-			buildTemplate(this, 'nav,navrow');
+			buildTemplate(this, 'nav,navrow,navrowadd');
 			var TM = this._TM;
 			
 			var get = function(tk){
 				var lst = "";
-				
 				if (!L.isNull(tk.parent)){
 					lst += get(tk.parent);
 				}
@@ -102,7 +102,7 @@ Component.entryPoint = function(){
 			};
 			
 			container.innerHTML = TM.replace('nav', {
-				'rows': get(task)
+				'rows': L.isNull(task) ? TM.replace('navrowadd') : get(task)
 			});
 		}
 	};
@@ -140,6 +140,8 @@ Component.entryPoint = function(){
 			// Данные подгружаемые дополнительно
 			// была ли загрузка дополнительных данных?
 			this.isLoadFullData = false;
+			
+			this.history = null;
 			
 			// описание задачи
 			this.descript = '';
@@ -215,7 +217,72 @@ Component.entryPoint = function(){
 			return this._list.length;
 		}
 	};
-	
+
+	// история может быт в трех состояниях:
+	// не загружена вовсе, загружена частично (только параметры - что изменено), 
+	// загружена полностью (параметры + сами данные из истории)
+	var History = function(data){
+		this.init(data);
+	}
+	History.prototype = {
+		init: function(data){
+			
+		}
+	};
+
+	var HistoryList = function(task){
+		this.init(task);
+	}
+	HistoryList.prototype = {
+		init: function(task){
+			this.task = task;
+			
+			this._list = [];
+			
+		},
+		foreach: function(f){
+			if (!L.isFunction(f)){ return; }
+			for (var i=0;i<this._list.length;i++){
+				if (f(this._list[i])){ break; };
+			}
+		},
+		getByIndex: function(index){
+			index = index || 0;
+			if (index < 0 || index >= this.count()){ return null; }
+			return this._list[index];
+		},
+		find: function(id){
+			var find = null;
+			this.foreach(function(hst){
+				if (hst*1 == hst.id*1){
+					find = hst;
+					return true;
+				}
+			});
+			return find;
+		},
+		exist: function(taskid){ 
+			return !L.isNull(this.find(taskid)); 
+		},
+		add: function(hst){
+			if (this.exist(hst.id)){ return; }
+			this._list[this._list.length] = hst;
+		},
+		remove: function(hstid){
+			var nlist = [];
+			
+			this.foreach(function(hst){
+				if (hstid*1 != hst.id*1){
+					nlist[nlist.length] = hst;
+				}
+			});
+			this._list = nlist;
+		},
+		count: function(){
+			return this._list.length;
+		}
+	};
+
 	var TaskManager = function(initData){
 		this.init(initData);
 	};
@@ -251,8 +318,10 @@ Component.entryPoint = function(){
 			this.list = tlist;
 			this.users = initData['users'];
 			
-			// this.onMakeOrder = new YAHOO.util.CustomEvent("onMakeOrder");
-			
+			this.updateEvent = new YAHOO.util.CustomEvent("updateEvent");
+		},
+		getTask: function(taskid){
+			return this.list.find(taskid);
 		},
 		loadTask: function(taskid, callback){
 			callback = L.isFunction(callback) ? callback : function(){};
@@ -308,6 +377,11 @@ Component.entryPoint = function(){
 		},
 		// обработать результат сохранения задачи
 		_afterSave: function(task, newdata, result){
+			
+			Brick.console(task);
+			Brick.console(newdata);
+			Brick.console(result);
+			this.updateEvent.fire();
 			return task;
 		}
 	};

@@ -88,23 +88,59 @@ class BotaskQuery {
 	public static function HistoryAppend(CMSDatabase $db, BotaskHistory $h) {
 		$sql = "
 			INSERT INTO ".$db->prefix."btk_history (
-				hitype, taskid, userid, dateline, parenttaskid, title, body, deadline, deadlinebytime, useradded, userremoved) VALUES (
+				hitype, taskid, userid, dateline, 
+				parenttaskid, parenttaskidc,
+				title, titlec,
+				body, bodyc, 
+				deadline, deadlinec, 
+				deadlinebytime, deadlinebytimec,
+				useradded, userremoved) VALUES (
 				
 				".bkint($h->hitype).",
 				".bkint($h->taskid).",
 				".bkint($h->userid).",
 				".TIMENOW.",
 				".bkint($h->parenttaskid).",
+				".bkint($h->parenttaskidc).",
 				'".bkstr($h->title)."',
+				".bkint($h->titlec).",
 				'".bkstr($h->body)."',
+				".bkint($h->bodyc).",
 				".bkint($h->deadline).",
+				".bkint($h->deadlinec).",
 				".bkint($h->deadlinebytime).",
+				".bkint($h->deadlinebytimec).",
 				'".bkstr($h->useradded)."',
 				'".bkstr($h->userremoved)."'
 			)
 		";
 		$db->query_write($sql);
 		return $db->insert_id();
+	}
+	
+	public static function BoardHistory(CMSDatabase $db, $userid){
+		$sql = "
+			SELECT 
+				h.historyid as id,
+				h.hitype as tp,
+				h.taskid as tid,
+				h.userid as uid,
+				h.dateline as dl,
+				
+				h.parenttaskidc as ptidc,
+				h.titlec as tlc,
+				h.bodyc as bdc,
+				h.deadlinec as ddlc, 
+				h.deadlinebytimec as ddltc
+				
+			FROM ".$db->prefix."btk_userrole ur 
+			INNER JOIN ".$db->prefix."btk_task p ON ur.taskid=p.taskid
+			INNER JOIN ".$db->prefix."btk_history h ON ur.taskid=h.taskid
+			WHERE ur.userid=".bkint($userid)." AND p.deldate=0
+			ORDER BY h.dateline DESC
+			LIMIT 20
+		";
+		return $db->query_read($sql);
 	}
 	
 	public static function Task(CMSDatabase $db, $taskid, $retarray = false){

@@ -68,16 +68,23 @@ if ($updateManager->isInstall()){
 		  `historyid` int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор роли',
 		  `hitype` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Тип записи - значения BotaskHistoryType',
 		  `taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор задачи',
-		  `parenttaskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор родительской задачи',
-		  
 		  `userid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя',
 		  `dateline` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время',
 		  
+		  `parenttaskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор родительской задачи',
+		  `parenttaskidc` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
+		  
 		  `title` varchar(250) NOT NULL DEFAULT '' COMMENT 'Сохраненная версия названия',
+		  `titlec` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
+		  
 		  `body` TEXT NOT NULL  COMMENT 'Сохраненная версия контента',
+		  `bodyc` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
 		  
 		  `deadline` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Сохраненный срок выполнения',
+		  `deadlinec` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
+		  
 		  `deadlinebytime` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Сохраненный срок выполнения - уточнение времени',
+		  `deadlinebytimec` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
 		  
 		  `useradded` varchar(250) NOT NULL DEFAULT '' COMMENT 'Добавленные пользователи',
 		  `userremoved` varchar(250) NOT NULL DEFAULT '' COMMENT 'Удаленные пользователи',

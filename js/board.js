@@ -32,36 +32,36 @@ Component.entryPoint = function(){
 	
 	Brick.util.CSS.update(Brick.util.CSS['botask']['board']);
 	
-	var buildTemplate = function(w, templates){ w._TM = TMG.build(templates); w._T = w._TM.data; w._TId = w._TM.idManager; };
-	
-	var BoardWidget = function(container){
-		this.init(container);
+	var buildTemplate = function(w, ts){w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;};
+
+	var BoardPanel = function(frend){
+		this.frend = frend;
+		BoardPanel.superclass.constructor.call(this, {
+			fixedcenter: true, width: '790px', height: '400px',
+			overflow: false, 
+			controlbox: 1
+		});
 	};
-	BoardWidget.prototype = {
-		init: function(container){
-			buildTemplate(this, 'widget,empty,table,row,rowwait,child');
-			container.innerHTML = this._TM.replace('widget');
+	YAHOO.extend(BoardPanel, Brick.widget.Panel, {
+		initTemplate: function(){
+			buildTemplate(this, 'panel,empty,table,row,rowwait,child');
+			return this._TM.replace('panel');
+		},
+		onLoad: function(){
 			
-			// E.on(container, 'mouseover', this.onMouseOver, this, true);
-			// E.on(container, 'mouseout', this.onMouseOut, this, true);
-			
-			// this.cm = NS.CloudsManager.getInstance();
-			this.onRender = new YAHOO.util.CustomEvent("onRender");
+			this.navigate = new NS.TaskNavigateWidget(this._TM.getEl('panel.nav'));
 			
 			if (!R.isWrite){
-				this._TM.getEl('widget.bappend').style.display = 'none';
+				this._TM.getEl('panel.bappend').style.display = 'none';
 			}
 			this.render();
-		},
-		getEl: function(key){
-			return this._TM.getEl(key);
 		},
 		render: function(){
 			var TM = this._TM;
 			
 			var tm = NS.taskManager;
 			if (tm.list.count() < 1){
-				TM.getEl('widget.table').innerHTML = TM.replace('empty');
+				TM.getEl('panel.table').innerHTML = TM.replace('empty');
 				return;
 			}
 			var lst = "";
@@ -82,10 +82,10 @@ Component.entryPoint = function(){
 					'childs': lstChilds
 				});
 			}, true);
-			TM.getEl('widget.table').innerHTML = TM.replace('table', {'rows': lst});
+			TM.getEl('panel.table').innerHTML = TM.replace('table', {'rows': lst});
 		},
 		onClick: function(el){
-			var TId = this._TId, tp = TId['widget'];
+			var TId = this._TId, tp = TId['panel'];
 			switch(el.id){
 			case TId['empty']['bappend']: 
 			case tp['bappend']: this.taskEditorShow(0); return true;
@@ -112,40 +112,7 @@ Component.entryPoint = function(){
 				API.showTaskEditorPanel(taskid, groupkey);
 			});
 		}
-	};
-	NS.BoardWidget = BoardWidget;
 
-	var BoardPanel = function(frend){
-		this.frend = frend;
-		BoardPanel.superclass.constructor.call(this, {
-			fixedcenter: true, width: '790px', height: '400px',
-			overflow: false, 
-			controlbox: 1
-		});
-	};
-	YAHOO.extend(BoardPanel, Brick.widget.Panel, {
-		initTemplate: function(){
-			buildTemplate(this, 'panel');
-			return this._TM.replace('panel');
-		},
-		onLoad: function(){
-			this.boardWidget = new BoardWidget(this.body);
-			NS.data.request();
-		},
-		onClick: function(el){
-			if (this.boardWidget.onClick(el)){ return true; }
-			return false;
-		},
-		destroy: function(){
-			this.boardWidget.destroy();
-			BoardPanel.superclass.destroy.call(this);
-		},
-		onResize: function(rel){
-			var el = this.boardWidget.getEl('widget.container');
-			if (rel.height > 0){
-				Dom.setStyle(el, 'height', (rel.height - 70)+'px');
-			}
-		}
 	});
 	NS.BoardPanel = BoardPanel;
 	

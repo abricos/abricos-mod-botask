@@ -8,6 +8,13 @@
 	margin-bottom: 0.6em;
 }
 
+.aw-botask .navigate .baddtask {
+    color: #73A110;
+    border-bottom: 1px dotted;
+    margin-right: 1em;
+    text-decoration: none;
+}
+
 .aw-botask .ui-form dl {
     margin: 0 0 0.3em;
     padding: 0;

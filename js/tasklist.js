@@ -34,8 +34,10 @@ Component.entryPoint = function(){
 	
 	var buildTemplate = function(w, templates){var TM = TMG.build(templates), T = TM.data, TId = TM.idManager; w._TM = TM; w._T = T; w._TId = TId; };
 	
-	var TaskListPanel = function(task){
-		this.task = task;
+	var TaskListPanel = function(taskid){
+		
+		this.task = NS.taskManager.getTask(taskid);
+		
 		TaskListPanel.superclass.constructor.call(this, {
 			fixedcenter: true, width: '790px', height: '400px',
 			overflow: false, 
@@ -45,12 +47,12 @@ Component.entryPoint = function(){
 	YAHOO.extend(TaskListPanel, Brick.widget.Panel, {
 		initTemplate: function(){
 			buildTemplate(this, 'panel,table,row');
+			
 
 			var task = this.task;
 			return this._TM.replace('panel', {
 				'id': task.id,
-				'tl': task.title,
-				'bd': task.descript
+				'tl': task.title
 			});
 		},
 		onLoad: function(){
@@ -84,6 +86,12 @@ Component.entryPoint = function(){
 				});
 			}, true);
 			TM.getEl('panel.ptlist').innerHTML = TM.replace('table', {'rows': lst});
+			
+			NS.taskManager.loadTask(task.id, function(task){
+				if (L.isNull(task)){ return; }
+				TM.getEl('panel.taskbody').innerHTML = task.descript;
+			});
+			
 		},
 		onClick: function(el){
 			var tp = this._TId['panel'];
@@ -118,10 +126,12 @@ Component.entryPoint = function(){
 	
 	API.showTaskListPanel = function(taskid){
 		NS.buildTaskManager(function(tm){
+			new TaskListPanel(taskid);
+			/*
 			tm.loadTask(taskid, function(task){
 				if (L.isNull(task)){ return; }
-				new TaskListPanel(task);
 			});
+			/**/
 		});
 	};
 

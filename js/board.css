@@ -1,10 +1,27 @@
+.aw-botask .board table.maintable {
+	width: 100%;
+}
+.aw-botask .board td.leftcol {
+	width: 90%;
+}
+.aw-botask .board .leftcol .colbody {
+	padding-right: 0.7em;
+}
+.aw-botask .board td.rightcol {
+	background-color: #F2F2F1;
+}
+.aw-botask .board .rightcol .colbody {
+	padding: 0 0.6em;
+	width: 220px;
+}
+
 .aw-botask .board {
 	width: 100%; 
-	margin-top: 8px; 
 }
 
 .aw-botask .board .node {
-	margin: 10px;
+	background-color: #F9F5DF;
+	margin: 0 10px 10px 0;
 	float: left;
 	width: 230px; 
 	height: 160px;
