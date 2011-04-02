@@ -15,8 +15,13 @@ class BotaskQuery {
 	 * 
 	 * @param CMSDatabase $db
 	 * @param integer $userid
+	 * @param integer $lastupdate
 	 */
-	public static function Board(CMSDatabase $db, $userid){
+	public static function Board(CMSDatabase $db, $userid, $lastupdate = 0){
+		$where = "";
+		if ($lastupdate > 0){
+			$where = " AND p.updatedate >= ".bkint($lastupdate);
+		}
 		$sql = "
 			SELECT
 				p.taskid as id,
@@ -28,7 +33,7 @@ class BotaskQuery {
 				p.deadlinebytime as ddlt
 			FROM ".$db->prefix."btk_userrole ur
 			INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
-			WHERE ur.userid=".bkint($userid)." AND p.deldate=0
+			WHERE ur.userid=".bkint($userid)." AND p.deldate=0 ".$where."
 		";
 		return $db->query_read($sql);
 	}
@@ -40,7 +45,11 @@ class BotaskQuery {
 	 * @param CMSDatabase $db
 	 * @param unknown_type $userid
 	 */
-	public static function BoardTaskUsers(CMSDatabase $db, $userid){
+	public static function BoardTaskUsers(CMSDatabase $db, $userid, $lastupdate = 0){
+		$where = "";
+		if ($lastupdate > 0){
+			$where = " AND p.updatedate >= ".bkint($lastupdate);
+		}
 		$sql = "
 			SELECT
 				CONCAT(ur1.taskid,'-',ur1.userid) as id,
@@ -50,7 +59,7 @@ class BotaskQuery {
 				SELECT ur.taskid
 				FROM ".$db->prefix."btk_userrole ur
 				INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
-				WHERE ur.userid=".bkint($userid)." AND p.deldate=0
+				WHERE ur.userid=".bkint($userid)." AND p.deldate=0 ".$where."
 			) ps
 			LEFT JOIN ".$db->prefix."btk_userrole ur1 ON ps.taskid=ur1.taskid
 			WHERE ur1.userid>0
@@ -64,7 +73,11 @@ class BotaskQuery {
 	 * @param CMSDatabase $db
 	 * @param unknown_type $userid
 	 */
-	public static function BoardUsers(CMSDatabase $db, $userid){
+	public static function BoardUsers(CMSDatabase $db, $userid, $lastupdate = 0){
+		$where = "";
+		if ($lastupdate > 0){
+			$where = " AND p.updatedate >= ".bkint($lastupdate);
+		}
 		$sql = "
 			SELECT
 				DISTINCT
@@ -77,7 +90,7 @@ class BotaskQuery {
 				SELECT DISTINCT ur.taskid
 				FROM ".$db->prefix."btk_userrole ur
 				INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
-				WHERE ur.userid=".bkint($userid)." AND p.deldate=0
+				WHERE ur.userid=".bkint($userid)." AND p.deldate=0 ".$where."
 			) ps
 			LEFT JOIN ".$db->prefix."btk_userrole ur1 ON ps.taskid=ur1.taskid
 			INNER JOIN ".$db->prefix."user u ON ur1.userid=u.userid
@@ -118,7 +131,12 @@ class BotaskQuery {
 		return $db->insert_id();
 	}
 	
-	public static function BoardHistory(CMSDatabase $db, $userid){
+	public static function BoardHistory(CMSDatabase $db, $userid, $lastHId = 0){
+		$lastHId = bkint($lastHId);
+		$where = "";
+		if ($lastHId > 0){
+			$where = " AND h.historyid > ".$lastHId;
+		}
 		$sql = "
 			SELECT 
 				h.historyid as id,
@@ -136,9 +154,32 @@ class BotaskQuery {
 			FROM ".$db->prefix."btk_userrole ur 
 			INNER JOIN ".$db->prefix."btk_task p ON ur.taskid=p.taskid
 			INNER JOIN ".$db->prefix."btk_history h ON ur.taskid=h.taskid
-			WHERE ur.userid=".bkint($userid)." AND p.deldate=0
+			WHERE ur.userid=".bkint($userid)." AND p.deldate=0 ".$where."
 			ORDER BY h.dateline DESC
-			LIMIT 20
+			LIMIT ".($lastHId == 0 ? 15 : 300)." 
+		";
+		return $db->query_read($sql);
+	}
+	
+	public static function TaskHistory(CMSDatabase $db, $taskid){
+		$sql = "
+			SELECT 
+				h.historyid as id,
+				h.hitype as tp,
+				h.taskid as tid,
+				h.userid as uid,
+				h.dateline as dl,
+				
+				h.parenttaskidc as ptidc,
+				h.titlec as tlc,
+				h.bodyc as bdc,
+				h.deadlinec as ddlc, 
+				h.deadlinebytimec as ddltc
+				
+			FROM ".$db->prefix."btk_history h
+			WHERE h.taskid=".bkint($taskid)."
+			ORDER BY h.dateline DESC
+			LIMIT 5 
 		";
 		return $db->query_read($sql);
 	}
@@ -147,6 +188,7 @@ class BotaskQuery {
 		$sql = "
 			SELECT
 				p.taskid as id,
+				p.parenttaskid as pid,
 				p.userid as uid,
 				p.title as tl,
 				c.body as bd,
@@ -168,7 +210,7 @@ class BotaskQuery {
 		$sql = "
 			INSERT INTO ".$db->prefix."btk_task (
 				userid, parenttaskid, title, pubkey, contentid, 
-				deadline, deadlinebytime, dateline) VALUES (
+				deadline, deadlinebytime, dateline, updatedate) VALUES (
 				".bkint($tk->uid).",
 				".bkint($tk->pid).",
 				'".bkstr($tk->tl)."',
@@ -176,6 +218,7 @@ class BotaskQuery {
 				".$contentid.",
 				".bkint($td->ddl).",
 				".bkint($td->ddlt).",
+				".TIMENOW.",
 				".TIMENOW."
 			)
 		";
@@ -192,7 +235,8 @@ class BotaskQuery {
 				title='".bkstr($tk->tl)."',
 				parenttaskid=".bkint($tk->pid).",
 				deadline=".bkint($tk->ddl).",
-				deadlinebytime=".bkint($tk->ddlt)."
+				deadlinebytime=".bkint($tk->ddlt).",
+				updatedate=".TIMENOW."
 			WHERE taskid=".bkint($tk->id)."
 		";
 		$db->query_write($sql);

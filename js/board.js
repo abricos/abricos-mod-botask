@@ -10,7 +10,7 @@ Component.requires = {
 	mod:[
 		{name: 'sys', files: ['data.js', 'container.js']},
         {name: 'uprofile', files: ['viewer.js']},
-        {name: 'botask', files: ['lib.js']}
+        {name: 'botask', files: ['history.js', 'lib.js']}
 	]
 };
 Component.entryPoint = function(){
@@ -48,11 +48,13 @@ Component.entryPoint = function(){
 			return this._TM.replace('panel');
 		},
 		onLoad: function(){
+			var TM = this._TM;
+			this.navigate = new NS.TaskNavigateWidget(TM.getEl('panel.nav'));
 			
-			this.navigate = new NS.TaskNavigateWidget(this._TM.getEl('panel.nav'));
+			this.history = new NS.HistoryWidget(TM.getEl('panel.history'));
 			
 			if (!R.isWrite){
-				this._TM.getEl('panel.bappend').style.display = 'none';
+				TM.getEl('panel.bappend').style.display = 'none';
 			}
 			this.render();
 		},

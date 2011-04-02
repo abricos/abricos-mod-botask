@@ -1,0 +1,47 @@
+.aw-botask .history {
+	margin-top: 5px;
+}
+
+.aw-botask .history .hitem {
+	font-size: 0.93em;
+	background-color: #FFF;
+	margin-bottom: 5px;
+	width: 220px;
+	overflow: hidden;
+}
+
+.aw-botask .history .more {
+	text-align: right;
+	background-color: #FFF;
+	margin-bottom: 5px;
+	padding: 1px 0 3px 0;
+}
+
+.aw-botask .history .hitem .hwrap {
+	margin: 3px;
+}
+
+.aw-botask .history .htitle {
+	position: relative;
+	white-space: nowrap;
+	overflow: hidden;	
+}
+
+.aw-botask .history .htitle .shadow {
+    background: url("/modules/botask/images/shadow.png") repeat-y scroll 0 0 transparent;
+    height: 1.3em;
+    position: absolute;
+    right: 0; top: 0;
+    width: 16px;
+}
+.aw-botask .history .huser a {
+	color: #000;
+	text-decoration: none;
+}
+.aw-botask .history .hitem .act1 {
+	color: #C82100
+}
+.aw-botask .history .hitem .act3,
+.aw-botask .history .hitem .act4 {
+	color: green;
+}

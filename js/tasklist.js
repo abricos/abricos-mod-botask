@@ -10,7 +10,7 @@ Component.requires = {
 	mod:[
 		{name: 'sys', files: ['data.js', 'container.js']},
         {name: 'uprofile', files: ['users.js']},
-        {name: 'botask', files: ['lib.js']}
+        {name: 'botask', files: ['history.js', 'lib.js']}
 	]
 };
 Component.entryPoint = function(){
@@ -48,7 +48,6 @@ Component.entryPoint = function(){
 		initTemplate: function(){
 			buildTemplate(this, 'panel,table,row');
 			
-
 			var task = this.task;
 			return this._TM.replace('panel', {
 				'id': task.id,
@@ -86,10 +85,11 @@ Component.entryPoint = function(){
 				});
 			}, true);
 			TM.getEl('panel.ptlist').innerHTML = TM.replace('table', {'rows': lst});
-			
-			NS.taskManager.loadTask(task.id, function(task){
-				if (L.isNull(task)){ return; }
+
+			var __self = this;
+			NS.taskManager.loadTask(task.id, function(){
 				TM.getEl('panel.taskbody').innerHTML = task.descript;
+				__self.history = new NS.HistoryWidget(TM.getEl('panel.history'), task.history);
 			});
 			
 		},

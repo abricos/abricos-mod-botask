@@ -151,19 +151,50 @@ class BotaskManager extends ModuleManager {
 	public function DSGetData($name, $rows){
 		$p = $rows->p;
 		switch ($name){
-			case 'board': return $this->Board();
-			// case 'boardusers': return $this->BoardUsers();
+			// case 'board': return $this->Board();
 		}
 	}
 	
-	public function AJAX($d){
+	private function _AJAX($d){
 		switch($d->do){
-			case 'init': return $this->InitializeData();
 			case 'task': return $this->Task($d->taskid);
 			case 'tasksave': return $this->TaskSave($d->task);
 		}
 		return null;
 	}
+	
+	public function AJAX($d){
+		if ($d->do == "init"){
+			return $this->BoardData(0);
+		}
+		$ret = new stdClass();
+		$ret->u = $this->userid;
+		$ret->r = $this->_AJAX($d);
+		$ret->board = $this->BoardData($d->hlid);
+		
+		return $ret;
+	}
+	
+	/**
+	 * Список знакомых пользователй
+	 */
+	public function UProfile_UserFriendList(){
+		if (!$this->IsViewRole()){ return null; }
+
+		$users = array();
+		$rows = BotaskQuery::BoardUsers($this->db, $this->userid);
+		while (($row = $this->db->fetch_array($rows))){
+			if ($row['id']*1 == $this->userid*1){ continue; }
+			$users[$row['id']] = $row;
+		}
+		
+		$o = new stdClass();
+		$o->p = UserFriendPriority::MIDDLING;
+		$o->users = $users;
+		
+		return $o;
+	}
+	
 	
 	private function ToArray($rows){
 		$ret = array();
@@ -176,34 +207,44 @@ class BotaskManager extends ModuleManager {
 	/**
 	 * Получить структуру доски задач
 	 */
-	public function InitializeData(){
+	public function BoardData($lastHId = 0){
 		if (!$this->IsViewRole()){ return null; }
 		$ret = new stdClass();
-
+		$ret->hst = array();
 		$ret->board = array();
-		$rows = BotaskQuery::Board($this->db, $this->userid);
+		$ret->users = array();
+		
+		$lastupdate = 0;
+		// история изменений, последнии 15 записей
+		$rows = BotaskQuery::BoardHistory($this->db, $this->userid, $lastHId);
+		while (($row = $this->db->fetch_array($rows))){
+			if ($lastupdate == 0){
+				$lastupdate = $row['dl'];
+			}
+			$lastupdate = min($lastupdate, $row['dl']*1);
+			array_push($ret->hst, $row);
+		}
+		if (count($ret->hst) == 0){ // нет изменений
+			return null;
+		}
+		if ($lastHId == 0){
+			$lastupdate = 0;
+		}
+		
+		$rows = BotaskQuery::Board($this->db, $this->userid, $lastupdate);
 		while (($row = $this->db->fetch_array($rows))){
 			$row['users'] = array();
 			$ret->board[$row['id']] = $row;
 		}
 		
-		$rows = BotaskQuery::BoardTaskUsers($this->db, $this->userid);
+		$rows = BotaskQuery::BoardTaskUsers($this->db, $this->userid, $lastupdate);
 		while (($row = $this->db->fetch_array($rows))){
 			array_push($ret->board[$row['tid']]['users'], $row['uid']);
 		}
 
-		$ret->users = array();
-		$rows = BotaskQuery::BoardUsers($this->db, $this->userid);
+		$rows = BotaskQuery::BoardUsers($this->db, $this->userid, $lastupdate);
 		while (($row = $this->db->fetch_array($rows))){
 			$ret->users[$row['id']] = $row;
-		}
-		
-		// история изменений, последнии 10 записей
-
-		$rows = BotaskQuery::BoardHistory($this->db, $this->userid);
-		$ret->hst = array();
-		while (($row = $this->db->fetch_array($rows))){
-			array_push($ret->hst, $row);
 		}
 		
 		return $ret;
@@ -262,6 +303,8 @@ class BotaskManager extends ModuleManager {
 			// является ли пользователь участником этой задача, если да, то он может делать с ней все что хошь
 			if (!$this->TaskAccess($tk->id)){ return null; }
 			
+			$history->taskid = $tk->id;
+			
 			$info = BotaskQuery::Task($this->db, $tk->id, true);
 			BotaskQuery::TaskUpdate($this->db, $tk);
 			
@@ -315,6 +358,14 @@ class BotaskManager extends ModuleManager {
 		foreach ($users as $user){
 			array_push($task['users'], $user['id']);
 		}
+
+		$hst = array();
+
+		$rows = BotaskQuery::TaskHistory($this->db, $taskid);
+		while (($row = $this->db->fetch_array($rows))){
+			array_push($hst, $row);
+		}
+		$task['hst'] = $hst;
 		
 		return $task;
 	}

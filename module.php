@@ -32,20 +32,40 @@ class BotaskModule extends CMSModule {
 		return $this->_manager;
 	}
 	
+	public function UProfile_UserFriendList(){
+		return $this->GetManager()->UProfile_UserFriendList();
+	}
+	
 }
 
+/**
+ * Элемент действия в истории
+ */
 class BotaskHistoryType {
+
+	/**
+	 * Задача открыта
+	 * @var integer
+	 */
+	const TASK_OPEN = 1;
 	
-	const TASK_OPEN = 0;
-	
-	const TASK_ACCEPT = 1;
-	
+	/**
+	 * Задача закрыта
+	 * @var integer
+	 */
 	const TASK_CLOSE = 2;
 	
-	const TASK_REMOVE = 3;
+	/**
+	 * Задача принята на выполнение
+	 * @var integer
+	 */
+	const TASK_ACCEPT = 3;
 	
-	const TASK_UPDATE = 4; // Обновлена задача
-	
+	/**
+	 * Задача обновлена
+	 * @var integer
+	 */
+	const TASK_UPDATE = 4;
 }
 
 /**
@@ -54,22 +74,22 @@ class BotaskHistoryType {
 class BotaskStatus {
 	
 	/**
-	 * Новая
+	 * Открытая задача
 	 * @var integer
 	 */
-	const OPEN = 0;
+	const TASK_OPEN = BotaskHistoryType::TASK_OPEN;
 
 	/**
-	 * Принята
+	 * Завершенная (закрытая) задача
 	 * @var integer
 	 */
-	const ACCEPT = 1;
+	const TASK_CLOSE = BotaskHistoryType::TASK_CLOSE;
 	
 	/**
-	 * Завершена
+	 * Задача в работе. Принятая или назначенная конкретному лицу
 	 * @var integer
 	 */
-	const CLOSE = 9;
+	const ACCEPT = BotaskHistoryType::TASK_ACCEPT;
 
 }
 

@@ -1,0 +1,34 @@
+<!--{widget}-->
+<div class="history" id="{i#id}">
+	<div id="{i#list}" class="list"></div>
+	<div id="{i#more}" class="more">
+		<a href="#" id="{i#bmore}">Загрузить еще...</a>
+		<img id="{i#load}" src="/images/loading.gif" style="display: none" />
+	</div>
+</div>
+
+<!--{item}-->
+<div class="hitem" title="">
+	<div class="hwrap">
+		<div class="htitle">
+			<span class="hact">{v#act}</span> → <a id="{i#task}-{v#id}" href="#app=botask/tasklist/showTaskListPanel/{v#tid}/" title="{v#tl}">{v#tl}</a>
+			<div class="shadow"></div>
+		</div>
+		<div class="hdate">{v#dl}</div>
+		<div class="huser">
+			<a href="#" class="show-user-profile user-{v#uid}">{v#unm}</a>
+		</div>
+	</div>
+</div>
+
+<!--{act1}-->
+<span class="act1" title="Открыта">Отк</span> 
+
+<!--{act2}-->
+<span class="act2" title="Закрыта">Зкт</span> 
+
+<!--{act3}-->
+<span class="act3" title="Принята">Прн</span> 
+
+<!--{act4}-->
+<span class="act4" title="Обновлена">Обн</span> 
