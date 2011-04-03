@@ -170,7 +170,7 @@ class BotaskManager extends ModuleManager {
 		$ret = new stdClass();
 		$ret->u = $this->userid;
 		$ret->r = $this->_AJAX($d);
-		$ret->board = $this->BoardData($d->hlid);
+		$ret->changes = $this->BoardData($d->hlid);
 		
 		return $ret;
 	}
@@ -215,7 +215,7 @@ class BotaskManager extends ModuleManager {
 		$ret->users = array();
 		
 		$lastupdate = 0;
-		// история изменений, последнии 15 записей
+		// история изменений, последнии 15 записей, если не указан $lastHId
 		$rows = BotaskQuery::BoardHistory($this->db, $this->userid, $lastHId);
 		while (($row = $this->db->fetch_array($rows))){
 			if ($lastupdate == 0){
@@ -351,6 +351,8 @@ class BotaskManager extends ModuleManager {
 		if (!$this->IsViewRole()){ return null; }
 		
 		if (!$this->TaskAccess($taskid)){ return null; }
+
+		BotaskQuery::TaskUpdateLastView($this->db, $taskid, $this->userid);
 		
 		$task = BotaskQuery::Task($this->db, $taskid, true);
 		$task['users'] = array();
@@ -366,7 +368,7 @@ class BotaskManager extends ModuleManager {
 			array_push($hst, $row);
 		}
 		$task['hst'] = $hst;
-		
+
 		return $task;
 	}
 

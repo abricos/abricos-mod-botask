@@ -28,14 +28,7 @@ Component.entryPoint = function(){
 	
 	Brick.util.CSS.update(Brick.util.CSS['botask']['taskeditor']);	
 
-	if (!NS.data){
-		NS.data = new Brick.util.data.byid.DataSet('botask');
-	}
-	
-	var buildTemplate = function(w, templates){
-		var TM = TMG.build(templates), T = TM.data, TId = TM.idManager;
-		w._TM = TM; w._T = T; w._TId = TId;
-	};
+	var buildTemplate = function(w, ts){w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;};
 
 	var TaskEditorPanel = function(task){
 		this.task = task;
@@ -84,9 +77,7 @@ Component.entryPoint = function(){
 			var tp = this._TId['panel'];
 			switch(el.id){
 			
-			case tp['bsave']: 
-			case tp['bsavepub']: this.saveTask(); return true;
-			case tp['bsavedraft']: this.saveTask(true); return true;
+			case tp['bsave']: this.saveTask(); return true;
 			case tp['bcancel']: this.close(); return true;
 			}
 			return false;
@@ -95,6 +86,10 @@ Component.entryPoint = function(){
 			var TM = this._TM,
 				task = this.task,
 				users = this.usersWidget.getSelectedUsers();
+			
+			Dom.setStyle(TM.getEl('panel.bsave'), 'display', 'none');
+			Dom.setStyle(TM.getEl('panel.bcancel'), 'display', 'none');
+			Dom.setStyle(TM.getEl('panel.loading'), 'display', '');
 			
 			users[users.length] = Brick.env.user.id;
 			
@@ -110,7 +105,7 @@ Component.entryPoint = function(){
 			};
 			
 			var __self = this;
-			NS.taskManager.saveTask(task, newdata, function(ntask){
+			NS.taskManager.taskSave(task, newdata, function(){
 				__self.close();
 			});
 		}
@@ -118,16 +113,15 @@ Component.entryPoint = function(){
 	NS.TaskEditorPanel = TaskEditorPanel;
 
 	// создать задачу
-	API.showCreateTaskPanel = function(parenttaskid){
-		parenttaskid = parenttaskid || 0;
+	API.showCreateTaskPanel = function(ptaskid){
+		ptaskid = ptaskid || 0;
 		var task = new NS.Task();
 		
 		NS.buildTaskManager(function(tm){
-			if (parenttaskid*1 > 0){
-				tm.loadTask(parenttaskid, function(ptask){
-					task.setParent(ptask);
-					new TaskEditorPanel(task);
-				});
+			if (ptaskid*1 > 0){
+				var ptask = tm.list.find(ptaskid);
+				task.parent = ptask;
+				new TaskEditorPanel(task);
 			}else{
 				new TaskEditorPanel(task);	
 			}
@@ -136,7 +130,8 @@ Component.entryPoint = function(){
 
 	API.showTaskEditorPanel = function(taskid){
 		NS.buildTaskManager(function(tm){
-			tm.loadTask(taskid, function(task){
+			var task = tm.list.find(taskid);
+			tm.taskLoad(taskid, function(){
 				new TaskEditorPanel(task);
 			});
 		});

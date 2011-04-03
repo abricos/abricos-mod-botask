@@ -55,6 +55,7 @@ if ($updateManager->isInstall()){
 		  `userroleid` int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор роли',
 		  `taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор задачи',
 		  `userid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя',
+		  `viewdate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата последнего просмотра',
 		  `deldate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата удаления',
 		  PRIMARY KEY  (`userroleid`), 
 		  UNIQUE KEY `task` (`taskid`,`userid`)

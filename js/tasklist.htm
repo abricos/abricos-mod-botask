@@ -8,10 +8,11 @@
 		<table class="maintable"><tbody><tr>
 			<td class="leftcol">
 				<div class="colbody">
-					<div id="{i#taskbody}" class="taskbody aw-page-content"><img src="/images/loading.gif" /></div>
+					<div id="{i#taskbody}" class="taskbody aw-page-content">
+						<img src="/images/loading.gif" />
+					</div>
 					
 					<div class="manbuttons">
-						
 						<a id="{i#bsetexec}" class="bsetexec btkbt" href="#" title="Стать ответственным за выполнение данной задачи">Принять</a>
 						<a id="{i#bclose}" class="bsetexec btkbt" href="#" title="Завершить задачу">Завершить</a>
 						
@@ -25,10 +26,7 @@
 						<a id="{i#ptlistsh}" class="ptlistsh btkbt" href="#">Подзадачи</a>
 						<a id="{i#ptappend}" class="ptappend btkbt" href="#app=botask/taskeditor/showCreateTaskPanel/{v#id}/">Добавить подзадачу</a>
 					</div>
-					<div class="ptlist">
-						<div id="{i#ptlist}">
-						</div>
-					</div>
+					<div class="ptlist" id="{i#ptlist}"></div>
 				</div>
 			</td>
 			<td class="rightcol">
@@ -39,7 +37,9 @@
 						<div id="{i#execuser}" ></div>
 					</div>
 			
-					<div id="{i#history}"></div>
+					<div id="{i#history}">
+						<img src="/images/loading.gif" />
+					</div>
 			
 				</div>
 			</td>
@@ -48,33 +48,61 @@
 	</div>
 </div>
 
+<!--{list}-->
+<div class="tlist" id="{i#id}">
+	<div class="tlmenu">
+		<div id="{i#all}" class="tlitem current">Все</div>
+		<div id="{i#new}" class="tlitem">Новые</div>
+		<div id="{i#fav}" class="tlitem">Избранное</div>
+	</div>
+	<div id="{i#table}" class="ttable"></div>
+</div>
+
+<!--{tablepold}-->
+			<th class="tautor"><span>Автор</span></th>
+			<th class="texec"><span>Ответственный</span></th>
+
+
 <!--{table}-->
 <table>
 	<thead>
 		<tr>
 			<th class="tname"><span>Задачи</span></th>
 			<th class="tddl"><span>Срок</span></th>
-			<th class="tautor"><span>Автор</span></th>
-			<th class="texec"><span>Ответственный</span></th>
+			<th class="tfav">
+				<span class="fav-icon-normal">
+					<img class="fav-checked" src="/images/empty.gif">
+				</span>
+			</th>
 		</tr>
 	</thead>
 	<tbody>{v#rows}</tbody>
 </table>
 
+<!--{rowold}-->
+	<td class="tautor">
+		<a href="#" class="show-user-profile user-{v#auid}">
+			{v#aunm}
+		</a>
+	</td>
+	<td></td>
+
 <!--{row}-->
 <tr class="row">
-	<td>
-		<a href="#app=botask/tasklist/showTaskListPanel/{v#id}/">{v#tl}</a>
+	<td class="tname">
+		<div class="ch-ico">
+			<div class="ch-btn">&nbsp;</div>
+		</div>
+		<div class="ch-tl">
+			<a href="#app=botask/tasklist/showTaskListPanel/{v#id}/">{v#tl}</a>
+		</div>
 	</td>
 	<td>
 		{v#ddl}
 	</td>
 	<td>
-		<a href="#" class="show-user-profile user-{v#auid}">
-			{v#aunm}
-		</a>
-	</td>
-	<td>
-	
+		<span class="fav-icon-normal">
+			<img id="{i#fav}-{v#id}" class="" src="/images/empty.gif">
+		</span>
 	</td>
 </tr>

@@ -55,34 +55,36 @@ Component.entryPoint = function(){
 				'ddl': 0,
 				'ddlt': 0
 			}, d || {});
-
-			this.id = d['id'];				// идентификатор
-			this.title = d['tl'];			// заголовок
-			this.userid = d['uid'];			// идентификатор автора
-			this.date = NS.dateToClient(d['dl']); // Дата создания задачи
 			
-			this.deadline = NS.dateToClient(d['ddl']); // Срок исполнения
-			this.ddlTime = d['ddlt']*1 > 0; // уточнено ли время?
-			
-			this.users = d['users'];		// участники задачи
-
-			this.parent = null; 			// родительская задача
+			this.update(d);
 			this.childs = new TaskList();	// подзадачи
-			
-			// была ли загрузка оставшихся данных (описание задачи, история изменений)?
-			this.isLoad = false;
+			this.parent = null; 			// родительская задача
 			
 			this.history = null;
 			
+			// была ли загрузка оставшихся данных (описание задачи, история изменений)?
+			this.isLoad = false;
+
 			// описание задачи
 			this.descript = '';
 		},
-		setParent: function(task){
-			this.parent = task;
+		update: function(d){
+			this.id = d['id']*1;				// идентификатор
+			this.title = d['tl'];				// заголовок
+			this.userid = d['uid'];				// идентификатор автора
+			this.date = NS.dateToClient(d['dl']); // Дата создания задачи
+			
+			this.deadline = NS.dateToClient(d['ddl']); // Срок исполнения
+			this.ddlTime = d['ddlt']*1 > 0;		// уточнено ли время?
+			
+			this.users = d['users'];			// участники задачи
+			this.parentTaskId = d['pid']*1;		// идентификатор родителя
+			this.isNew = d['n']*1 > 0;
 		},
 		setData: function(d){
 			this.isLoad = true;
 			this.descript = d['bd'];
+			this.isNew = d['n']*1 > 0;
 		},
 		addHItem: function(hst){
 			if (L.isNull(this.history)){
@@ -90,6 +92,7 @@ Component.entryPoint = function(){
 			}
 			this.history.add(hst);
 		},
+		
 		toString: function(){
 			return "'"+this.title+"', Child: "+this.childs.count();
 		}
@@ -123,14 +126,14 @@ Component.entryPoint = function(){
 			return this._list[index];
 		},
 		
-		find: function(taskid){
+		find: function(taskid, nochild){
 			var find = null;
 			this.foreach(function(task){
 				if (taskid*1 == task.id*1){
 					find = task;
 					return true;
 				}
-			});
+			}, nochild);
 			return find;
 		},
 		exist: function(taskid){ 
@@ -150,6 +153,9 @@ Component.entryPoint = function(){
 			});
 			this._list = nlist;
 		},
+		clear: function(){
+			this._list = [];
+		},
 		count: function(){
 			return this._list.length;
 		}
@@ -164,9 +170,9 @@ Component.entryPoint = function(){
 	}
 	HItem.prototype = {
 		init: function(d){
-			this.id = d['id'];			// идентификатор элемента истории
+			this.id = d['id']*1;		// идентификатор элемента истории
 			this.htype = d['tp']*1;		// тип действия HType
-			this.taskid = d['tid'];		// идентификатор задачи
+			this.taskid = d['tid']*1;	// идентификатор задачи
 			this.userid = d['uid'];		// идентификатор пользователя
 			this.date = NS.dateToClient(d['dl']); // дата/время действия
 			this.dl = d['dl']*1;		 // дата/время серверное
@@ -201,6 +207,15 @@ Component.entryPoint = function(){
 	YAHOO.extend(HItemTaskUpdate, HItem, {
 		init: function(d){
 			HItemTaskUpdate.superclass.init.call(this, d);
+			
+			this.isTitle = d['tlc']*1 > 0;
+			this.isDescript = d['bdc']*1 > 0;
+			this.isDeadline = d['ddlc']*1 > 0;
+			this.isDdlTime = d['ddltc']*1 > 0;
+			this.isParent = d['ptidc']*1 > 0;
+			
+			this.userAdded = d['usa'];
+			this.userRemoved = d['usr'];
 		}
 	});
 	NS.HItemTaskUpdate = HItemTaskUpdate;
@@ -220,14 +235,28 @@ Component.entryPoint = function(){
 		}
 		return null;
 	};
+	var hSort = function(a, b){
+		if (a.id > b.id){ return -1;
+		}else if(a.id < b.id){ return 1; }
+		return 0;
+	};
+	var hSortDesc = function(a, b){
+		if (a.id > b.id){ return 1;
+		}else if(a.id < b.id){ return -1; }
+		return 0;
+	};
 	History.prototype = {
 		init: function(){
 			this._list = [];
 		},
-		foreach: function(f){
+		foreach: function(f, desc){
 			if (!L.isFunction(f)){ return; }
-			for (var i=0;i<this._list.length;i++){
-				if (f(this._list[i])){ break; };
+			var lst = this._list;
+			if (desc){ // сортировка по дате
+				lst = lst.sort(hSortDesc)				
+			}
+			for (var i=0;i<lst.length;i++){
+				if (f(lst[i])){ break; };
 			}
 		},
 		getByIndex: function(index){
@@ -248,9 +277,11 @@ Component.entryPoint = function(){
 		exist: function(itemid){ 
 			return !L.isNull(this.find(itemid)); 
 		},
-		add: function(hst){
-			if (this.exist(hst.id)){ return; }
-			this._list[this._list.length] = hst;
+		add: function(item){
+			if (this.exist(item.id)){ return; }
+			var lst = this._list;
+			lst[lst.length] = item;
+			this._list = lst.sort(hSort)				
 		},
 		remove: function(hstid){
 			var nlist = [];
@@ -261,6 +292,9 @@ Component.entryPoint = function(){
 				}
 			});
 			this._list = nlist;
+		},
+		clear: function(){
+			this._list = [];
 		},
 		count: function(){
 			return this._list.length;
@@ -289,31 +323,13 @@ Component.entryPoint = function(){
 			var list = {}, tree = {},
 				board = initData['board'];
 			
+			this.list = new TaskList();
+
 			for (var id in board){
 				list[id] = new Task(board[id]);
 			}
+			this._buildTaskTree(list);
 			
-			// построить дерево
-			for (var id in list){
-				var task = list[id],
-					di = board[task.id],
-					pid = di['pid'],
-					ptask = list[pid];
-				
-				if (pid*1 > 0 && ptask){
-					task.setParent(ptask);
-					ptask.childs.add(task);
-				}
-			}
-			
-			var tlist = new TaskList();
-			for (var id in list){
-				var task = list[id];
-				if (L.isNull(task.parent)){
-					tlist.add(task);
-				}
-			}
-			this.list = tlist;
 			this.users = initData['users'];
 			
 			// глобальная коллекция истории
@@ -322,41 +338,96 @@ Component.entryPoint = function(){
 			for (var i=0;i<hsts.length;i++){
 				this.historyItemAdd(hsts[i]);
 			}
+			this.historyChangedEvent = new YAHOO.util.CustomEvent("historyChangedEvent");
+		},
+		
+		_buildTaskTree: function(list){
+
+			this.list.clear();
+			var tlist = this.list;
 			
-			this.updateEvent = new YAHOO.util.CustomEvent("updateEvent");
+			for (var id in list){
+				var task = list[id];
+				task.parent = null;
+				task.childs.clear();
+			}
+			
+			for (var id in list){
+				var task = list[id],
+					pid = task.parentTaskId,
+					ptask = list[pid];
+				
+				if (pid*1 > 0 && ptask){
+					task.parent = ptask;
+					ptask.childs.add(task);
+				}
+			}
+			
+			for (var id in list){
+				var task = list[id];
+				if (L.isNull(task.parent)){
+					tlist.add(task);
+				}
+			}
 		},
 		
 		historyItemAdd: function(d, task){
-			if (this.history.exist(d.id)){ return; }
-			var item = History.buildItem(d);
+			var item = this.history.find(d.id);
+			if (!L.isNull(item)){ return item; }
+			item = History.buildItem(d);
 			this.history.add(item);
 			
 			task = task || this.list.find(item.taskid);
 			task.addHItem(item);
+			return item;
 		},
 		
 		getTask: function(taskid){
 			return this.list.find(taskid);
 		},
 		
-		ajaxResult: function(s, r){
-			if (r.u*1 != Brick.env.user.id){
+		_ajaxResult: function(r){
+			if (r.u*1 != Brick.env.user.id){ // пользователь разлогинился
 				Brick.Page.reload();
 				return;
 			}
+			if (L.isNull(r['changes'])){ return; } // изменения не зафиксированы
 			
-			// Brick.console(r);
-			/*
-			var fd = ;
-			if (!L.isNull(fd)){
-				task.setData(fd);
+			// построить архитектуру задач
+			var tups = {};
+			for (var id in r['changes']['board']){
+				var d = r['changes']['board'][id];
+				var task = this.list.find(id); 
+				if (L.isNull(task)){ // новая задача
+					task = new Task(d);
+				}else{
+					task.update(d);
+				}
+				tups[id] = task;
 			}
-			callback(task);
-			/**/
+			this.list.foreach(function(task){
+				if (!tups[task.id]){
+					tups[task.id]= task;
+				}
+			});
+			this._buildTaskTree(tups);
+
+			var histe = new History(), 
+				hsts = r['changes']['hst'];
+
+			// применить изменения зафиксированные сервером
+			for (var i=0;i<hsts.length;i++){
+				var item = this.historyItemAdd(hsts[i]);
+				histe.add(item);
+				var task = tups[item.taskid];
+				if (item.htype == HType.TASK_UPDATE && item.isDescript){
+					task.isLoad = false;
+				}
+			}
+			this.historyChangedEvent.fire(histe);
 		},
 		
 		ajax: function(d, callback){
-			
 			d['hlid'] = this.history.lastId();
 			
 			// все запросы по модулю проходят через этот менеджер.
@@ -367,22 +438,22 @@ Component.entryPoint = function(){
 			Brick.ajax('botask', {
 				'data': d,
 				'event': function(request){
-					__self.ajaxResult(d, request.data)
+					// применить результат запроса
 					callback(request.data.r);
+					// прменить возможные изменения в истории
+					__self._ajaxResult(request.data)
 				}
 			});
-			
 		},
-		
-		loadTask: function(taskid, callback){
+		taskLoad: function(taskid, callback){
 			callback = callback || function(){};
-			var task = this.list.find(taskid);
+			var task = this.list.find(taskid),
+				__self = this;
 			if (task.isLoad){
 				callback();
-				return;
+				return true;
 			}
-			var __self = this;
-			
+
 			this.ajax({'do': 'task', 'taskid': taskid }, function(r){
 				task.setData(r);
 				for (var i=0;i<r['hst'].length;i++){
@@ -393,8 +464,7 @@ Component.entryPoint = function(){
 		},
 		
 		// сохранить задачу (task - задача, newdata - новые данных по задаче)
-		// если сохранение пройдет успешно => обновить данные и вызвать событие
-		saveTask: function(task, d, callback){
+		taskSave: function(task, d, callback){
 			var __self = this;
 			
 			d = L.merge({
@@ -444,6 +514,18 @@ Component.entryPoint = function(){
 	TaskNavigateWidget.prototype = {
 		init: function(container, task){
 			buildTemplate(this, 'nav,navrow,navrowadd');
+			
+			this.container= container;
+			this.task = task;
+			
+			// Подписаться на событие изменений в задачах
+			NS.taskManager.historyChangedEvent.subscribe(this.onHistoryChanged, this, true);
+			this.render();
+		},
+		onHistoryChanged: function(type, args){
+			this.render();
+		},
+		render: function(){
 			var TM = this._TM;
 			
 			var get = function(tk){
@@ -458,9 +540,12 @@ Component.entryPoint = function(){
 				return lst;
 			};
 			
-			container.innerHTML = TM.replace('nav', {
-				'rows': L.isNull(task) ? TM.replace('navrowadd') : get(task)
+			this.container.innerHTML = TM.replace('nav', {
+				'rows': L.isNull(this.task) ? TM.replace('navrowadd') : get(this.task)
 			});
+		},
+		destroy: function(){
+			NS.taskManager.historyChangedEvent.unsubscribe(this.onHistoryChanged);
 		}
 	};
 	NS.TaskNavigateWidget = TaskNavigateWidget;

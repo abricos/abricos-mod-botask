@@ -53,38 +53,85 @@
 	margin-top: 0.5em;
 	display: block;
 }
-.aw-botask .taskview .ptlist table {
+.aw-botask .tlist table {
 	table-layout: fixed;
 	border-collapse: collapse;
 	width: 100%;
 }
-.aw-botask .taskview .ptlist table th {
+.aw-botask .tlist table th {
 	background-color: #F4F4EE;
 	font-weight: normal;
 	padding: 0;
 	white-space: nowrap;
 	text-align: left;
 	height: 1.8em;	
-	padding: 0.4em 0.5em;
 }
-.aw-botask .taskview .ptlist table th.tname {
-	width: 50%;
+.aw-botask .tlist table th {
+	padding: 0.4em 0.3em;
 }
-.aw-botask .taskview .ptlist table th.tddl {
-	width: 9em;
-} 
-.aw-botask .taskview .ptlist table th.tautor, 
-.aw-botask .taskview .ptlist table th.texec {
-	width: 25%;
+.aw-botask .tlist tr.row td {
+	padding: 0.5em 0.3em 0.6em 0.3em;
 }
 
-.aw-botask .taskview .ptlist tr.row:hover {
-	background: none repeat scroll 0 0 #FFF0C6;
+.aw-botask .tlist table th.tname {
+	width: 75%;
 }
-.aw-botask .taskview .ptlist tr.row td {
-	padding: 0.7em 0.3em;
+.aw-botask .tlist table th.tname span {
+    margin-left: 30px;
+}
+.aw-botask .tlist .tname .ch-ico {
+	float: left;
+	width: 30px;
+	height: 15px;
+}
+.aw-botask .tlist .tname .ch-tl {
+	margin-left: 30px;
+}
+.aw-botask .tlist div.ch-btn {
+    background: url("/modules/botask/images/expd.gif") no-repeat scroll 0 0 transparent;
+    cursor: pointer;
+	margin-top: 0.25em;
+    margin-left: 4px;
+    width: 20px;
+}
+.aw-botask .tlist .expanded div.ch-btn {
+    background-image: url("/modules/botask/images/clsp.gif");
+}
+
+.aw-botask .tlist table th.tddl {
+	width: 9em;
+} 
+.aw-botask .tlist table th.tautor, 
+.aw-botask .tlist table th.texec {
+	width: 25%;
+}
+.aw-botask .tlist table th.tfav {
+	width: 32px;
+} 
+.aw-botask .tlist tr.row:hover {
+	background: none repeat scroll 0 0 #FFF0C6;
 }
 
 .aw-botask .taskview .author {
 	width: 220px;
+}
+.aw-botask .tlist .tlmenu {
+	margin-left: 10px;
+}
+.aw-botask .tlist .tlitem {
+	cursor: pointer;
+	float: left;
+	background-color: #E3E3D7;
+	margin: 0 1px;
+	padding: 5px 15px; 
+}
+.aw-botask .tlist .tlitem:hover {
+	text-decoration: underline;
+	
+}
+.aw-botask .tlist .current {
+	background-color: #F4F4EE;
+}
+.aw-botask .tlist .ttable {
+	clear: both;
 }

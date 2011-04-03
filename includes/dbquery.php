@@ -10,6 +10,17 @@
 
 class BotaskQuery {
 	
+	const TASK_FIELDS = "
+		p.taskid as id,
+		p.parenttaskid as pid,
+		p.userid as uid,
+		p.title as tl,
+		p.dateline as dl,
+		p.deadline as ddl,
+		p.deadlinebytime as ddlt,
+		IF (ur.viewdate > 0, 0, 1) as n
+	";
+	
 	/**
 	 * Список доступных пользователю задач
 	 * 
@@ -24,13 +35,7 @@ class BotaskQuery {
 		}
 		$sql = "
 			SELECT
-				p.taskid as id,
-				p.parenttaskid as pid,
-				p.userid as uid,
-				p.title as tl,
-				p.dateline as dl,
-				p.deadline as ddl,
-				p.deadlinebytime as ddlt
+				".BotaskQuery::TASK_FIELDS."
 			FROM ".$db->prefix."btk_userrole ur
 			INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
 			WHERE ur.userid=".bkint($userid)." AND p.deldate=0 ".$where."
@@ -149,7 +154,9 @@ class BotaskQuery {
 				h.titlec as tlc,
 				h.bodyc as bdc,
 				h.deadlinec as ddlc, 
-				h.deadlinebytimec as ddltc
+				h.deadlinebytimec as ddltc,
+				h.useradded as usad,
+				h.userremoved as usrm
 				
 			FROM ".$db->prefix."btk_userrole ur 
 			INNER JOIN ".$db->prefix."btk_task p ON ur.taskid=p.taskid
@@ -187,16 +194,11 @@ class BotaskQuery {
 	public static function Task(CMSDatabase $db, $taskid, $retarray = false){
 		$sql = "
 			SELECT
-				p.taskid as id,
-				p.parenttaskid as pid,
-				p.userid as uid,
-				p.title as tl,
+				".BotaskQuery::TASK_FIELDS.",
 				c.body as bd,
-				p.contentid as ctid,
-				p.deadline as ddl,
-				p.deadlinebytime as ddlt,
-				p.dateline as dl
+				p.contentid as ctid
 			FROM ".$db->prefix."btk_task p
+			INNER JOIN ".$db->prefix."btk_userrole ur ON p.taskid=ur.taskid
 			INNER JOIN ".$db->prefix."content c ON p.contentid=c.contentid
 			WHERE p.taskid=".bkint($taskid)."
 			LIMIT 1
@@ -284,18 +286,21 @@ class BotaskQuery {
 		return $retarray ? $db->query_first($sql) : $db->query_read($sql);
 	}
 	
-	
-	/*
-	public static function UserRoleUpdate(CMSDatabase $db, $taskid, $userid){
+	/**
+	 * Обновить информацию последнего просмотра задачи (для определения флага - Новая)
+	 * 
+	 * @param CMSDatabase $db
+	 * @param integer $taskid
+	 */
+	public static function TaskUpdateLastView(CMSDatabase $db, $taskid, $userid){
 		$sql = "
 			UPDATE ".$db->prefix."btk_userrole
-			SET isread=".bkint($isRead).",
-				iswrite=".bkint($isWrite)."
+			SET viewdate=".TIMENOW."
 			WHERE taskid=".bkint($taskid)." AND userid=".bkint($userid)."
+			LIMIT 1
 		";
 		$db->query_write($sql);
 	}
-	/**/
 	
 	public static function UserRoleRemove(CMSDatabase $db, $taskid, $userid){
 		$sql = "

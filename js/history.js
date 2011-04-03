@@ -39,7 +39,7 @@ Component.entryPoint = function(){
 		init: function(container, history){
 			buildTemplate(this, 'widget,item,act1,act2,act3,act4');
 			container.innerHTML = this._TM.replace('widget');
-			this.history = history || NS.taskManager;
+			this.history = history || NS.taskManager.history;
 			
 			var __self = this;
 			E.on(container, 'click', function(e){

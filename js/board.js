@@ -10,7 +10,7 @@ Component.requires = {
 	mod:[
 		{name: 'sys', files: ['data.js', 'container.js']},
         {name: 'uprofile', files: ['viewer.js']},
-        {name: 'botask', files: ['history.js', 'lib.js']}
+        {name: 'botask', files: ['tasklist.js', 'history.js', 'lib.js']}
 	]
 };
 Component.entryPoint = function(){
@@ -33,9 +33,8 @@ Component.entryPoint = function(){
 	Brick.util.CSS.update(Brick.util.CSS['botask']['board']);
 	
 	var buildTemplate = function(w, ts){w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;};
-
-	var BoardPanel = function(frend){
-		this.frend = frend;
+	
+	var BoardPanel = function(){
 		BoardPanel.superclass.constructor.call(this, {
 			fixedcenter: true, width: '790px', height: '400px',
 			overflow: false, 
@@ -44,17 +43,49 @@ Component.entryPoint = function(){
 	};
 	YAHOO.extend(BoardPanel, Brick.widget.Panel, {
 		initTemplate: function(){
-			buildTemplate(this, 'panel,empty,table,row,rowwait,child');
+			buildTemplate(this, 'panel,empty');
 			return this._TM.replace('panel');
 		},
 		onLoad: function(){
 			var TM = this._TM;
 			this.navigate = new NS.TaskNavigateWidget(TM.getEl('panel.nav'));
-			
 			this.history = new NS.HistoryWidget(TM.getEl('panel.history'));
+			this.list = new NS.TaskListWidget(TM.getEl('panel.list'), 0);
+		},
+		destroy: function(){
+			this.navigate.destroy();
+			this.list.destroy();
+			BoardPanel.superclass.destroy.call(this);
+		}
+	});
+	NS.BoardPanel = BoardPanel;
+	
+	API.showBoardPanel = function(){
+		NS.buildTaskManager(function(tm){
+			new BoardPanel();
+		});
+	};
+
+	var BoardExpPanel = function(){
+		BoardExpPanel.superclass.constructor.call(this, {
+			fixedcenter: true, width: '790px', height: '400px',
+			overflow: false, 
+			controlbox: 1
+		});
+	};
+	YAHOO.extend(BoardExpPanel, Brick.widget.Panel, {
+		initTemplate: function(){
+			buildTemplate(this, 'panelexp,empty,table,row,rowwait,child');
+			return this._TM.replace('panelexp');
+		},
+		onLoad: function(){
+			var TM = this._TM;
+			this.navigate = new NS.TaskNavigateWidget(TM.getEl('panelexp.nav'));
+			
+			this.history = new NS.HistoryWidget(TM.getEl('panelexp.history'));
 			
 			if (!R.isWrite){
-				TM.getEl('panel.bappend').style.display = 'none';
+				TM.getEl('panelexp.bappend').style.display = 'none';
 			}
 			this.render();
 		},
@@ -63,7 +94,7 @@ Component.entryPoint = function(){
 			
 			var tm = NS.taskManager;
 			if (tm.list.count() < 1){
-				TM.getEl('panel.table').innerHTML = TM.replace('empty');
+				TM.getEl('panelexp.table').innerHTML = TM.replace('empty');
 				return;
 			}
 			var lst = "";
@@ -84,10 +115,10 @@ Component.entryPoint = function(){
 					'childs': lstChilds
 				});
 			}, true);
-			TM.getEl('panel.table').innerHTML = TM.replace('table', {'rows': lst});
+			TM.getEl('panelexp.table').innerHTML = TM.replace('table', {'rows': lst});
 		},
 		onClick: function(el){
-			var TId = this._TId, tp = TId['panel'];
+			var TId = this._TId, tp = TId['panelexp'];
 			switch(el.id){
 			case TId['empty']['bappend']: 
 			case tp['bappend']: this.taskEditorShow(0); return true;
@@ -116,11 +147,11 @@ Component.entryPoint = function(){
 		}
 
 	});
-	NS.BoardPanel = BoardPanel;
+	NS.BoardExpPanel = BoardExpPanel;
 	
-	API.showBoardPanel = function(){
+	API.showBoardExpPanel = function(){
 		NS.buildTaskManager(function(tm){
-			new BoardPanel();
+			new BoardExpPanel();
 		});
 	};
 

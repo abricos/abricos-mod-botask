@@ -36,3 +36,26 @@
 .aw-botask .ui-form .input-text {
 	border: 1px solid #CCCCCC;	
 }
+
+.aw-botask .fav-icon-normal,
+.aw-botask .fav-icon-small {
+    cursor: pointer;
+}
+.aw-botask .fav-icon-normal img {
+    background: url("/modules/botask/images/fav-n.png") no-repeat scroll center 0 transparent;
+    float: none !important;
+    height: 14px;
+    margin: 0 !important;
+    width: 14px;
+}
+.aw-botask .fav-icon-small img {
+    background: url("/modules/botask/images/fav-s.png") no-repeat scroll center 0 transparent;
+    height: 10px !important;
+    width: 10px !important;
+}
+.aw-botask .fav-icon-normal img.fav-checked {
+    background-position: center -14px;
+}
+.aw-botask .fav-icon-small img.fav-checked {
+    background-position: center -10px;
+}
