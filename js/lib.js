@@ -320,6 +320,12 @@ Component.entryPoint = function(){
 	};
 	TaskManager.prototype = {
 		init: function(initData){
+			initData = L.merge({
+				'board': {},
+				'users': [],
+				'hst': {}
+			}, initData || {});
+			
 			var list = {}, tree = {},
 				board = initData['board'];
 			
@@ -339,6 +345,9 @@ Component.entryPoint = function(){
 				this.historyItemAdd(hsts[i]);
 			}
 			this.historyChangedEvent = new YAHOO.util.CustomEvent("historyChangedEvent");
+			
+			// событие, когда прочитали новую задачу
+			this.newTaskReadEvent = new YAHOO.util.CustomEvent("newTaskReadEvent");
 		},
 		
 		_buildTaskTree: function(list){
@@ -455,7 +464,12 @@ Component.entryPoint = function(){
 			}
 
 			this.ajax({'do': 'task', 'taskid': taskid }, function(r){
+				var isNew = task.isNew;
 				task.setData(r);
+				if (isNew){
+					__self.newTaskReadEvent.fire(task);
+				}
+
 				for (var i=0;i<r['hst'].length;i++){
 					__self.historyItemAdd(r['hst'][i], task);
 				}

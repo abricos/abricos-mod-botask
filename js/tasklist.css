@@ -95,8 +95,78 @@
     width: 20px;
 }
 .aw-botask .tlist .expanded div.ch-btn {
-    background-image: url("/modules/botask/images/clsp.gif");
+    background-image: url("/modules/botask/images/clps.gif");
 }
+.aw-botask .tlist .nochild div.ch-btn {
+    background-image: none;
+}
+.aw-botask .tlist .tname .new,
+.aw-botask .tlist .tname .chnew {
+	display: none;
+	font-family: sans-serif;
+	vertical-align: top;
+	font-size: 60%;
+	color: red;
+}
+.aw-botask .tlist .tname .chnew {
+	font-size: 50%;
+	vertical-align: bottom;
+}
+.aw-botask .tlist .tchnew .tname .chnew,
+.aw-botask .tlist .tnew .tname .new {
+		display: inline;
+}
+
+.aw-botask .tlist .level0 .tname .ch-ico{}
+.aw-botask .tlist .level0 .tname .ch-tl	{font-size:		1.4em;}
+
+.aw-botask .tlist .level1 .tname .ch-ico{margin-left:	15px;}
+.aw-botask .tlist .level1 .tname .ch-tl {font-size:		1.2em;}
+
+.aw-botask .tlist .level2 .tname .ch-ico{margin-left:	30px;}
+.aw-botask .tlist .level2 .tname .ch-tl {font-size:		1.1em;}
+
+.aw-botask .tlist .level3 .tname .ch-ico{margin-left:	45px;}
+.aw-botask .tlist .level3 .tname .ch-tl {font-size:		1em;}
+
+.aw-botask .tlist .level4 .tname .ch-ico{margin-left:	60px;}
+.aw-botask .tlist .level4 .tname .ch-tl {font-size:		0.9em;}
+
+.aw-botask .tlist .level5 .tname .ch-ico{margin-left:	75px;}
+.aw-botask .tlist .level5 .tname .ch-tl {font-size:		0.8em;}
+
+.aw-botask .tlist .level6 .tname .ch-ico{margin-left:	90px;}
+.aw-botask .tlist .level6 .tname .ch-tl {font-size:		0.75em;}
+
+.aw-botask .tlist .level7 .tname .ch-ico{margin-left:	105px;}
+.aw-botask .tlist .level7 .tname .ch-tl {font-size:		0.7em;}
+
+.aw-botask .tlist .level8 .tname .ch-ico{margin-left:	120px;}
+.aw-botask .tlist .level8 .tname .ch-tl {font-size:		0.65em;}
+
+.aw-botask .tlist .level9 .tname .ch-ico{margin-left:	135px;}
+.aw-botask .tlist .level9 .tname .ch-tl {font-size:		0.6em;}
+
+.aw-botask .tlist .level10 .tname .ch-ico{margin-left:	150px;}
+.aw-botask .tlist .level10 .tname .ch-tl {font-size:	0.55em;}
+
+.aw-botask .tlist .level11 .tname .ch-ico{margin-left:	150px;}
+.aw-botask .tlist .level11 .tname .ch-tl {font-size:	0.55em;}
+
+.aw-botask .tlist .level12 .tname .ch-ico{margin-left:	150px;}
+.aw-botask .tlist .level12 .tname .ch-tl {font-size:	0.55em;}
+
+.aw-botask .tlist .level13 .tname .ch-ico{margin-left:	150px;}
+.aw-botask .tlist .level13 .tname .ch-tl {font-size:	0.55em;}
+
+.aw-botask .tlist .level14 .tname .ch-ico{margin-left:	150px;}
+.aw-botask .tlist .level14 .tname .ch-tl {font-size:	0.55em;}
+
+.aw-botask .tlist .level15 .tname .ch-ico{margin-left:	150px;}
+.aw-botask .tlist .level15 .tname .ch-tl {font-size:	0.55em;}
+
+.aw-botask .tlist .level16 .tname .ch-ico{margin-left:	150px;}
+.aw-botask .tlist .level16 .tname .ch-tl {font-size:	0.55em;}
 
 .aw-botask .tlist table th.tddl {
 	width: 9em;

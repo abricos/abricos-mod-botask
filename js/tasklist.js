@@ -42,8 +42,7 @@ Component.entryPoint = function(){
 			
 			var __self = this;
 			E.on(container, 'click', function(e){
-                var el = E.getTarget(e);
-                if (__self.onClick(el)){ E.preventDefault(e); }
+                if (__self.onClick(E.getTarget(e))){ E.preventDefault(e); }
 			});
 			
 			var tman = NS.taskManager;
@@ -54,52 +53,142 @@ Component.entryPoint = function(){
 				this.list = task.childs;
 			}
 			
+			this.expanded = {};
+			
 			this.render();
 			
 			// Подписаться на событие изменений в задачах
 			NS.taskManager.historyChangedEvent.subscribe(this.onHistoryChanged, this, true);
-
+			NS.taskManager.newTaskReadEvent.subscribe(this.onNewTaskRead, this, true);
+		},
+		buildNewInfo: function(){
+			var tnew = {};
+			this.list.foreach(function(tk){
+				if (tk.isNew){
+					tnew[tk.id] = tnew[tk.id] || {};
+					tnew[tk.id]['n'] = true;
+					if (!L.isNull(tk.parent)){
+						tnew[tk.parent.id] = tnew[tk.parent.id] || {};
+						tnew[tk.parent.id]['cn'] = true;
+					}
+				}
+			});
+			this.tnew = tnew;
+		},
+		buildRow: function(tk, level){
+			level = level || 0;
+			var TM = this._TM, ddl = "";
+			if (!L.isNull(tk.deadline)){
+				ddl = Brick.dateExt.convert(tk.deadline.getTime()/1000, 0, !tk.ddlTime);
+			}
+			
+			var author = NS.taskManager.users[tk.userid];
+			
+			var chcls = tk.childs.count() > 0 ? '' : 'nochild';
+			if (this.expanded[tk.id]){
+				chcls = 'expanded';
+			}
+			var tnew = this.tnew[tk.id] || {};
+			var sRow = TM.replace('row', {
+				'id': tk.id,
+				'tnew': tnew['n'] ? 'tnew' : '',
+				'tchnew': tnew['cn'] ? 'tchnew' : '',
+				'level': level,
+				'classch': chcls,
+				'tl': tk.title,
+				'aunm': UP.builder.getUserName(author),
+				'auid': author.id,
+				'ddl': ddl
+			});
+			
+			if (tk.childs.count() > 0 && this.expanded[tk.id]){
+				sRow += this.buildRows(tk.childs, level+1);
+			}
+			
+			return sRow;
+		},
+		buildRows: function(list, level){
+			level = level || 0;
+			var lst = "", __self = this;
+			list.foreach(function(tk){
+				lst += __self.buildRow(tk, level);
+			}, true);
+			return lst;
 		},
 		render: function(){
-			var TM = this._TM, lst = "";
-			this.list.foreach(function(tk){
-
-				var ddl = "";
-				if (!L.isNull(tk.deadline)){
-					ddl = Brick.dateExt.convert(tk.deadline.getTime()/1000, 0, !tk.ddlTime);
-				}
-				
-				var author = NS.taskManager.users[tk.userid];
-
-				lst += TM.replace('row', {
-					'id': tk.id,
-					'tl': tk.title,
-					'aunm': UP.builder.getUserName(author),
-					'auid': author.id,
-					'ddl': ddl
-				});
-			}, true);
+			this.buildNewInfo();
+			var TM = this._TM, 
+				lst = this.buildRows(this.list);
 			TM.getEl('list.table').innerHTML = TM.replace('table', {'rows': lst});			
 		},
 		onClick: function(el){
+			var prefix = el.id.replace(/([0-9]+$)/, ''),
+				taskid = el.id.replace(prefix, "");
 			
+			var TId = this._TId;
+			var tp = TId['row'];
+			
+			switch(prefix){
+			case (tp['exp']+'-'): this.shChilds(taskid); return true;
+			}
+
 			return false;
+		},
+		shChilds: function(taskid){
+			var task = NS.taskManager.getTask(taskid);
+			if (L.isNull(task)){ return; }
+			var TM = this._TM;
+			
+			var elRow = Dom.get(TM.getElId('row.id')+'-'+taskid);
+			if (L.isNull(elRow)){ return; }
+			if (task.childs.count() == 0){
+				Dom.removeClass(elRow, 'expanded');
+				Dom.addClass(elRow, 'nochild');
+				return;
+			}
+			
+			var exp = this.expanded;
+			exp[taskid] = exp[taskid] || false;
+			exp[taskid] = !exp[taskid];
+			
+			this.render();
 		},
 		destroy: function(){
 			NS.taskManager.historyChangedEvent.unsubscribe(this.onHistoryChanged);
+			NS.taskManager.newTaskReadEvent.unsubscribe(this.onNewTaskRead);
+		},
+		_isHistoryChanged: function(list, ids){
+			var exp = this.expanded, __self = this, find = false;
+			list.foreach(function(tk){
+				for (var id in ids){
+					if (tk.id*1 == id*1){
+						find=true;
+						return true;
+					}
+				}
+				if (tk.childs.count() > 0 && exp[tk.id]){
+					if (__self._isHistoryChanged(tk.childs, ids)){
+						find = true;
+						return true;
+					}
+				}
+			}, true);
+			return find;
 		},
 		onHistoryChanged: function(type, args){
-			var history = args[0],
-				list = this.list, isRChild = false;
-			history.foreach(function(item){
-				if (list.find(item.taskid, true)){
-					isRChild = true;
-					return true;
-				}
+			this.render();
+			/*
+			var ids = {};
+			args[0].foreach(function(item){
+				ids[item.taskid] = true;
 			});
-			if (isRChild){
+			if (this._isHistoryChanged(this.list, ids)){
 				this.render();
 			}
+			/**/
+		},
+		onNewTaskRead: function(type, args){
+			this.render();
 		}
 	};
 	NS.TaskListWidget = TaskListWidget;

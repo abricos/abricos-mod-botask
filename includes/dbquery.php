@@ -218,8 +218,8 @@ class BotaskQuery {
 				'".bkstr($tk->tl)."',
 				'".bkstr($pubkey)."',
 				".$contentid.",
-				".bkint($td->ddl).",
-				".bkint($td->ddlt).",
+				".bkint($tk->ddl).",
+				".bkint($tk->ddlt).",
 				".TIMENOW.",
 				".TIMENOW."
 			)

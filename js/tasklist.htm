@@ -88,13 +88,15 @@
 	<td></td>
 
 <!--{row}-->
-<tr class="row">
+<tr  id="{i#id}-{v#id}" class="row {v#classch} level{v#level} {v#tnew} {v#tchnew}">
 	<td class="tname">
 		<div class="ch-ico">
-			<div class="ch-btn">&nbsp;</div>
+			<div class="ch-btn" id="{i#exp}-{v#id}">&nbsp;</div>
 		</div>
 		<div class="ch-tl">
 			<a href="#app=botask/tasklist/showTaskListPanel/{v#id}/">{v#tl}</a>
+			<span id="{i#new}-{v#id}" class="new" title="Эта задача новая">New</span>
+			<span id="{i#chnew}-{v#id}" class="chnew" title="Есть новые подзадачи">+New</span>
 		</div>
 	</td>
 	<td>
