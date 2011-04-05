@@ -18,6 +18,9 @@ class BotaskQuery {
 		p.dateline as dl,
 		p.deadline as ddl,
 		p.deadlinebytime as ddlt,
+		p.status as st,
+		p.statuserid as stuid,
+		p.statdate as stdl,
 		IF (ur.viewdate > 0, 0, 1) as n
 	";
 	
@@ -112,6 +115,7 @@ class BotaskQuery {
 				body, bodyc, 
 				deadline, deadlinec, 
 				deadlinebytime, deadlinebytimec,
+				status,prevstatus,statuserid,
 				useradded, userremoved) VALUES (
 				
 				".bkint($h->hitype).",
@@ -128,6 +132,11 @@ class BotaskQuery {
 				".bkint($h->deadlinec).",
 				".bkint($h->deadlinebytime).",
 				".bkint($h->deadlinebytimec).",
+				
+				".bkint($h->status).",
+				".bkint($h->prevstatus).",
+				".bkint($h->statuserid).",
+				
 				'".bkstr($h->useradded)."',
 				'".bkstr($h->userremoved)."'
 			)
@@ -191,16 +200,16 @@ class BotaskQuery {
 		return $db->query_read($sql);
 	}
 	
-	public static function Task(CMSDatabase $db, $taskid, $retarray = false){
+	public static function Task(CMSDatabase $db, $taskid, $userid, $retarray = false){
 		$sql = "
 			SELECT
 				".BotaskQuery::TASK_FIELDS.",
 				c.body as bd,
 				p.contentid as ctid
 			FROM ".$db->prefix."btk_task p
-			INNER JOIN ".$db->prefix."btk_userrole ur ON p.taskid=ur.taskid
+			INNER JOIN ".$db->prefix."btk_userrole ur ON p.taskid=ur.taskid AND ur.userid=".bkint($userid)."
 			INNER JOIN ".$db->prefix."content c ON p.contentid=c.contentid
-			WHERE p.taskid=".bkint($taskid)."
+			WHERE p.taskid=".bkint($taskid)." 
 			LIMIT 1
 		";
 		return $retarray ? $db->query_first($sql) : $db->query_read($sql);
@@ -240,6 +249,18 @@ class BotaskQuery {
 				deadlinebytime=".bkint($tk->ddlt).",
 				updatedate=".TIMENOW."
 			WHERE taskid=".bkint($tk->id)."
+		";
+		$db->query_write($sql);
+	}
+	
+	public static function TaskSetStatus(CMSDatabase $db, $taskid, $status, $statuserid){
+		$sql = "
+			UPDATE ".$db->prefix."btk_task
+			SET
+				status=".bkint($status).",
+				statuserid=".bkint($statuserid).",
+				statdate=".TIMENOW."
+			WHERE taskid=".bkint($taskid)."
 		";
 		$db->query_write($sql);
 	}

@@ -79,12 +79,23 @@ Component.entryPoint = function(){
 			
 			this.users = d['users'];			// участники задачи
 			this.parentTaskId = d['pid']*1;		// идентификатор родителя
-			this.isNew = d['n']*1 > 0;
+			
+			this.status = d['st'];
+			this.stUserId = d['stuid'];
+			this.stDate = NS.dateToClient(d['stdl']);
+			
+			this._updateFlagNew(d);
 		},
 		setData: function(d){
 			this.isLoad = true;
 			this.descript = d['bd'];
+			this._updateFlagNew(d);
+		},
+		_updateFlagNew: function(d){
 			this.isNew = d['n']*1 > 0;
+			if (Brick.env.user.id*1 == this.userid*1){
+				this.isNew = false;
+			}
 		},
 		addHItem: function(hst){
 			if (L.isNull(this.history)){
@@ -454,10 +465,17 @@ Component.entryPoint = function(){
 				}
 			});
 		},
+		taskSetExec: function(taskid, callback){ // принять на исполнение
+			callback = callback || function(){};
+			this.ajax({'do': 'tasksetexec', 'taskid': taskid }, function(r){
+				callback();
+			});
+		},
 		taskLoad: function(taskid, callback){
 			callback = callback || function(){};
 			var task = this.list.find(taskid),
 				__self = this;
+
 			if (task.isLoad){
 				callback();
 				return true;

@@ -19,6 +19,10 @@ class BotaskHistory {
 	public $parenttaskid = 0;
 	public $parenttaskidc = false;
 	
+	public $status = 0;
+	public $prevstatus = 0;
+	public $statuserid = 0;
+	
 	public $title = "";
 	public $titlec = false;
 	
@@ -41,6 +45,14 @@ class BotaskHistory {
 	
 	public function BotaskHistory($userid){
 		$this->userid = $userid;
+	}
+	
+	public function SetStatus($ot, $newStatus, $statUserId){
+		if ($ot['st']*1 == $newStatus*1){ return; }
+		$this->change = true;
+		$this->prevstatus = $ot['st'];
+		$this->status = $newStatus;
+		$this->statuserid = $statUserId;
 	}
 	
 	public function CompareTask($nt, $ot){
@@ -159,6 +171,7 @@ class BotaskManager extends ModuleManager {
 		switch($d->do){
 			case 'task': return $this->Task($d->taskid);
 			case 'tasksave': return $this->TaskSave($d->task);
+			case 'tasksetexec': return $this->TaskSetExec($d->taskid);
 		}
 		return null;
 	}
@@ -267,6 +280,30 @@ class BotaskManager extends ModuleManager {
 	}
 	
 	/**
+	 * Принять задачу на исполнение
+	 * 
+	 * @param integer $taskid
+	 */
+	public function TaskSetExec($taskid){
+		if (!$this->TaskAccess($taskid)){ return null; }
+		
+		$task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
+		
+		if ($task['st'] != BotaskStatus::TASK_OPEN && $task['st'] != BotaskStatus::TASK_REOPEN){
+			return -1;
+		}
+		
+		$history = new BotaskHistory($this->userid);
+		$history->SetStatus($task, BotaskStatus::TASK_ACCEPT, $this->userid);
+		$history->hitype = BotaskHistoryType::TASK_UPDATE;
+		$history->taskid = $taskid;
+		$history->Save();
+		BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_ACCEPT, $this->userid);
+		
+		return 1;
+	}
+	
+	/**
 	 * Сохранить задачу
 	 * 
 	 * @param object $tk
@@ -305,7 +342,7 @@ class BotaskManager extends ModuleManager {
 			
 			$history->taskid = $tk->id;
 			
-			$info = BotaskQuery::Task($this->db, $tk->id, true);
+			$info = BotaskQuery::Task($this->db, $tk->id, $this->userid, true);
 			BotaskQuery::TaskUpdate($this->db, $tk);
 			
 			$history->CompareTask($tk, $info);
@@ -344,7 +381,7 @@ class BotaskManager extends ModuleManager {
 		
 		$history->Save();
 		
-		return $this->Task($tk->id);
+		return $tk->id;
 	}
 	
 	public function Task($taskid){
@@ -354,7 +391,7 @@ class BotaskManager extends ModuleManager {
 
 		BotaskQuery::TaskUpdateLastView($this->db, $taskid, $this->userid);
 		
-		$task = BotaskQuery::Task($this->db, $taskid, true);
+		$task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
 		$task['users'] = array();
 		$users = $this->TaskUserList($taskid, true);
 		foreach ($users as $user){

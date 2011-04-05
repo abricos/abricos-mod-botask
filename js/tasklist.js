@@ -205,7 +205,7 @@ Component.entryPoint = function(){
 	};
 	YAHOO.extend(TaskListPanel, Brick.widget.Panel, {
 		initTemplate: function(){
-			buildTemplate(this, 'panel');
+			buildTemplate(this, 'panel,user');
 			
 			var task = this.task;
 			return this._TM.replace('panel', {
@@ -220,12 +220,6 @@ Component.entryPoint = function(){
 			
 			this.history = null;
 			this.navigate = new NS.TaskNavigateWidget(TM.getEl('panel.nav'), task);
-			
-			// исполнитель
-			var eUser = NS.taskManager.users[task.userid];
-			this.execUsers = new UP.UserBlockWidget(TM.getEl('panel.execuser'), eUser, {
-				'info': Brick.dateExt.convert(task.date.getTime()/1000, 0, false)
-			});
 			
 			// подзадачи
 			this.childs = new NS.TaskListWidget(TM.getEl('panel.ptlist'), task.id);
@@ -265,36 +259,82 @@ Component.entryPoint = function(){
 		},
 		renderTask: function(){
 			var TM = this._TM, task = this.task;
+			
 			TM.getEl('panel.taskbody').innerHTML = task.descript;
-			this.history = new NS.HistoryWidget(TM.getEl('panel.history'), task.history);
+			if (L.isNull(this.history)){
+				this.history = new NS.HistoryWidget(TM.getEl('panel.history'), task.history);
+			}
+			
+			// Автор
+			var user = NS.taskManager.users[task.userid];
+			TM.getEl('panel.author').innerHTML = TM.replace('user', {
+				'uid': user.id, 'unm': UP.builder.getUserName(user)
+			});
+			// Исполнитель
+			if (task.stUserId*1 > 0){
+				user = NS.taskManager.users[task.stUserId];
+				TM.getEl('panel.exec').innerHTML = TM.replace('user', {
+					'uid': user.id, 'unm': UP.builder.getUserName(user)
+				});
+			}
+			var lst = "";
+			for (var i=0;i<task.users.length;i++){
+				user = NS.taskManager.users[task.users[i]];
+				lst += TM.replace('user', {
+					'uid': user.id, 'unm': UP.builder.getUserName(user)
+				});
+			}
+			TM.getEl('panel.users').innerHTML = lst;
+			
+			var sddl = "", sddlt = "";
+			// срок исполнения
+			if (!L.isNull(task.deadline)){
+				sddl = Brick.dateExt.convert(task.deadline, 3, true);
+				if (task.ddlTime){
+					sddlt = Brick.dateExt.convert(task.deadline, 4);
+				}
+			}
+			TM.getEl('panel.ddl').innerHTML = sddl;
+			TM.getEl('panel.ddlt').innerHTML = sddlt;
 		},
 		onClick: function(el){
 			var tp = this._TId['panel'];
 			switch(el.id){
+			case tp['bsetexec']:
+				this.setExecTask();
+				return true;
 			case tp['beditor']: this.taskEditorShow(); return true;
-			case tp['ptlistsh']: this.showHideChildTaskTable(); return true;
+			case tp['ptlisthide']: 
+			case tp['ptlistshow']: 
+				this.showHideChildTaskTable(); return true;
 			
 			}
 			return false;
 		},
+		_shLoading: function(show){
+			var TM = this._TM;
+			Dom.setStyle(TM.getEl('panel.buttons'), 'display', show ? 'none' : '');
+			Dom.setStyle(TM.getEl('panel.bloading'), 'display', show ? '' : 'none');
+		},
+		setExecTask: function(){
+			var __self = this;
+			this._shLoading(true);
+			NS.taskManager.taskSetExec(this.task.id, function(){
+				__self._shLoading(false);
+			});
+		},
 		showHideChildTaskTable: function(){
-			var el = this._TM.getEl('panel.ptlist');
+			var TM = this._TM, el = TM.getEl('panel.ptlist');
 			var view = Dom.getStyle(el, 'display');
 			Dom.setStyle(el, 'display', view != 'none' ? 'none' : '')
+			Dom.setStyle(TM.getEl('panel.ptlisthide'), 'display', view != 'none' ? 'none' : '')
+			Dom.setStyle(TM.getEl('panel.ptlistshow'), 'display', view != 'none' ? '' : 'none')
 		},
 		taskEditorShow: function(){
 			var taskid = this.task.id;
 			Brick.ff('botask', 'taskeditor', function(){
 				API.showTaskEditorPanel(taskid);
 			});
-		},
-		onResize: function(rel){
-			/*
-			var el = this.taskListWidget.getEl('widget.container');
-			if (rel.height > 0){
-				Dom.setStyle(el, 'height', (rel.height - 70)+'px');
-			}
-			/**/
 		}
 	});
 	NS.TaskListPanel = TaskListPanel;

@@ -22,6 +22,10 @@
 	background-color: #F9F5DF;
 	padding: 0.5em 1em;
 }
+.aw-botask .taskview .manbuttons {
+	height: 22px;
+}
+
 .aw-botask .taskview .manbuttons,
 .aw-botask .taskview .ptbuttons {
 	margin: 1em 0;
@@ -204,4 +208,42 @@
 }
 .aw-botask .tlist .ttable {
 	clear: both;
+}
+
+.aw-botask .colinfo .cirow {
+	margin: 5px 0;
+	clear: both;
+	padding-bottom: 3px;
+	border-bottom: #73A110 1px dotted;
+}
+.aw-botask .colinfo .nobline {
+	margin-bottom: 0 !important;
+	padding-bottom: 0 !important;
+	border-bottom: none !important;
+}
+
+.aw-botask .colinfo .tl {
+	font-weight: bold; 
+	clear: both;
+}
+.aw-botask .colinfo .tl {
+	float: left;
+}
+.aw-botask .colinfo .vl {
+	width: 100%;
+}
+.aw-botask .colinfo .vi {
+	width: 100%;
+	text-align: right;
+}
+.aw-botask .colinfo .ddl .dt,
+.aw-botask .colinfo .ddl .tm {
+	font-size: 1.37em;
+}
+.aw-botask .colinfo .ddl .tm {
+	font-size: 1.2em;
+}
+.aw-botask .colinfo .user {
+	font-weight: bold;
+	margin-bottom: 5px;
 }

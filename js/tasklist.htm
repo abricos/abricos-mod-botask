@@ -13,32 +13,55 @@
 					</div>
 					
 					<div class="manbuttons">
-						<a id="{i#bsetexec}" class="bsetexec btkbt" href="#" title="Стать ответственным за выполнение данной задачи">Принять</a>
-						<a id="{i#bclose}" class="bsetexec btkbt" href="#" title="Завершить задачу">Завершить</a>
-						
-						<a id="{i#beditor}" class="beditor btkbt" href="#app=botask/taskeditor/showTaskEditorPanel/{v#id}/">Редактировать</a>
-						<a id="{i#bremove}" class="bremove btkbt" href="#">Удалить</a>
+						<div id="{i#buttons}">
+							<a id="{i#bsetexec}" class="bsetexec btkbt" href="#" title="Стать ответственным за выполнение данной задачи">Принять</a>
+							<a id="{i#bclose}" class="bsetexec btkbt" href="#" title="Завершить задачу">Завершить</a>
+							
+							<a id="{i#beditor}" class="beditor btkbt" href="#app=botask/taskeditor/showTaskEditorPanel/{v#id}/">Редактировать</a>
+							<a id="{i#bremove}" class="bremove btkbt" href="#">Удалить</a>
+						</div>
+						<img id="{i#bloading}" src="/images/loading.gif" style="display: none;"/>
 					</div>
 					
 					<div class="sepline"></div>
 					
 					<div class="ptbuttons">
-						<a id="{i#ptlistsh}" class="ptlistsh btkbt" href="#">Подзадачи</a>
+						<a id="{i#ptlisthide}" class="ptlistsh btkbt" href="#">Скрыть подзадачи</a>
+						<a id="{i#ptlistshow}" class="ptlistsh btkbt" href="#" style="display: none;">Показать подзадачи</a>
 						<a id="{i#ptappend}" class="ptappend btkbt" href="#app=botask/taskeditor/showCreateTaskPanel/{v#id}/">Добавить подзадачу</a>
 					</div>
 					<div class="ptlist" id="{i#ptlist}"></div>
 				</div>
 			</td>
 			<td class="rightcol">
-				<div class=colbody>
-				
-					<div class="author">
-						<div style="font-weight: bold; line-height: 2em;">Автор</div>
-						<div id="{i#execuser}" ></div>
+				<div class="colbody colinfo">
+					<div class="cirow ddl">
+						<div class="tl">Срок</div>
+						<div class="vl">
+							<div class="dt vi" id="{i#ddl}"></div>
+							<div class="tm vi" id="{i#ddlt}"></div>
+						</div>
+						<div class="clear"></div>
 					</div>
-			
-					<div id="{i#history}">
-						<img src="/images/loading.gif" />
+					<div class="cirow author">
+						<div class="tl">Автор</div>
+						<div id="{i#author}" class="vl"></div>
+						<div class="clear"></div>
+					</div>
+					<div class="cirow exec">
+						<div class="tl">Исполнитель</div>
+						<div id="{i#exec}" class="vl"></div>
+						<div class="clear"></div>
+					</div>
+					<div class="cirow users">
+						<div class="tl">Участники</div>
+						<div id="{i#users}" class="vl"></div>
+						<div class="clear"></div>
+					</div>
+					<div class="cirow history nobline">
+						<div id="{i#history}">
+							<img src="/images/loading.gif" />
+						</div>
 					</div>
 			
 				</div>
@@ -47,6 +70,12 @@
 		
 	</div>
 </div>
+
+<!--{user}-->
+<div class="user vi">
+	<a href="#" class="show-user-profile user-{v#uid}">{v#unm}</a>
+</div>
+
 
 <!--{list}-->
 <div class="tlist" id="{i#id}">

@@ -41,7 +41,7 @@ if ($updateManager->isInstall()){
 		  `deadline` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Срок выполнения',
 		  `deadlinebytime` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Срок выполнения - уточнение времени',
 		  
-		  `status` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Текущий статус задачи - значения BotaskHistoryType',
+		  `status` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Текущий статус задачи - значения BotaskHistoryType',
 		  `statuserid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Пользователь текущего статуса',
 		  `statdate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/Время текущего статуса',
 		  
@@ -74,6 +74,10 @@ if ($updateManager->isInstall()){
 		  
 		  `parenttaskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор родительской задачи',
 		  `parenttaskidc` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
+
+		  `status` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Новый/текущий статус задачи',
+		  `prevstatus` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Предыдущий статус задачи',
+		  `statuserid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Пользователь для статуса',
 		  
 		  `title` varchar(250) NOT NULL DEFAULT '' COMMENT 'Сохраненная версия названия',
 		  `titlec` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
@@ -89,6 +93,8 @@ if ($updateManager->isInstall()){
 		  
 		  `useradded` varchar(250) NOT NULL DEFAULT '' COMMENT 'Добавленные пользователи',
 		  `userremoved` varchar(250) NOT NULL DEFAULT '' COMMENT 'Удаленные пользователи',
+
+		  `hicomment` TEXT NOT NULL  COMMENT 'Комментарий к этому изменению',
 		  
 		  PRIMARY KEY  (`historyid`)
 		)".$charset

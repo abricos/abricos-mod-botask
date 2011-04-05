@@ -77,20 +77,32 @@ class BotaskStatus {
 	 * Открытая задача
 	 * @var integer
 	 */
-	const TASK_OPEN = BotaskHistoryType::TASK_OPEN;
+	const TASK_OPEN = 0;
 
+	/**
+	 * Открытая задача повторно
+	 * @var integer
+	 */
+	const TASK_REOPEN = 1;
+	
 	/**
 	 * Завершенная (закрытая) задача
 	 * @var integer
 	 */
-	const TASK_CLOSE = BotaskHistoryType::TASK_CLOSE;
+	const TASK_CLOSE = 2;
 	
 	/**
-	 * Задача в работе. Принятая или назначенная конкретному лицу
+	 * Задача в работе. Принятая самостоятельно.
 	 * @var integer
 	 */
-	const ACCEPT = BotaskHistoryType::TASK_ACCEPT;
+	const TASK_ACCEPT = 3;
 
+	/**
+	 * Задача в работе. Назначенная конкретному лицу.
+	 * @var integer
+	 */
+	const TASK_ASSIGN = 4;
+	
 }
 
 class BotaskAction {
