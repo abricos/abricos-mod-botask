@@ -21,6 +21,7 @@ class BotaskQuery {
 		p.status as st,
 		p.statuserid as stuid,
 		p.statdate as stdl,
+		p.priority as prt,
 		IF (ur.viewdate > 0, 0, 1) as n
 	";
 	
@@ -116,6 +117,7 @@ class BotaskQuery {
 				deadline, deadlinec, 
 				deadlinebytime, deadlinebytimec,
 				status,prevstatus,statuserid,
+				priority,priorityc,
 				useradded, userremoved) VALUES (
 				
 				".bkint($h->hitype).",
@@ -136,6 +138,9 @@ class BotaskQuery {
 				".bkint($h->status).",
 				".bkint($h->prevstatus).",
 				".bkint($h->statuserid).",
+
+				".bkint($h->priority).",
+				".bkint($h->priorityc).",
 				
 				'".bkstr($h->useradded)."',
 				'".bkstr($h->userremoved)."'
@@ -221,7 +226,7 @@ class BotaskQuery {
 		$sql = "
 			INSERT INTO ".$db->prefix."btk_task (
 				userid, parenttaskid, title, pubkey, contentid, 
-				deadline, deadlinebytime, dateline, updatedate) VALUES (
+				deadline, deadlinebytime, dateline, updatedate, priority) VALUES (
 				".bkint($tk->uid).",
 				".bkint($tk->pid).",
 				'".bkstr($tk->tl)."',
@@ -230,7 +235,8 @@ class BotaskQuery {
 				".bkint($tk->ddl).",
 				".bkint($tk->ddlt).",
 				".TIMENOW.",
-				".TIMENOW."
+				".TIMENOW.",
+				".bkint($tk->prt)."
 			)
 		";
 		$db->query_write($sql);
@@ -247,7 +253,8 @@ class BotaskQuery {
 				parenttaskid=".bkint($tk->pid).",
 				deadline=".bkint($tk->ddl).",
 				deadlinebytime=".bkint($tk->ddlt).",
-				updatedate=".TIMENOW."
+				updatedate=".TIMENOW.",
+				priority=".bkint($tk->prt)."
 			WHERE taskid=".bkint($tk->id)."
 		";
 		$db->query_write($sql);
@@ -265,7 +272,15 @@ class BotaskQuery {
 		$db->query_write($sql);
 	}
 	
-
+	public static function TaskUnsetStatus(CMSDatabase $db, $taskid){
+		$sql = "
+			UPDATE ".$db->prefix."btk_task
+			SET status=0, statuserid=0, statdate=0
+			WHERE taskid=".bkint($taskid)."
+		";
+		$db->query_write($sql);
+	}
+	
 	/**
 	 * Список пользователей и их права на задачу
 	 * @param CMSDatabase $db

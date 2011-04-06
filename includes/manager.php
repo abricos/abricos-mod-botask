@@ -23,6 +23,9 @@ class BotaskHistory {
 	public $prevstatus = 0;
 	public $statuserid = 0;
 	
+	public $priority = 0;
+	public $priorityc = false;
+	
 	public $title = "";
 	public $titlec = false;
 	
@@ -53,6 +56,8 @@ class BotaskHistory {
 		$this->prevstatus = $ot['st'];
 		$this->status = $newStatus;
 		$this->statuserid = $statUserId;
+		$this->hitype = BotaskHistoryType::TASK_UPDATE;
+		$this->taskid = $ot['id'];
 	}
 	
 	public function CompareTask($nt, $ot){
@@ -81,6 +86,11 @@ class BotaskHistory {
 		if (intval($nt->ddlt) != intval($ot['ddlt'])){
 			$this->deadlinebytime = $ot['ddlt'];
 			$this->deadlinebytimec = true;
+			$this->change = true;
+		}
+		if (intval($nt->prt) != intval($ot['prt'])){
+			$this->priority = $ot['prt'];
+			$this->priorityc = true;
 			$this->change = true;
 		}
 	}
@@ -172,6 +182,8 @@ class BotaskManager extends ModuleManager {
 			case 'task': return $this->Task($d->taskid);
 			case 'tasksave': return $this->TaskSave($d->task);
 			case 'tasksetexec': return $this->TaskSetExec($d->taskid);
+			case 'taskunsetexec': return $this->TaskUnsetExec($d->taskid);
+			
 		}
 		return null;
 	}
@@ -295,10 +307,29 @@ class BotaskManager extends ModuleManager {
 		
 		$history = new BotaskHistory($this->userid);
 		$history->SetStatus($task, BotaskStatus::TASK_ACCEPT, $this->userid);
-		$history->hitype = BotaskHistoryType::TASK_UPDATE;
-		$history->taskid = $taskid;
 		$history->Save();
 		BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_ACCEPT, $this->userid);
+		
+		return 1;
+	}
+
+	/**
+	 * Отказаться от выполнения данной задачи
+	 * 
+	 * @param integer $taskid
+	 */
+	public function TaskUnsetExec($taskid){
+		if (!$this->TaskAccess($taskid)){ return null; }
+		
+		$task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
+		
+		if ($task['st'] != BotaskStatus::TASK_ACCEPT){ return -1; }
+		
+		$history = new BotaskHistory($this->userid);
+		$history->SetStatus($task, BotaskStatus::TASK_OPEN, $this->userid);
+		$history->Save();
+		
+		BotaskQuery::TaskUnsetStatus($this->db, $taskid);
 		
 		return 1;
 	}

@@ -72,6 +72,8 @@ Component.entryPoint = function(){
 				'date': task.deadline,
 				'showTime': task.ddlTime
 			});
+			
+			TM.getEl('panel.prt').value = task.priority;
 		},
 		onClick: function(el){
 			var tp = this._TId['panel'];
@@ -101,7 +103,8 @@ Component.entryPoint = function(){
 				'users': users,
 				'parentid': L.isNull(task.parent) ? 0 : task.parent.id,
 				'deadline': ddl['date'],
-				'ddlTime': ddl['showTime']
+				'ddlTime': ddl['showTime'],
+				'priority': TM.getEl('panel.prt').value
 			};
 			
 			var __self = this;

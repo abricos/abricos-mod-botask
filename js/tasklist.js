@@ -25,10 +25,14 @@ Component.entryPoint = function(){
 		R = NS.roles;
 	
 	var UP = Brick.mod.uprofile;
+	
+	var LNG = Brick.util.Language.getc('mod.botask');
 
 	Brick.util.CSS.update(Brick.util.CSS['botask']['tasklist']);	
 	
 	var buildTemplate = function(w, ts){w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;};
+	
+	var TaskStatus = NS.TaskStatus;
 	
 	var TaskListWidget = function(container, ptaskid){
 		this.init(container, ptaskid);
@@ -91,6 +95,9 @@ Component.entryPoint = function(){
 			var tnew = this.tnew[tk.id] || {};
 			var sRow = TM.replace('row', {
 				'id': tk.id,
+				'prt': tk.priority,
+				'expired': tk.isExpired() ? 'expired' : '',
+				'prts': LNG['priority'][tk.priority],
 				'tnew': tnew['n'] ? 'tnew' : '',
 				'tchnew': tnew['cn'] ? 'tchnew' : '',
 				'level': level,
@@ -235,14 +242,17 @@ Component.entryPoint = function(){
 		destroy: function(){
 			this.navigate.destroy();
 			this.childs.destroy();
+			if (!L.isNull(this.history)){
+				this.history.destroy();
+			}
+			
 			NS.taskManager.historyChangedEvent.unsubscribe(this.onHistoryChanged);
 			TaskListPanel.superclass.destroy.call(this);
 		},
 		onHistoryChanged: function(type, args){
 			var history = args[0];
-			// пришла новая история с сервера, необходимо ее просмотреть
-			// и если это затронуло задачи в этом виджите, то применить
-			// эти изменения
+			
+			
 			var task = this.task, isRTask = false;
 			history.foreach(function(item){
 				if (item.taskid == task.id){
@@ -251,29 +261,34 @@ Component.entryPoint = function(){
 				}
 			});
 			if (isRTask){
-				var __self = this;
-				NS.taskManager.taskLoad(task.id, function(){
-					__self.renderTask();
-				});
+				this.renderTask();
 			}
 		},
 		renderTask: function(){
 			var TM = this._TM, task = this.task;
 			
-			TM.getEl('panel.taskbody').innerHTML = task.descript;
+			var gel = function(nm){
+				return TM.getEl('panel.'+nm);
+			};
+			
+			gel('taskbody').innerHTML = task.descript;
 			if (L.isNull(this.history)){
-				this.history = new NS.HistoryWidget(TM.getEl('panel.history'), task.history);
+				this.history = new NS.HistoryWidget(gel('history'), task.history);
 			}
 			
 			// Автор
 			var user = NS.taskManager.users[task.userid];
-			TM.getEl('panel.author').innerHTML = TM.replace('user', {
+			gel('author').innerHTML = TM.replace('user', {
 				'uid': user.id, 'unm': UP.builder.getUserName(user)
 			});
+			// Создана
+			gel('dl').innerHTML = Brick.dateExt.convert(task.date, 3, true);
+			gel('dlt').innerHTML = Brick.dateExt.convert(task.date, 4);
+
 			// Исполнитель
 			if (task.stUserId*1 > 0){
 				user = NS.taskManager.users[task.stUserId];
-				TM.getEl('panel.exec').innerHTML = TM.replace('user', {
+				gel('exec').innerHTML = TM.replace('user', {
 					'uid': user.id, 'unm': UP.builder.getUserName(user)
 				});
 			}
@@ -284,8 +299,8 @@ Component.entryPoint = function(){
 					'uid': user.id, 'unm': UP.builder.getUserName(user)
 				});
 			}
-			TM.getEl('panel.users').innerHTML = lst;
-			
+			gel('users').innerHTML = lst;
+
 			var sddl = "", sddlt = "";
 			// срок исполнения
 			if (!L.isNull(task.deadline)){
@@ -294,15 +309,31 @@ Component.entryPoint = function(){
 					sddlt = Brick.dateExt.convert(task.deadline, 4);
 				}
 			}
-			TM.getEl('panel.ddl').innerHTML = sddl;
-			TM.getEl('panel.ddlt').innerHTML = sddlt;
+			gel('ddl').innerHTML = sddl;
+			gel('ddlt').innerHTML = sddlt;
+
+			// закрыть все кнопки, открыть те, что соответсуют статусу задачи
+			Dom.setStyle(gel('bsetexec'), 'display', 'none');
+			Dom.setStyle(gel('bunsetexec'), 'display', 'none');
+			Dom.setStyle(gel('bclose'), 'display', 'none');
+
+			// статус
+			switch(task.status){
+			case TaskStatus.OPEN:
+			case TaskStatus.REOPEN:
+				Dom.setStyle(gel('bsetexec'), 'display', '');
+				break;
+			case TaskStatus.ACCEPT:
+				Dom.setStyle(gel('bclose'), 'display', '');
+				Dom.setStyle(gel('bunsetexec'), 'display', '');
+				break;
+			}
 		},
 		onClick: function(el){
 			var tp = this._TId['panel'];
 			switch(el.id){
-			case tp['bsetexec']:
-				this.setExecTask();
-				return true;
+			case tp['bsetexec']: this.setExecTask(); return true;
+			case tp['bunsetexec']: this.unsetExecTask(); return true;
 			case tp['beditor']: this.taskEditorShow(); return true;
 			case tp['ptlisthide']: 
 			case tp['ptlistshow']: 
@@ -316,10 +347,17 @@ Component.entryPoint = function(){
 			Dom.setStyle(TM.getEl('panel.buttons'), 'display', show ? 'none' : '');
 			Dom.setStyle(TM.getEl('panel.bloading'), 'display', show ? '' : 'none');
 		},
-		setExecTask: function(){
+		setExecTask: function(){ // принять задачу в работу 
 			var __self = this;
 			this._shLoading(true);
 			NS.taskManager.taskSetExec(this.task.id, function(){
+				__self._shLoading(false);
+			});
+		},
+		unsetExecTask: function(){ // отказаться от выполнения данной задачи
+			var __self = this;
+			this._shLoading(true);
+			NS.taskManager.taskUnsetExec(this.task.id, function(){
 				__self._shLoading(false);
 			});
 		},

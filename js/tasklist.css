@@ -181,7 +181,28 @@
 }
 .aw-botask .tlist table th.tfav {
 	width: 32px;
-} 
+}
+
+.aw-botask .tlist table th.tprt {
+	width: 9em;
+}
+.aw-botask .tlist table td.tprt .tl {
+	text-align: center;
+	padding: 1px 0;
+}
+
+.aw-botask .tlist table .prt1 td.tprt .tl {	color: #C82100; }
+.aw-botask .tlist table .prt2 td.tprt .tl { color: #FF4E00; }
+.aw-botask .tlist table .prt3 td.tprt .tl {	color: #006699; }
+.aw-botask .tlist table .prt5 td.tprt .tl {	color: #DDDDDD; }
+.aw-botask .tlist table .prt4 td.tprt .tl {	color: #839097; }
+
+.aw-botask .tlist table .expired td, 
+.aw-botask .tlist table .expired td a,
+.aw-botask .tlist table .expired td.tprt .tl {
+	color: #C82100; 
+}
+
 .aw-botask .tlist tr.row:hover {
 	background: none repeat scroll 0 0 #FFF0C6;
 }
@@ -236,12 +257,13 @@
 	width: 100%;
 	text-align: right;
 }
-.aw-botask .colinfo .ddl .dt,
-.aw-botask .colinfo .ddl .tm {
-	font-size: 1.37em;
+.aw-botask .colinfo ._dl .dt,
+.aw-botask .colinfo .ddl .dt {
+		font-size: 1.37em;
 }
+.aw-botask .colinfo ._dl .tm, 
 .aw-botask .colinfo .ddl .tm {
-	font-size: 1.2em;
+		font-size: 1.2em;
 }
 .aw-botask .colinfo .user {
 	font-weight: bold;

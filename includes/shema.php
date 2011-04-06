@@ -38,6 +38,12 @@ if ($updateManager->isInstall()){
 		  `deldate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата удаления',
 		  `updatedate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата обновления',
 		  
+		  `priority` tinyint(1) unsigned NOT NULL DEFAULT 3 COMMENT 'Приоритет: 1-срочно, 2-важно, 3-нормально, 4-не срочно, 5-не важно',
+		  
+		  `isstartdate` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Использовать дату старта',
+		  `startdate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата старта',
+		  `startdatebytime` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата старта - уточнение времени',
+
 		  `deadline` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Срок выполнения',
 		  `deadlinebytime` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Срок выполнения - уточнение времени',
 		  
@@ -78,6 +84,9 @@ if ($updateManager->isInstall()){
 		  `status` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Новый/текущий статус задачи',
 		  `prevstatus` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Предыдущий статус задачи',
 		  `statuserid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Пользователь для статуса',
+		  
+		  `priority` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Сохраненный приоритет',
+		  `priorityc` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
 		  
 		  `title` varchar(250) NOT NULL DEFAULT '' COMMENT 'Сохраненная версия названия',
 		  `titlec` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',

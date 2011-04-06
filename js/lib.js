@@ -34,9 +34,11 @@ Component.entryPoint = function(){
 	NS.HType = HType;
 	
 	var TaskStatus = {
-		'TASK_OPEN'		: HType.TASK_OPEN,	// открыта
-		'TASK_CLOSE'	: HType.TASK_CLOSE,	// принята
-		'TASK_ACCEPT'	: HType.TASK_ACCEPT	// закрыта
+		'OPEN'		: 0,	// открыта
+		'REOPEN'	: 1,	// открыта повторно
+		'CLOSE'		: 2,	// принята
+		'ACCEPT'	: 3,	// закрыта
+		'ASSIGN'	: 4		// назначена
 	}
 	NS.TaskStatus = TaskStatus;
 
@@ -53,7 +55,8 @@ Component.entryPoint = function(){
 				'uid': Brick.env.user.id,
 				'users': [Brick.env.user.id],
 				'ddl': 0,
-				'ddlt': 0
+				'ddlt': 0,
+				'prt': 3
 			}, d || {});
 			
 			this.update(d);
@@ -80,9 +83,11 @@ Component.entryPoint = function(){
 			this.users = d['users'];			// участники задачи
 			this.parentTaskId = d['pid']*1;		// идентификатор родителя
 			
-			this.status = d['st'];
+			this.status = d['st']*1;
 			this.stUserId = d['stuid'];
 			this.stDate = NS.dateToClient(d['stdl']);
+			
+			this.priority = d['prt']*1;
 			
 			this._updateFlagNew(d);
 		},
@@ -104,11 +109,39 @@ Component.entryPoint = function(){
 			this.history.add(hst);
 		},
 		
+		isExpired: function(){
+			var ddl = this.deadline;
+			if (L.isNull(ddl)){ return false; }
+			return ddl.getTime() < (new Date()).getTime();
+		},
+		
 		toString: function(){
 			return "'"+this.title+"', Child: "+this.childs.count();
 		}
 	};
 	NS.Task = Task;
+	
+	var sortDate = function(d1, d2){ // сортировка даты
+		var t1 = L.isNull(d1) ? 0 : d1.getTime(),
+			t2 = L.isNull(d2) ? 0 : d2.getTime();
+		if (t1 > t2) { return -1;}
+		if (t1 < t2) { return 1; }
+		return 0;
+	};
+	
+	NS.taskSort = {
+	 	'default': function(tk1, tk2){ // сортировка: Наименьший срок, наивысший приоритет
+		
+			var t1 = L.isNull(tk1.deadline) ? 9999999999999 : tk1.deadline.getTime(),
+				t2 = L.isNull(tk2.deadline) ? 9999999999999 : tk2.deadline.getTime();
+			
+			if (t1 < t2) { return -1;}
+			if (t1 > t2) { return 1; }
+			
+			if ((t1 == 0 && t2 == 0) || t1 == t2) { // сортировка по дате нет, значит по приоритету
+			}
+		}
+	};
 	
 	var TaskList = function(){
 		this.init();
@@ -118,12 +151,23 @@ Component.entryPoint = function(){
 			this._list = [];
 		},
 		// пробег по всем элементам, включая дочерний - если nochild==false 
-		foreach: function(f, nochild){
-			nochild = nochild || false;
+		foreach: function(f, nochild, sortMethod){
 			if (!L.isFunction(f)){ return; }
+			nochild = nochild || false;
+			if (L.isString(sortMethod)){
+				sortMethod = NS.taskSort[sortMethod];
+			}
+			sortMethod = NS.taskSort['default'];
+			
+			var lst = this._list;
+			
+			if (L.isFunction(sortMethod)){
+				lst = lst.sort(sortMethod);				
+			}
+			
 			var task;
-			for (var i=0;i<this._list.length;i++){
-				task = this._list[i];
+			for (var i=0;i<lst.length;i++){
+				task = lst[i];
 				if (f(task)){ break; };
 				if (!nochild){
 					task.childs.foreach(f);
@@ -471,6 +515,12 @@ Component.entryPoint = function(){
 				callback();
 			});
 		},
+		taskUnsetExec: function(taskid, callback){ // отказаться от выполнения данной задачи
+			callback = callback || function(){};
+			this.ajax({'do': 'taskunsetexec', 'taskid': taskid }, function(r){
+				callback();
+			});
+		},
 		taskLoad: function(taskid, callback){
 			callback = callback || function(){};
 			var task = this.list.find(taskid),
@@ -504,7 +554,8 @@ Component.entryPoint = function(){
 				'descript': '',
 				'users': [Brick.env.user.id],
 				'deadline': null,
-				'ddlTime': false
+				'ddlTime': false,
+				'priority': 3
 			}, d || {});
 			
 			this.ajax({
@@ -516,7 +567,8 @@ Component.entryPoint = function(){
 					'users': d['users'],
 					'pid':  d['parentid'],
 					'ddl': NS.dateToServer(d['deadline']),
-					'ddlt': d['ddlTime'] ? 1 : 0
+					'ddlt': d['ddlTime'] ? 1 : 0,
+					'prt': d['priority']
 				}
 			}, callback);
 		}
