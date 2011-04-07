@@ -28,7 +28,7 @@ Component.entryPoint = function(){
 	var HType = {
 		'TASK_OPEN'		: 1,	// открыта
 		'TASK_CLOSE'	: 2,	// закрыта
-		'TASK_ACCEPT'	: 3,	// принята
+		'TASK_REMOVE'	: 3,	// удалена
 		'TASK_UPDATE'	: 4 	// обновлена
 	}
 	NS.HType = HType;
@@ -84,6 +84,7 @@ Component.entryPoint = function(){
 			this.parentTaskId = d['pid']*1;		// идентификатор родителя
 			
 			this.status = d['st']*1;
+			this.pstatus = d['pst']*1;
 			this.stUserId = d['stuid'];
 			this.stDate = NS.dateToClient(d['stdl']);
 			
@@ -94,7 +95,7 @@ Component.entryPoint = function(){
 		setData: function(d){
 			this.isLoad = true;
 			this.descript = d['bd'];
-			this._updateFlagNew(d);
+			this.update(d);
 		},
 		_updateFlagNew: function(d){
 			this.isNew = d['n']*1 > 0;
@@ -114,32 +115,61 @@ Component.entryPoint = function(){
 			if (L.isNull(ddl)){ return false; }
 			return ddl.getTime() < (new Date()).getTime();
 		},
-		
+
+		isClosed: function(){
+			return this.status*1 == NS.TaskStatus.CLOSE;
+		},
+
 		toString: function(){
 			return "'"+this.title+"', Child: "+this.childs.count();
 		}
 	};
 	NS.Task = Task;
 	
-	var sortDate = function(d1, d2){ // сортировка даты
-		var t1 = L.isNull(d1) ? 0 : d1.getTime(),
-			t2 = L.isNull(d2) ? 0 : d2.getTime();
-		if (t1 > t2) { return -1;}
-		if (t1 < t2) { return 1; }
+	var sortDate = function(d1, d2){ // Дата в порядке убывания
+		var v1 = d1.getTime(), v2 = d2.getTime();
+		if (v1 > v2){ return 1; }
+		if (v1 < v2){ return -1; }
+		return 0;
+	};
+	var sortDateDesc = function(d1, d2){ return sortDate(d2, d1); }
+	
+	var sortPriority = function(tk1, tk2){
+		var v1 = tk1.priority, v2 = tk2.priority;
+		if (v1 > v2){ return 1; }
+		if (v1 < v2){ return -1; }
+		return 0;
+	};
+	
+	var sortClosed = function(tk1, tk2){
+		var v1 = tk1.isClosed() ? 1 : 0,
+			v2 = tk2.isClosed() ? 1 : 0;
+		
+		if (v1 > v2){ return 1; }
+		if (v1 < v2){ return -1; }
 		return 0;
 	};
 	
 	NS.taskSort = {
 	 	'default': function(tk1, tk2){ // сортировка: Наименьший срок, наивысший приоритет
 		
-			var t1 = L.isNull(tk1.deadline) ? 9999999999999 : tk1.deadline.getTime(),
-				t2 = L.isNull(tk2.deadline) ? 9999999999999 : tk2.deadline.getTime();
-			
+			var t1 = L.isNull(tk1.deadline) || tk1.isClosed() ? 9999999999999 : tk1.deadline.getTime(),
+				t2 = L.isNull(tk2.deadline) || tk2.isClosed() ? 9999999999999 : tk2.deadline.getTime(),
+				v;
+
 			if (t1 < t2) { return -1;}
 			if (t1 > t2) { return 1; }
 			
-			if ((t1 == 0 && t2 == 0) || t1 == t2) { // сортировка по дате нет, значит по приоритету
+			v = sortClosed(tk1, tk2);
+			if (v != 0){ return v; }
+			
+			var isClosed = tk1.isClosed() && tk2.isClosed();
+			
+			if (!isClosed){
+				return sortPriority(tk1, tk2);
 			}
+			
+			return sortDate(tk1.stDate, tk2.stDate);
 		}
 	};
 	
@@ -249,11 +279,11 @@ Component.entryPoint = function(){
 	NS.HItemTaskClose = HItemTaskClose;
 
 	// Элемент действия истории: Задача принята на выполнение
-	var HItemTaskAccept = function(d){
-		HItemTaskAccept.superclass.constructor.call(this, HType.TASK_ACCEPT, d);
+	var HItemTaskRemove = function(d){
+		HItemTaskRemove.superclass.constructor.call(this, HType.TASK_REMOVE, d);
 	}
-	YAHOO.extend(HItemTaskAccept, HItem, { });
-	NS.HItemTaskAccept = HItemTaskAccept;
+	YAHOO.extend(HItemTaskRemove, HItem, { });
+	NS.HItemTaskRemove = HItemTaskRemove;
 
 	// Элемент действия истории: Обновлена
 	var HItemTaskUpdate = function(d){
@@ -269,8 +299,13 @@ Component.entryPoint = function(){
 			this.isDdlTime = d['ddltc']*1 > 0;
 			this.isParent = d['ptidc']*1 > 0;
 			
-			this.userAdded = d['usa'];
-			this.userRemoved = d['usr'];
+			this.isStatus = d['st']*1 != d['pst']*1;
+			this.stUserId = d['stuid']*1;
+			this.status = d['st']*1;
+			this.pstatus = d['pst']*1;
+			
+			this.userAdded = d['usad'];
+			this.userRemoved = d['usrm'];
 		}
 	});
 	NS.HItemTaskUpdate = HItemTaskUpdate;
@@ -285,7 +320,7 @@ Component.entryPoint = function(){
 		switch(d['tp']*1){
 		case HType.TASK_OPEN:	return new HItemTaskOpen(d);
 		case HType.TASK_CLOSE:	return new HItemTaskClose(d);
-		case HType.TASK_ACCEPT:	return new HItemTaskAccept(d);
+		case HType.TASK_REMOVE:	return new HItemTaskRemove(d);
 		case HType.TASK_UPDATE: return new HItemTaskUpdate(d);
 		}
 		return null;
@@ -303,7 +338,18 @@ Component.entryPoint = function(){
 	History.prototype = {
 		init: function(){
 			this._list = [];
+			
+			// последний загруженный идентификатор в этой коллекции
+			this.firstLoadedId = 0;
+			this.isFullLoaded = false;
 		},
+		setFirstLoadedId: function(id){
+			if (this.firstLoadedId == 0){
+				this.firstLoadedId = id;
+			}
+			this.firstLoadedId = Math.min(this.firstLoadedId, id*1);
+		},
+
 		foreach: function(f, desc){
 			if (!L.isFunction(f)){ return; }
 			var lst = this._list;
@@ -397,7 +443,8 @@ Component.entryPoint = function(){
 			var history = this.history = new History(), 
 				hsts = initData['hst'];
 			for (var i=0;i<hsts.length;i++){
-				this.historyItemAdd(hsts[i]);
+				var item = this.historyItemAdd(hsts[i]);
+				history.setFirstLoadedId(item.id);
 			}
 			this.historyChangedEvent = new YAHOO.util.CustomEvent("historyChangedEvent");
 			
@@ -509,44 +556,57 @@ Component.entryPoint = function(){
 				}
 			});
 		},
-		taskSetExec: function(taskid, callback){ // принять на исполнение
+		_taskAJAX: function(taskid, cmd, callback){
 			callback = callback || function(){};
-			this.ajax({'do': 'tasksetexec', 'taskid': taskid }, function(r){
+			var __self = this;
+			this.ajax({'do': cmd, 'taskid': taskid }, function(r){
+				__self._setLoadedTaskData(r);
 				callback();
 			});
 		},
+		_setLoadedTaskData: function(d){
+			if (L.isNull(d)){ return; }
+			var task = this.list.find(d['id']);
+			if (L.isNull(task)){ return; }
+			
+			var isNew = task.isNew;
+			task.setData(d);
+			var history = null;
+			for (var i=0;i<d['hst'].length;i++){
+				var item = this.historyItemAdd(d['hst'][i], task);
+				if (L.isNull(history)){
+					history = task.history;
+				}
+				history.setFirstLoadedId(item.id);
+			}
+
+			if (isNew){
+				this.newTaskReadEvent.fire(task);
+			}
+		},
+		taskClose: function(taskid, callback){ // закрыть задачу
+			this._taskAJAX(taskid, 'taskclose', callback);
+		},
+		taskSetExec: function(taskid, callback){ // принять на исполнение
+			this._taskAJAX(taskid, 'tasksetexec', callback);
+		},
 		taskUnsetExec: function(taskid, callback){ // отказаться от выполнения данной задачи
-			callback = callback || function(){};
-			this.ajax({'do': 'taskunsetexec', 'taskid': taskid }, function(r){
-				callback();
-			});
+			this._taskAJAX(taskid, 'taskunsetexec', callback);
 		},
 		taskLoad: function(taskid, callback){
 			callback = callback || function(){};
-			var task = this.list.find(taskid),
-				__self = this;
+			var task = this.list.find(taskid);
 
-			if (task.isLoad){
+			if (L.isNull(task) || task.isLoad){
 				callback();
 				return true;
 			}
-
-			this.ajax({'do': 'task', 'taskid': taskid }, function(r){
-				var isNew = task.isNew;
-				task.setData(r);
-				if (isNew){
-					__self.newTaskReadEvent.fire(task);
-				}
-
-				for (var i=0;i<r['hst'].length;i++){
-					__self.historyItemAdd(r['hst'][i], task);
-				}
-				callback();
-			});
+			this._taskAJAX(taskid, 'task', callback);
 		},
 		
 		// сохранить задачу (task - задача, newdata - новые данных по задаче)
 		taskSave: function(task, d, callback){
+			callback = callback || function(){};
 			var __self = this;
 			
 			d = L.merge({
@@ -570,7 +630,39 @@ Component.entryPoint = function(){
 					'ddlt': d['ddlTime'] ? 1 : 0,
 					'prt': d['priority']
 				}
-			}, callback);
+			}, function(r){
+				__self._setLoadedTaskData(r);
+				callback();
+			});
+		},
+		
+		loadHistory: function(history, taskid, callback){
+			callback = callback || function(){};
+			var __self = this;
+			this.ajax({
+				'do': 'history',
+				'taskid': taskid,
+				'firstid': history.firstLoadedId
+			}, function(r){
+				r = L.isArray(r) ? r : [];
+				history.isFullLoaded = r.length == 0;
+				for (var i=0;i<r.length;i++){
+					var item = __self.historyItemAdd(r[i]);
+					history.setFirstLoadedId(item.id);
+				}
+				callback();
+			});
+			
+			
+			/*
+			var cfg = this.cfg, counter = 1;
+			
+			this.history.foreach(function(hst){
+				lst += __self.buildRow(hst);
+				if (counter >= cfg['pagerow']*cfg['page']){ return true; }
+				counter++;
+			});
+			/**/
 		}
 	};
 	NS.taskManager = null;

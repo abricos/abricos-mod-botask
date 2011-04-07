@@ -150,57 +150,66 @@ class BotaskQuery {
 		return $db->insert_id();
 	}
 	
-	public static function BoardHistory(CMSDatabase $db, $userid, $lastHId = 0){
+	const HISTORY_FIELDS = "
+		h.historyid 		as id,
+		h.hitype 			as tp,
+		h.taskid 			as tid,
+		h.userid 			as uid,
+		h.dateline 			as dl,
+		
+		h.parenttaskidc 	as ptidc,
+		h.titlec 			as tlc,
+		h.bodyc 			as bdc,
+		h.deadlinec 		as ddlc, 
+		h.deadlinebytimec 	as ddltc,
+		h.useradded 		as usad,
+		h.userremoved 		as usrm,
+		
+		h.status 			as st,
+		h.prevstatus 		as pst,
+		h.statuserid 		as stuid,
+		h.priority 			as prt,
+		h.priorityc			as prtc
+	";
+	
+	public static function BoardHistory(CMSDatabase $db, $userid, $lastHId = 0, $firstHId = 0){
 		$lastHId = bkint($lastHId);
+		$firstHId = bkint($firstHId);
 		$where = "";
 		if ($lastHId > 0){
 			$where = " AND h.historyid > ".$lastHId;
 		}
+		if ($firstHId > 0){
+			$where = " AND h.historyid < ".$firstHId;
+		}
+		
 		$sql = "
-			SELECT 
-				h.historyid as id,
-				h.hitype as tp,
-				h.taskid as tid,
-				h.userid as uid,
-				h.dateline as dl,
-				
-				h.parenttaskidc as ptidc,
-				h.titlec as tlc,
-				h.bodyc as bdc,
-				h.deadlinec as ddlc, 
-				h.deadlinebytimec as ddltc,
-				h.useradded as usad,
-				h.userremoved as usrm
-				
+			SELECT
+				".BotaskQuery::HISTORY_FIELDS." 
 			FROM ".$db->prefix."btk_userrole ur 
 			INNER JOIN ".$db->prefix."btk_task p ON ur.taskid=p.taskid
 			INNER JOIN ".$db->prefix."btk_history h ON ur.taskid=h.taskid
 			WHERE ur.userid=".bkint($userid)." AND p.deldate=0 ".$where."
 			ORDER BY h.dateline DESC
-			LIMIT ".($lastHId == 0 ? 15 : 300)." 
+			LIMIT 15 
 		";
 		return $db->query_read($sql);
 	}
 	
-	public static function TaskHistory(CMSDatabase $db, $taskid){
+	public static function TaskHistory(CMSDatabase $db, $taskid, $firstHId = 0){
+		$firstHId = bkint($firstHId);
+		$where = "";
+		if ($firstHId > 0){
+			$where = " AND h.historyid < ".$firstHId;
+		}
+		
 		$sql = "
 			SELECT 
-				h.historyid as id,
-				h.hitype as tp,
-				h.taskid as tid,
-				h.userid as uid,
-				h.dateline as dl,
-				
-				h.parenttaskidc as ptidc,
-				h.titlec as tlc,
-				h.bodyc as bdc,
-				h.deadlinec as ddlc, 
-				h.deadlinebytimec as ddltc
-				
+				".BotaskQuery::HISTORY_FIELDS." 
 			FROM ".$db->prefix."btk_history h
-			WHERE h.taskid=".bkint($taskid)."
+			WHERE h.taskid=".bkint($taskid)." ".$where."
 			ORDER BY h.dateline DESC
-			LIMIT 5 
+			LIMIT 15 
 		";
 		return $db->query_read($sql);
 	}
@@ -243,8 +252,8 @@ class BotaskQuery {
 		return $db->insert_id();
 	}
 	
-	public static function TaskUpdate(CMSDatabase $db, $tk){
-		$info = BotaskQuery::Task($db, $tk->id, true);
+	public static function TaskUpdate(CMSDatabase $db, $tk, $userid){
+		$info = BotaskQuery::Task($db, $tk->id, $userid, true);
 		CoreQuery::ContentUpdate($db, $info['ctid'], $tk->bd);
 		$sql = "
 			UPDATE ".$db->prefix."btk_task

@@ -5,14 +5,14 @@
 		<a href="#" id="{i#bmore}">Загрузить еще...</a>
 		<img id="{i#load}" src="/images/loading.gif" style="display: none" />
 	</div>
+	<div id="{i#end}"></div>
 </div>
 
 <!--{item}-->
 <div class="hitem" title="">
 	<div class="hwrap">
 		<div class="htitle">
-			<span class="hact">{v#act}</span> → <a id="{i#task}-{v#id}" href="#app=botask/tasklist/showTaskListPanel/{v#tid}/" title="{v#tl}">{v#tl}</a>
-			<div class="shadow"></div>
+			{v#hd}
 		</div>
 		<div class="hdate">{v#dl}</div>
 		<div class="huser">
@@ -20,6 +20,13 @@
 		</div>
 	</div>
 </div>
+
+<!--{hd}-->
+<span class="hact">{v#act}</span> → <a id="{i#task}-{v#id}" href="#app=botask/tasklist/showTaskListPanel/{v#tid}/" title="{v#tl}">{v#tl}</a>
+<div class="shadow"></div>
+
+<!--{fhd}-->
+<div class="details">{v#ht}</div>
 
 <!--{act1}-->
 <span class="act1" title="Открыта">Отк</span> 

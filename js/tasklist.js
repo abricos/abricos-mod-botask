@@ -97,6 +97,7 @@ Component.entryPoint = function(){
 				'id': tk.id,
 				'prt': tk.priority,
 				'expired': tk.isExpired() ? 'expired' : '',
+				'closed': tk.isClosed() ? 'closed' : '',
 				'prts': LNG['priority'][tk.priority],
 				'tnew': tnew['n'] ? 'tnew' : '',
 				'tchnew': tnew['cn'] ? 'tchnew' : '',
@@ -251,8 +252,7 @@ Component.entryPoint = function(){
 		},
 		onHistoryChanged: function(type, args){
 			var history = args[0];
-			
-			
+
 			var task = this.task, isRTask = false;
 			history.foreach(function(item){
 				if (item.taskid == task.id){
@@ -266,14 +266,13 @@ Component.entryPoint = function(){
 		},
 		renderTask: function(){
 			var TM = this._TM, task = this.task;
-			
 			var gel = function(nm){
 				return TM.getEl('panel.'+nm);
 			};
 			
 			gel('taskbody').innerHTML = task.descript;
 			if (L.isNull(this.history)){
-				this.history = new NS.HistoryWidget(gel('history'), task.history);
+				this.history = new NS.HistoryWidget(gel('history'), task.history, {'taskid': task.id});
 			}
 			
 			// Автор
@@ -286,12 +285,15 @@ Component.entryPoint = function(){
 			gel('dlt').innerHTML = Brick.dateExt.convert(task.date, 4);
 
 			// Исполнитель
+			var s = "";
 			if (task.stUserId*1 > 0){
 				user = NS.taskManager.users[task.stUserId];
-				gel('exec').innerHTML = TM.replace('user', {
+				s = TM.replace('user', {
 					'uid': user.id, 'unm': UP.builder.getUserName(user)
 				});
 			}
+			gel('exec').innerHTML = s;
+			
 			var lst = "";
 			for (var i=0;i<task.users.length;i++){
 				user = NS.taskManager.users[task.users[i]];
@@ -316,16 +318,24 @@ Component.entryPoint = function(){
 			Dom.setStyle(gel('bsetexec'), 'display', 'none');
 			Dom.setStyle(gel('bunsetexec'), 'display', 'none');
 			Dom.setStyle(gel('bclose'), 'display', 'none');
+			Dom.setStyle(gel('bclosens'), 'display', 'none');
+			Dom.setStyle(gel('bopen'), 'display', 'none');
 
 			// статус
 			switch(task.status){
 			case TaskStatus.OPEN:
 			case TaskStatus.REOPEN:
 				Dom.setStyle(gel('bsetexec'), 'display', '');
+				Dom.setStyle(gel('bclosens'), 'display', '');
 				break;
 			case TaskStatus.ACCEPT:
 				Dom.setStyle(gel('bclose'), 'display', '');
 				Dom.setStyle(gel('bunsetexec'), 'display', '');
+				break;
+			case TaskStatus.CLOSE:
+				Dom.setStyle(gel('bopen'), 'display', '');
+				Dom.setStyle(gel('beditor'), 'display', 'none');
+				Dom.setStyle(gel('bremove'), 'display', 'none');
 				break;
 			}
 		},
@@ -334,6 +344,9 @@ Component.entryPoint = function(){
 			switch(el.id){
 			case tp['bsetexec']: this.setExecTask(); return true;
 			case tp['bunsetexec']: this.unsetExecTask(); return true;
+			case tp['bclose']: 
+			case tp['bclosens']: 
+				this.closeTask(); return true;
 			case tp['beditor']: this.taskEditorShow(); return true;
 			case tp['ptlisthide']: 
 			case tp['ptlistshow']: 
@@ -346,6 +359,13 @@ Component.entryPoint = function(){
 			var TM = this._TM;
 			Dom.setStyle(TM.getEl('panel.buttons'), 'display', show ? 'none' : '');
 			Dom.setStyle(TM.getEl('panel.bloading'), 'display', show ? '' : 'none');
+		},
+		closeTask: function(){ // закрыть задачу
+			var __self = this;
+			this._shLoading(true);
+			NS.taskManager.taskClose(this.task.id, function(){
+				__self._shLoading(false);
+			});
 		},
 		setExecTask: function(){ // принять задачу в работу 
 			var __self = this;

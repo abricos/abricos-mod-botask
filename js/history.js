@@ -32,15 +32,21 @@ Component.entryPoint = function(){
 	
 	var buildTemplate = function(w, ts){w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;};
 
-	var HistoryWidget = function(container, history){
-		this.init(container, history);
+	var HistoryWidget = function(container, history, cfg){
+		this.init(container, history, cfg);
 	};
 	HistoryWidget.prototype = {
-		init: function(container, history){
-			buildTemplate(this, 'widget,item,act1,act2,act3,act4');
+		init: function(container, history, cfg){
+			buildTemplate(this, 'widget,item,act1,act2,act3,act4,hd,fhd');
 			container.innerHTML = this._TM.replace('widget');
+
+			this.cfg = L.merge({
+				'taskid': 0,
+				'pagerow': 5,
+				'page': 1
+			}, cfg || {});
 			this.history = history || NS.taskManager.history;
-			
+
 			var __self = this;
 			E.on(container, 'click', function(e){
                 var el = E.getTarget(e);
@@ -48,27 +54,99 @@ Component.entryPoint = function(){
 	        });
 			
 			this.render();
+			
+			NS.taskManager.historyChangedEvent.subscribe(this.onHistoryChanged, this, true);
 		},
-		render: function(){
+		destroy: function(){
+			NS.taskManager.historyChangedEvent.unsubscribe(this.onHistoryChanged);
+		},
+		onHistoryChanged: function(type, args){
+			var taskid = this.cfg['taskid']*1,
+				isRender = taskid == 0;
+			
+			if (!isRender){
+				args[0].foreach(function(hst){
+					if (hst['taskid']*1 == taskid*1){
+						isRender = true;
+						return true;
+					}
+				});
+			}
+			if (isRender){
+				this.render();
+			}
+		},
+		buildRow: function(hst){
 			var TM = this._TM,
 				tman = NS.taskManager,
+				task = tman.list.find(hst.taskid),
+				user = tman.users[hst.userid];
+			
+			var shead = "";
+			if (this.cfg['taskid']*1 > 0){
+				var sht = "",
+					LNGA = LNG['act'],
+					HT = NS.HType;
+				switch(hst.htype){
+				case HT.TASK_OPEN: sht = LNGA['new']; break;
+				case HT.TASK_UPDATE:
+					
+					var fa = [];
+					if (hst.isTitle){fa[fa.length] = LNGA['title'];}
+					if (hst.isDescript){fa[fa.length] = LNGA['descript'];}
+					if (hst.isDeadline || hst.isDdlTime){fa[fa.length] = LNGA['deadline'];}
+
+					if (hst.userAdded.length > 0 || hst.userRemoved.length > 0 ){fa[fa.length] = LNGA['users'];}
+
+					if (hst.isStatus){
+						var TS = NS.TaskStatus;
+						if (hst.status == TS.CLOSE){
+							fa[fa.length] = LNGA['close'];
+						}else if (hst.status == TS.ACCEPT){
+							fa[fa.length] = LNGA['st_accept'];
+						}else if (hst.status == TS.OPEN){
+							if (hst.pstatus == TS.ACCEPT){
+								fa[fa.length] = LNGA['st_unaccept'];
+							}
+						}
+					}
+					sht = fa.join('<br />');
+					break;
+				}
+				
+				shead = TM.replace('fhd', {'ht': sht});
+			}else{
+				shead = TM.replace('hd', {
+					'act': TM.replace('act'+hst.htype),
+					'tl': task.title,
+					'tid': task.id
+				});
+			}
+			
+			return TM.replace('item', {
+				'tl': task.title,
+				'tid': task.id,
+				'hd': shead,
+				'dl': Brick.dateExt.convert(hst.date.getTime()/1000),
+				'uid': user.id,
+				'unm': UP.builder.getUserName(user, true)
+			});
+		},
+		render: function(){
+			var __self = this,
 				lst = "";
 			
-			var task, user;
+			var cfg = this.cfg, counter = 1, limit = cfg['pagerow']*cfg['page'];
 			this.history.foreach(function(hst){
-				task = tman.list.find(hst.taskid);
-				user = tman.users[hst.userid];
-				
-				lst += TM.replace('item', {
-					'tl': task.title,
-					'act': TM.replace('act'+hst.htype),
-					'tid': task.id,
-					'dl': Brick.dateExt.convert(hst.date.getTime()/1000),
-					'uid': user.id,
-					'unm': UP.builder.getUserName(user, true)
-				});
+				lst += __self.buildRow(hst);
+				if (counter >= limit){ return true; }
+				counter++;
 			});
-			TM.getEl('widget.list').innerHTML = lst;
+			this._TM.getEl('widget.list').innerHTML = lst;
+			
+			if (this.history.isFullLoaded){
+				Dom.setStyle(this._TM.getEl('widget.more'), 'display', 'none');
+			}
 		},
 		onClick: function(el){
 			if (el.id == this._TId['widget']['bmore']){
@@ -80,9 +158,42 @@ Component.entryPoint = function(){
 		loadMore: function(){
 			var TM = this._TM;
 			var elB = TM.getEl('widget.bmore'),
-				elL = TM.getEl('widget.load');
-			Dom.setStyle(elB, 'display', 'none');
-			Dom.setStyle(elL, 'display', '');
+				elL = TM.getEl('widget.load'),
+				history = this.history;
+
+			var cfg = this.cfg; 
+			cfg['page']++;
+			
+			var counter = 1, limit = cfg['pagerow']*cfg['page'];
+			
+			var isLoad = limit > history.count();
+
+			if (!isLoad && cfg['taskid']*1 == 0){
+				
+				// кол-во в кеше достаточно, но может быть это кеш кусков загруженных задач?
+				history.foreach(function(hst){
+					if (history.firstLoadedId > hst.id){
+						isLoad = true;
+						return true;
+					}
+				});
+			}
+			
+			if (isLoad){
+				var __self = this;
+				Dom.setStyle(elB, 'display', 'none');
+				Dom.setStyle(elL, 'display', '');
+				
+				NS.taskManager.loadHistory(history, cfg['taskid'], function(){
+					Dom.setStyle(elB, 'display', '');
+					Dom.setStyle(elL, 'display', 'none');
+					__self.render();
+				});
+			}else{
+				this.render();
+			}
+			
+			TM.getEl('widget.end').scrollIntoView(true);
 		}
 	};
 	NS.HistoryWidget = HistoryWidget;

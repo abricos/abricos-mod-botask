@@ -56,10 +56,10 @@ class BotaskHistoryType {
 	const TASK_CLOSE = 2;
 	
 	/**
-	 * Задача принята на выполнение
+	 * Задача удалена
 	 * @var integer
 	 */
-	const TASK_ACCEPT = 3;
+	const TASK_REMOVE = 3;
 	
 	/**
 	 * Задача обновлена

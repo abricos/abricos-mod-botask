@@ -203,6 +203,12 @@
 	color: #C82100; 
 }
 
+.aw-botask .tlist table .closed td, 
+.aw-botask .tlist table .closed td a,
+.aw-botask .tlist table .closed td.tprt .tl {
+	color: #839097; 
+}
+
 .aw-botask .tlist tr.row:hover {
 	background: none repeat scroll 0 0 #FFF0C6;
 }

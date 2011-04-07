@@ -183,7 +183,8 @@ class BotaskManager extends ModuleManager {
 			case 'tasksave': return $this->TaskSave($d->task);
 			case 'tasksetexec': return $this->TaskSetExec($d->taskid);
 			case 'taskunsetexec': return $this->TaskUnsetExec($d->taskid);
-			
+			case 'taskclose': return $this->TaskClose($d->taskid);
+			case 'history': return $this->History($d->taskid, $d->firstid);
 		}
 		return null;
 	}
@@ -302,7 +303,7 @@ class BotaskManager extends ModuleManager {
 		$task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
 		
 		if ($task['st'] != BotaskStatus::TASK_OPEN && $task['st'] != BotaskStatus::TASK_REOPEN){
-			return -1;
+			return null;
 		}
 		
 		$history = new BotaskHistory($this->userid);
@@ -310,7 +311,7 @@ class BotaskManager extends ModuleManager {
 		$history->Save();
 		BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_ACCEPT, $this->userid);
 		
-		return 1;
+		return $this->Task($taskid);
 	}
 
 	/**
@@ -323,7 +324,7 @@ class BotaskManager extends ModuleManager {
 		
 		$task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
 		
-		if ($task['st'] != BotaskStatus::TASK_ACCEPT){ return -1; }
+		if ($task['st'] != BotaskStatus::TASK_ACCEPT){ return null; }
 		
 		$history = new BotaskHistory($this->userid);
 		$history->SetStatus($task, BotaskStatus::TASK_OPEN, $this->userid);
@@ -331,8 +332,30 @@ class BotaskManager extends ModuleManager {
 		
 		BotaskQuery::TaskUnsetStatus($this->db, $taskid);
 		
-		return 1;
+		return $this->Task($taskid);
 	}
+	
+	/**
+	 * Завершить задачу
+	 * 
+	 * @param integer $taskid
+	 */
+	public function TaskClose($taskid){
+		if (!$this->TaskAccess($taskid)){ return null; }
+		
+		$task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
+		
+		if ($task['st'] == BotaskStatus::TASK_CLOSE){ return null; }
+		
+		$history = new BotaskHistory($this->userid);
+		$history->SetStatus($task, BotaskStatus::TASK_CLOSE, $this->userid);
+		$history->Save();
+		
+		BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_CLOSE, $this->userid);
+		
+		return $this->Task($taskid);
+	}
+	
 	
 	/**
 	 * Сохранить задачу
@@ -374,7 +397,10 @@ class BotaskManager extends ModuleManager {
 			$history->taskid = $tk->id;
 			
 			$info = BotaskQuery::Task($this->db, $tk->id, $this->userid, true);
-			BotaskQuery::TaskUpdate($this->db, $tk);
+			
+			if ($info['st'] == BotaskStatus::TASK_CLOSE){ return null; }
+			
+			BotaskQuery::TaskUpdate($this->db, $tk, $this->userid);
 			
 			$history->CompareTask($tk, $info);
 		}
@@ -412,7 +438,7 @@ class BotaskManager extends ModuleManager {
 		
 		$history->Save();
 		
-		return $tk->id;
+		return $this->Task($tk->id);
 	}
 	
 	public function Task($taskid){
@@ -440,6 +466,22 @@ class BotaskManager extends ModuleManager {
 		return $task;
 	}
 
+	public function History($taskid, $firstHId){
+		if (!$this->IsViewRole()){ return null; }
+		
+		$taskid = intval($taskid);
+		if ($taskid > 0){
+			if (!$this->TaskAccess($taskid)){ return null; }
+			$rows = BotaskQuery::TaskHistory($this->db, $taskid, $firstHId);
+		}else{
+			$rows = BotaskQuery::BoardHistory($this->db, $this->userid, 0, $firstHId);
+		}
+		$hst = array();
+		while (($row = $this->db->fetch_array($rows))){
+			array_push($hst, $row);
+		}
+		return $hst;
+	}
 }
 
 ?>

@@ -14,9 +14,11 @@
 					
 					<div class="manbuttons">
 						<div id="{i#buttons}">
-							<a id="{i#bsetexec}" class="bsetexec btkbt" href="#" title="Принять в работу эту задачу">Принять</a>
-							<a id="{i#bclose}" class="bsetexec btkbt" href="#" title="Завершить задачу">Завершить</a>
-							<a id="{i#bunsetexec}" class="bsetexec btkbt" href="#" title="Отказаться от выполнения этой задачи">Отклонить</a>
+							<a id="{i#bsetexec}" style="display: none;" class="bsetexec btkbt" href="#" title="Принять в работу эту задачу">Принять</a>
+							<a id="{i#bclose}" style="display: none;" class="bsetexec btkbt" href="#" title="Завершить задачу">Завершить</a>
+							<a id="{i#bclosens}" style="display: none;" class="bsetexec btkbt" href="#" title="Закрыть задачу">Закрыть</a>
+							<a id="{i#bunsetexec}" style="display: none;" class="bsetexec btkbt" href="#" title="Отказаться от выполнения этой задачи">Отклонить</a>
+							<a id="{i#bopen}" style="display: none;" class="bsetexec btkbt" href="#" title="Открыть задачу повторно">Открыть повторно</a>
 							
 							<a id="{i#beditor}" class="beditor btkbt" href="#app=botask/taskeditor/showTaskEditorPanel/{v#id}/">Редактировать</a>
 							<a id="{i#bremove}" class="bremove btkbt" href="#">Удалить</a>
@@ -127,7 +129,7 @@
 	<td></td>
 
 <!--{row}-->
-<tr id="{i#id}-{v#id}" class="row {v#classch} level{v#level} {v#tnew} {v#tchnew} prt{v#prt} {v#expired}">
+<tr id="{i#id}-{v#id}" class="row {v#classch} level{v#level} {v#tnew} {v#tchnew} prt{v#prt} {v#expired} {v#closed}">
 	<td class="tname">
 		<div class="ch-ico">
 			<div class="ch-btn" id="{i#exp}-{v#id}">&nbsp;</div>
