@@ -88,7 +88,7 @@ Component.entryPoint = function(){
 					LNGA = LNG['act'],
 					HT = NS.HType;
 				switch(hst.htype){
-				case HT.TASK_OPEN: sht = LNGA['new']; break;
+				case HT.TASK_CREATE: sht = LNGA['new']; break;
 				case HT.TASK_UPDATE:
 					
 					var fa = [];

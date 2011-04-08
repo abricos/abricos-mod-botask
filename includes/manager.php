@@ -184,6 +184,7 @@ class BotaskManager extends ModuleManager {
 			case 'tasksetexec': return $this->TaskSetExec($d->taskid);
 			case 'taskunsetexec': return $this->TaskUnsetExec($d->taskid);
 			case 'taskclose': return $this->TaskClose($d->taskid);
+			case 'taskvoting': return $this->TaskVoting($d->taskid, $d->val);
 			case 'history': return $this->History($d->taskid, $d->firstid);
 		}
 		return null;
@@ -356,6 +357,14 @@ class BotaskManager extends ModuleManager {
 		return $this->Task($taskid);
 	}
 	
+	public function TaskVoting($taskid, $value){
+		if (!$this->TaskAccess($taskid)){ return null; }
+		
+		BotaskQuery::TaskVoting($this->db, $taskid, $this->userid, $value);
+		
+		return $value;
+	}
+	
 	
 	/**
 	 * Сохранить задачу
@@ -386,7 +395,7 @@ class BotaskManager extends ModuleManager {
 			$pubkey = md5(time().$this->userid);
 			$tk->id = BotaskQuery::TaskAppend($this->db, $tk, $pubkey);
 			
-			$history->hitype = BotaskHistoryType::TASK_OPEN;
+			$history->hitype = BotaskHistoryType::TASK_CREATE;
 			$history->taskid = $tk->id;
 			
 		}else{

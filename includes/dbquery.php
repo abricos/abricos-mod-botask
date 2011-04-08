@@ -22,7 +22,8 @@ class BotaskQuery {
 		p.statuserid as stuid,
 		p.statdate as stdl,
 		p.priority as prt,
-		IF (ur.viewdate > 0, 0, 1) as n
+		IF (ur.viewdate > 0, 0, 1) as n,
+		ur.ord as o
 	";
 	
 	/**
@@ -341,6 +342,16 @@ class BotaskQuery {
 		$sql = "
 			UPDATE ".$db->prefix."btk_userrole
 			SET viewdate=".TIMENOW."
+			WHERE taskid=".bkint($taskid)." AND userid=".bkint($userid)."
+			LIMIT 1
+		";
+		$db->query_write($sql);
+	}
+	
+	public static function TaskVoting(CMSDatabase $db, $taskid, $userid, $value){
+		$sql = "
+			UPDATE ".$db->prefix."btk_userrole
+			SET ord=".$value."
 			WHERE taskid=".bkint($taskid)." AND userid=".bkint($userid)."
 			LIMIT 1
 		";

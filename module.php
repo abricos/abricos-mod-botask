@@ -44,28 +44,23 @@ class BotaskModule extends CMSModule {
 class BotaskHistoryType {
 
 	/**
-	 * Задача открыта
+	 * Создана новая задача
 	 * @var integer
 	 */
-	const TASK_OPEN = 1;
+	const TASK_CREATE = 1;
 	
 	/**
-	 * Задача закрыта
+	 * Задача удалена. 
+	 * Примечание: после удаления, задачу нельзя вернуть.
 	 * @var integer
 	 */
-	const TASK_CLOSE = 2;
-	
-	/**
-	 * Задача удалена
-	 * @var integer
-	 */
-	const TASK_REMOVE = 3;
+	const TASK_REMOVE = 2;
 	
 	/**
 	 * Задача обновлена
 	 * @var integer
 	 */
-	const TASK_UPDATE = 4;
+	const TASK_UPDATE = 3;
 }
 
 /**

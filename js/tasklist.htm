@@ -37,7 +37,8 @@
 				</div>
 			</td>
 			<td class="rightcol">
-				<div class="colbody colinfo">
+				<div id="{i#colinfo}" class="colbody colinfo">
+					<div id="{i#status}" class="cirow status">&nbsp;</div>
 					<div class="cirow author">
 						<div class="tl">Автор</div>
 						<div id="{i#author}" class="vl"></div>
@@ -56,6 +57,13 @@
 						<div class="vl">
 							<div class="dt vi" id="{i#ddl}"></div>
 							<div class="tm vi" id="{i#ddlt}"></div>
+						</div>
+						<div class="clear"></div>
+					</div>
+					<div class="cirow priority">
+						<div class="tl">Приоритет</div>
+						<div class="vl">
+							<div id="{i#priority}" class="vi prtclr"></div>
 						</div>
 						<div class="clear"></div>
 					</div>
@@ -115,6 +123,8 @@
 					<img class="fav-checked" src="/images/empty.gif">
 				</span>
 			</th>
+			<th class="tvot">
+			</th>
 		</tr>
 	</thead>
 	<tbody>{v#rows}</tbody>
@@ -129,7 +139,7 @@
 	<td></td>
 
 <!--{row}-->
-<tr id="{i#id}-{v#id}" class="row {v#classch} level{v#level} {v#tnew} {v#tchnew} prt{v#prt} {v#expired} {v#closed}">
+<tr id="{i#id}-{v#id}" class="row {v#classch} level{v#level} {v#tnew} {v#tchnew} priority{v#prt} {v#expired} {v#closed}">
 	<td class="tname">
 		<div class="ch-ico">
 			<div class="ch-btn" id="{i#exp}-{v#id}">&nbsp;</div>
@@ -144,11 +154,18 @@
 		{v#ddl}
 	</td>
 	<td class="tprt">
-		<div class="tl">{v#prts}</div>
+		<div class="prtclr">{v#prts}</div>
 	</td>
 	<td>
 		<span class="fav-icon-normal">
 			<img id="{i#fav}-{v#id}" class="" src="/images/empty.gif">
 		</span>
+	</td>
+	<td>
+		<ul id="{i#voting}-{v#id}" class="voting">
+			<li id="{i#up}-{v#id}" class="up" title="Вверх"></li>
+			<li id="{i#vot}-{v#id}" class="res">{v#ord}</li>
+			<li id="{i#down}-{v#id}" class="down" title="Вниз"></li>
+		</ul>
 	</td>
 </tr>

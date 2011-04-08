@@ -47,7 +47,7 @@ if ($updateManager->isInstall()){
 		  `deadline` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Срок выполнения',
 		  `deadlinebytime` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Срок выполнения - уточнение времени',
 		  
-		  `status` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Текущий статус задачи - значения BotaskHistoryType',
+		  `status` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Текущий статус задачи - значения BotaskStatus',
 		  `statuserid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Пользователь текущего статуса',
 		  `statdate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/Время текущего статуса',
 		  
@@ -62,6 +62,7 @@ if ($updateManager->isInstall()){
 		  `taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор задачи',
 		  `userid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя',
 		  `viewdate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата последнего просмотра',
+		  `ord` int(3) NOT NULL DEFAULT 0 COMMENT 'Вес этой задачи по мнению пользователя',
 		  `deldate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата удаления',
 		  PRIMARY KEY  (`userroleid`), 
 		  UNIQUE KEY `task` (`taskid`,`userid`)

@@ -26,10 +26,9 @@ Component.entryPoint = function(){
 	var buildTemplate = function(w, ts){w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;};
 	
 	var HType = {
-		'TASK_OPEN'		: 1,	// открыта
-		'TASK_CLOSE'	: 2,	// закрыта
-		'TASK_REMOVE'	: 3,	// удалена
-		'TASK_UPDATE'	: 4 	// обновлена
+		'TASK_CREATE'	: 1,	// открыта
+		'TASK_REMOVE'	: 2,	// удалена
+		'TASK_UPDATE'	: 3 	// обновлена
 	}
 	NS.HType = HType;
 	
@@ -89,6 +88,7 @@ Component.entryPoint = function(){
 			this.stDate = NS.dateToClient(d['stdl']);
 			
 			this.priority = d['prt']*1;
+			this.order = d['o']*1;
 			
 			this._updateFlagNew(d);
 		},
@@ -150,12 +150,24 @@ Component.entryPoint = function(){
 		return 0;
 	};
 	
+	var sortOrder = function(tk1, tk2){
+		if (tk1.order < tk2.order){ return 1;}
+		if (tk1.order > tk2.order){ return -1;}
+		return 0;
+	};
+	
 	NS.taskSort = {
 	 	'default': function(tk1, tk2){ // сортировка: Наименьший срок, наивысший приоритет
-		
-			var t1 = L.isNull(tk1.deadline) || tk1.isClosed() ? 9999999999999 : tk1.deadline.getTime(),
-				t2 = L.isNull(tk2.deadline) || tk2.isClosed() ? 9999999999999 : tk2.deadline.getTime(),
-				v;
+			var v, t1, t2;
+			
+			v = sortClosed(tk1, tk2);
+			if (v != 0){ return v; }
+
+			v = sortOrder(tk1, tk2);
+			if (v != 0){ return v; }
+			
+			t1 = L.isNull(tk1.deadline) || tk1.isClosed() ? 9999999999999 : tk1.deadline.getTime();
+			t2 = L.isNull(tk2.deadline) || tk2.isClosed() ? 9999999999999 : tk2.deadline.getTime();
 
 			if (t1 < t2) { return -1;}
 			if (t1 > t2) { return 1; }
@@ -266,19 +278,12 @@ Component.entryPoint = function(){
 	
 	// Элемент действия истории: Задача открыта
 	var HItemTaskOpen = function(d){
-		HItemTaskOpen.superclass.constructor.call(this, HType.TASK_OPEN, d);
+		HItemTaskOpen.superclass.constructor.call(this, HType.TASK_CREATE, d);
 	}
 	YAHOO.extend(HItemTaskOpen, HItem, {});
 	NS.HItemTaskOpen = HItemTaskOpen;
 
-	// Элемент действия истории: Задача закрыта
-	var HItemTaskClose = function(d){
-		HItemTaskClose.superclass.constructor.call(this, HType.TASK_CLOSE, d);
-	}
-	YAHOO.extend(HItemTaskClose, HItem, {});
-	NS.HItemTaskClose = HItemTaskClose;
-
-	// Элемент действия истории: Задача принята на выполнение
+	// Элемент действия истории: Задача удалена
 	var HItemTaskRemove = function(d){
 		HItemTaskRemove.superclass.constructor.call(this, HType.TASK_REMOVE, d);
 	}
@@ -318,8 +323,7 @@ Component.entryPoint = function(){
 	};
 	History.buildItem = function(d){
 		switch(d['tp']*1){
-		case HType.TASK_OPEN:	return new HItemTaskOpen(d);
-		case HType.TASK_CLOSE:	return new HItemTaskClose(d);
+		case HType.TASK_CREATE:	return new HItemTaskOpen(d);
 		case HType.TASK_REMOVE:	return new HItemTaskRemove(d);
 		case HType.TASK_UPDATE: return new HItemTaskUpdate(d);
 		}
@@ -450,6 +454,9 @@ Component.entryPoint = function(){
 			
 			// событие, когда прочитали новую задачу
 			this.newTaskReadEvent = new YAHOO.util.CustomEvent("newTaskReadEvent");
+			
+			// события внесения изменений пользователя в задачу (добавление в избранное, голосование и т.п.) 
+			this.taskUserChangedEvent = new YAHOO.util.CustomEvent("taskUserChangedEvent");
 		},
 		
 		_buildTaskTree: function(list){
@@ -556,6 +563,19 @@ Component.entryPoint = function(){
 				}
 			});
 		},
+		
+		taskSetOrder: function(taskid, value, callback){
+			callback = callback || function(){};
+			var __self = this;
+			this.ajax({'do': 'taskvoting', 'taskid': taskid, 'val': value }, function(r){
+				callback();
+				if (L.isNull(r)){ return; }
+				var task = NS.taskManager.list.find(taskid);
+				task.order = r*1;
+				__self.taskUserChangedEvent.fire(task);
+			});
+		},
+		
 		_taskAJAX: function(taskid, cmd, callback){
 			callback = callback || function(){};
 			var __self = this;
@@ -652,17 +672,6 @@ Component.entryPoint = function(){
 				}
 				callback();
 			});
-			
-			
-			/*
-			var cfg = this.cfg, counter = 1;
-			
-			this.history.foreach(function(hst){
-				lst += __self.buildRow(hst);
-				if (counter >= cfg['pagerow']*cfg['page']){ return true; }
-				counter++;
-			});
-			/**/
 		}
 	};
 	NS.taskManager = null;

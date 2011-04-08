@@ -49,6 +49,10 @@ Component.entryPoint = function(){
                 if (__self.onClick(E.getTarget(e))){ E.preventDefault(e); }
 			});
 			
+			E.on(container, 'mouseout', function(e){
+				__self.onMouseOut(E.getTarget(e));
+			});
+			
 			var tman = NS.taskManager;
 			if (ptaskid == 0){
 				this.list = tman.list;
@@ -64,6 +68,11 @@ Component.entryPoint = function(){
 			// Подписаться на событие изменений в задачах
 			NS.taskManager.historyChangedEvent.subscribe(this.onHistoryChanged, this, true);
 			NS.taskManager.newTaskReadEvent.subscribe(this.onNewTaskRead, this, true);
+			NS.taskManager.taskUserChangedEvent.subscribe(this.onTaskUserChanged, this, true);
+			
+			this.vtMan = null;
+			
+			this._timeSelectedRow = 0;
 		},
 		buildNewInfo: function(){
 			var tnew = {};
@@ -93,9 +102,11 @@ Component.entryPoint = function(){
 				chcls = 'expanded';
 			}
 			var tnew = this.tnew[tk.id] || {};
+			var n = tk.order;
 			var sRow = TM.replace('row', {
 				'id': tk.id,
 				'prt': tk.priority,
+				'ord': n != 0 ? ((n>0?'+':'')+n) : '&mdash;',
 				'expired': tk.isExpired() ? 'expired' : '',
 				'closed': tk.isClosed() ? 'closed' : '',
 				'prts': LNG['priority'][tk.priority],
@@ -127,7 +138,26 @@ Component.entryPoint = function(){
 			this.buildNewInfo();
 			var TM = this._TM, 
 				lst = this.buildRows(this.list);
-			TM.getEl('list.table').innerHTML = TM.replace('table', {'rows': lst});			
+			TM.getEl('list.table').innerHTML = TM.replace('table', {'rows': lst});
+			
+			if (this._timeSelectedRow*1 > 0){
+				var __self = this,
+					taskid = this._timeSelectedRow;
+				
+				this._timeSelectedRow = 0;
+				var elRow = Dom.get(TM.getElId('row.id')+'-'+taskid);
+				Dom.addClass(elRow, 'row-hover');
+				setTimeout(function(){
+					Dom.removeClass(elRow, 'row-hover');
+				}, 500);
+			}
+		},
+		_parseId: function(el){
+			if (!el.id){ return null; }
+			var prefix = el.id.replace(/([0-9]+$)/, ''),
+				taskid = el.id.replace(prefix, "");
+			
+			return [prefix, taskid];
 		},
 		onClick: function(el){
 			var prefix = el.id.replace(/([0-9]+$)/, ''),
@@ -138,9 +168,49 @@ Component.entryPoint = function(){
 			
 			switch(prefix){
 			case (tp['exp']+'-'): this.shChilds(taskid); return true;
+			case (tp['up']+'-'): this.taskVoting(taskid, 1); return true;
+			case (tp['down']+'-'): this.taskVoting(taskid, -1); return true;
 			}
 
 			return false;
+		},
+		onMouseOut: function(el){
+			if (L.isNull(this.vtMan)){ return; }
+
+			var psid = this._parseId(el);
+			if (L.isNull(psid)){ return; }
+			
+			var prefix = psid[0], tp = this._TId['row'];
+			if (!((tp['up']+'-') == prefix || (tp['down']+'-') == prefix)) { return; }
+			
+			var vtMan = this.vtMan, taskid = psid[1], __self = this;
+			this.vtMan = null;
+			if (vtMan.task.id*1 != taskid*1){ return; }
+			
+			this._isVotingProcess = true;
+			var elList = this._TM.getEl('list.id');
+			Dom.addClass(elList, 'voting-process');
+			NS.taskManager.taskSetOrder(taskid, vtMan['n'], function(){
+				__self._isVotingProcess = false;
+				__self._timeSelectedRow = taskid;
+				Dom.removeClass(elList, 'voting-process');
+			});
+		},
+		taskVoting: function(taskid, inc){
+			if (this._isVotingProcess){ return; }
+			
+			if (L.isNull(this.vtMan)){
+				var task = NS.taskManager.getTask(taskid);
+				this.vtMan = {'task': task, 'n': task.order};
+			}
+			var vtMan = this.vtMan;
+			vtMan['n'] += inc;
+			
+			var elRow = Dom.get(this._TM.getElId('row.vot')+'-'+taskid);
+			var n = vtMan['n'];
+			
+			elRow.innerHTML = n != 0 ? ((n>0?'+':'')+n) : '&mdash;';
+			
 		},
 		shChilds: function(taskid){
 			var task = NS.taskManager.getTask(taskid);
@@ -164,6 +234,7 @@ Component.entryPoint = function(){
 		destroy: function(){
 			NS.taskManager.historyChangedEvent.unsubscribe(this.onHistoryChanged);
 			NS.taskManager.newTaskReadEvent.unsubscribe(this.onNewTaskRead);
+			NS.taskManager.taskUserChangedEvent.unsubscribe(this.onTaskUserChanged);
 		},
 		_isHistoryChanged: function(list, ids){
 			var exp = this.expanded, __self = this, find = false;
@@ -183,6 +254,11 @@ Component.entryPoint = function(){
 			}, true);
 			return find;
 		},
+		
+		onTaskUserChanged: function(type, args){
+			this.render();
+		},
+		
 		onHistoryChanged: function(type, args){
 			this.render();
 			/*
@@ -274,7 +350,21 @@ Component.entryPoint = function(){
 			if (L.isNull(this.history)){
 				this.history = new NS.HistoryWidget(gel('history'), task.history, {'taskid': task.id});
 			}
+
+			var elColInfo = gel('colinfo');
+			for (var i=1;i<=5;i++){
+				Dom.removeClass(elColInfo, 'priority'+i);
+				Dom.removeClass(elColInfo, 'status'+i);
+			}
+			Dom.addClass(elColInfo, 'priority'+task.priority);
+			Dom.addClass(elColInfo, 'status'+task.status);
 			
+			// Статус
+			gel('status').innerHTML = LNG['status'][task.status];
+			
+			// Приоритет
+			gel('priority').innerHTML = LNG['priority'][task.priority];
+
 			// Автор
 			var user = NS.taskManager.users[task.userid];
 			gel('author').innerHTML = TM.replace('user', {
@@ -294,6 +384,7 @@ Component.entryPoint = function(){
 			}
 			gel('exec').innerHTML = s;
 			
+			// Участники
 			var lst = "";
 			for (var i=0;i<task.users.length;i++){
 				user = NS.taskManager.users[task.users[i]];

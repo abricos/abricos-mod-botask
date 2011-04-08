@@ -182,6 +182,9 @@
 .aw-botask .tlist table th.tfav {
 	width: 32px;
 }
+.aw-botask .tlist table th.tvot {
+	width: 50px;
+}
 
 .aw-botask .tlist table th.tprt {
 	width: 9em;
@@ -191,11 +194,11 @@
 	padding: 1px 0;
 }
 
-.aw-botask .tlist table .prt1 td.tprt .tl {	color: #C82100; }
-.aw-botask .tlist table .prt2 td.tprt .tl { color: #FF4E00; }
-.aw-botask .tlist table .prt3 td.tprt .tl {	color: #006699; }
-.aw-botask .tlist table .prt5 td.tprt .tl {	color: #DDDDDD; }
-.aw-botask .tlist table .prt4 td.tprt .tl {	color: #839097; }
+.aw-botask .priority1 .prtclr {	color: #C82100; }
+.aw-botask .priority2 .prtclr { color: #FF4E00; }
+.aw-botask .priority3 .prtclr {	color: #006699; }
+.aw-botask .priority4 .prtclr {	color: #DDDDDD; }
+.aw-botask .priority5 .prtclr {	color: #839097; }
 
 .aw-botask .tlist table .expired td, 
 .aw-botask .tlist table .expired td a,
@@ -209,7 +212,8 @@
 	color: #839097; 
 }
 
-.aw-botask .tlist tr.row:hover {
+.aw-botask .tlist tr.row:hover, 
+.aw-botask .tlist tr.row-hover {
 	background: none repeat scroll 0 0 #FFF0C6;
 }
 
@@ -237,7 +241,7 @@
 	clear: both;
 }
 
-.aw-botask .colinfo .cirow {
+.aw-botask .colinfo .cirow  {
 	margin: 5px 0;
 	clear: both;
 	padding-bottom: 3px;
@@ -263,15 +267,69 @@
 	width: 100%;
 	text-align: right;
 }
+.aw-botask .colinfo .status {
+	text-align: center;
+	font-size: 1.4em;
+}
+
+.aw-botask .colinfo .priority .vi {
+	font-weight: bold;
+}
 .aw-botask .colinfo ._dl .dt,
 .aw-botask .colinfo .ddl .dt {
-		font-size: 1.37em;
+	font-size: 1.37em;
 }
 .aw-botask .colinfo ._dl .tm, 
 .aw-botask .colinfo .ddl .tm {
-		font-size: 1.2em;
+	font-size: 1.2em;
 }
 .aw-botask .colinfo .user {
 	font-weight: bold;
 	margin-bottom: 5px;
 }
+
+.aw-botask .voting {
+	overflow: hidden;
+	height: 15px;
+	outline: medium none;
+}
+.aw-botask .voting .up,
+.aw-botask .voting .down {
+	margin-top: 3px;
+	width: 10px;
+	height: 11px;
+	cursor: pointer;
+	float: left;
+}
+.aw-botask .voting .res {
+	-moz-user-select: none;
+	-khtml-user-select: none;
+	user-select: none;  
+	float: left;
+	margin-left: 2px;
+	color: #AAAAAA;
+}
+
+.aw-botask tr.row:hover .voting .up {
+	background: url("/modules/botask/images/icons.gif") no-repeat scroll 0px 0 transparent;
+}
+.aw-botask tr.row:hover .voting .up:hover {
+	background: url("/modules/botask/images/icons.gif") no-repeat scroll -60px 0 transparent;
+}
+.aw-botask tr.row:hover .voting .down {
+	background: url("/modules/botask/images/icons.gif") no-repeat scroll -10px 0 transparent;
+	margin-left: 2px;
+}
+.aw-botask tr.row:hover .voting .down:hover {
+	background: url("/modules/botask/images/icons.gif") no-repeat scroll -50px 0 transparent;
+}
+.aw-botask .voting-process tr.row:hover .voting .up,
+.aw-botask .voting-process tr.row:hover .voting .down,
+.aw-botask .voting-process .up,
+.aw-botask .voting-process .up:hover,
+.aw-botask .voting-process .down,
+.aw-botask .voting-process .down:hover {
+	background: none;
+	cursor: inherit;
+}
+
