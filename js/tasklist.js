@@ -34,11 +34,17 @@ Component.entryPoint = function(){
 	
 	var TaskStatus = NS.TaskStatus;
 	
-	var TaskListWidget = function(container, ptaskid){
-		this.init(container, ptaskid);
+	var TaskListWidget = function(container, ptaskid, cfg){
+		this.init(container, ptaskid, cfg);
 	};
 	TaskListWidget.prototype = {
-		init: function(container, ptaskid){
+		init: function(container, ptaskid, cfg){
+			this.cfg = L.merge({
+				'sort': 'default',
+				'sortdesc': false,
+				'filter': 'all'
+			}, cfg || {});
+			
 			this.ptaskid = ptaskid = ptaskid || 0;
 			
 			buildTemplate(this, 'list,table,row');
@@ -106,6 +112,7 @@ Component.entryPoint = function(){
 			var sRow = TM.replace('row', {
 				'id': tk.id,
 				'prt': tk.priority,
+				'fav': tk.favorite ? 'fav-checked' : '',
 				'ord': n != 0 ? ((n>0?'+':'')+n) : '&mdash;',
 				'expired': tk.isExpired() ? 'expired' : '',
 				'closed': tk.isClosed() ? 'closed' : '',
@@ -128,17 +135,28 @@ Component.entryPoint = function(){
 		},
 		buildRows: function(list, level){
 			level = level || 0;
-			var lst = "", __self = this;
+			var lst = "", __self = this, cfg = this.cfg;
 			list.foreach(function(tk){
 				lst += __self.buildRow(tk, level);
-			}, true);
+			}, true, cfg['sort'], cfg['sortdesc']);
 			return lst;
 		},
 		render: function(){
 			this.buildNewInfo();
 			var TM = this._TM, 
-				lst = this.buildRows(this.list);
-			TM.getEl('list.table').innerHTML = TM.replace('table', {'rows': lst});
+				lst = this.buildRows(this.list),
+				cfg = this.cfg;
+			
+			var d = {
+				'sortname': '',
+				'sortdeadline': '',
+				'sortpriority': '',
+				'sortfavorite': '',
+				'sortvoting': '',
+				'rows': lst
+			};
+			d['sort'+cfg['sort']] = cfg['sortdesc'] ? 'sb' : 'sa';
+			TM.getEl('list.table').innerHTML = TM.replace('table', d);
 			
 			if (this._timeSelectedRow*1 > 0){
 				var __self = this,
@@ -160,19 +178,45 @@ Component.entryPoint = function(){
 			return [prefix, taskid];
 		},
 		onClick: function(el){
+			var TId = this._TId;
+			var tp = TId['table'];
+			switch(el.id){
+			case tp['sortname']: this.sort('name'); return true;
+			case tp['sortdeadline']: this.sort('deadline'); return true;
+			case tp['sortpriority']: this.sort('priority'); return true;
+			case tp['sortfavorite']: this.sort('favorite'); return true;
+			case tp['sortvoting']: this.sort('voting'); return true;
+			}
+			
 			var prefix = el.id.replace(/([0-9]+$)/, ''),
 				taskid = el.id.replace(prefix, "");
 			
-			var TId = this._TId;
 			var tp = TId['row'];
 			
 			switch(prefix){
 			case (tp['exp']+'-'): this.shChilds(taskid); return true;
 			case (tp['up']+'-'): this.taskVoting(taskid, 1); return true;
 			case (tp['down']+'-'): this.taskVoting(taskid, -1); return true;
+			case (tp['fav']+'-'): 
+			case (tp['favi']+'-'): 
+				this.taskFavorite(taskid); return true;
 			}
 
 			return false;
+		},
+		
+		sort: function(field){
+			var cfg = this.cfg;
+			
+			var desc = cfg['sort'] == field;
+			cfg['sort'] = field;
+			cfg['sortdesc'] = desc ? !cfg['sortdesc'] : false;
+			this.render();
+		},
+		
+		taskFavorite: function(taskid){
+			var __self = this;
+			NS.taskManager.taskFavorite(taskid);
 		},
 		onMouseOut: function(el){
 			if (L.isNull(this.vtMan)){ return; }

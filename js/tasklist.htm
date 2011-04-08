@@ -107,36 +107,67 @@
 </div>
 
 <!--{tablepold}-->
-			<th class="tautor"><span>Автор</span></th>
-			<th class="texec"><span>Ответственный</span></th>
+<th class="tautor"><span>Автор</span></th>
+<th class="texec"><span>Ответственный</span></th>
 
+<!--{sorta}-->
+
+<!--{sortd}-->
 
 <!--{table}-->
-<table>
-	<thead>
-		<tr>
-			<th class="tname"><span>Задачи</span></th>
-			<th class="tddl"><span>Срок</span></th>
-			<th class="tprt"><span>Приоритет</span></th>
-			<th class="tfav">
-				<span class="fav-icon-normal">
-					<img class="fav-checked" src="/images/empty.gif">
-				</span>
-			</th>
-			<th class="tvot">
-			</th>
-		</tr>
-	</thead>
+<table id="{i#id}">
+	<thead><tr>
+		<th class="tname">
+			<ul class="{v#sortname}">
+				<li class="tl"><a id="{i#sortname}" href="#">Задачи</a></li>
+				<li><div class="sort sortstr-asc"></div></li>
+				<li><div class="sort sortstr-desc"></div></li>
+			</ul>
+		</th>
+		<th class="tddl">
+			<ul class="{v#sortdeadline}">
+				<li class="tl"><a id="{i#sortdeadline}" href="#">Срок</a></li>
+				<li><div class="sort sortdate-asc"></div></li>
+				<li><div class="sort sortdate-desc"></div></li>
+			</ul>
+		</th>
+		<th class="tprt">
+			<ul class="{v#sortpriority}">
+				<li class="tl"><a id="{i#sortpriority}" href="#">Приоритет</a></li>
+				<li><div class="sort sort-asc"></div></li>
+				<li><div class="sort sort-desc"></div></li>
+			</ul>
+		</th>
+		<th class="tfav">
+			<ul class="{v#sortfavorite}">
+				<li class="tl">
+					<span class="fav-icon-normal">
+						<img id="{i#sortfavorite}" class="fav-checked" src="/images/empty.gif">
+					</span>
+				</li>
+				<li><div class="sort sort-asc"></div></li>
+				<li><div class="sort sort-desc"></div></li>
+			</ul>
+		</th>
+		<th class="tvot">
+			<ul class="{v#sortvoting}">
+				<li class="tl"><a id="{i#sortvoting}" href="#" title="Моя сортировка">М</a></li>
+				<li><div class="sort sort-asc"></div></li>
+				<li><div class="sort sort-desc"></div></li>
+			</ul>
+		
+		</th>
+	</tr></thead>
 	<tbody>{v#rows}</tbody>
 </table>
 
 <!--{rowold}-->
-	<td class="tautor">
-		<a href="#" class="show-user-profile user-{v#auid}">
-			{v#aunm}
-		</a>
-	</td>
-	<td></td>
+<td class="tautor">
+	<a href="#" class="show-user-profile user-{v#auid}">
+		{v#aunm}
+	</a>
+</td>
+<td></td>
 
 <!--{row}-->
 <tr id="{i#id}-{v#id}" class="row {v#classch} level{v#level} {v#tnew} {v#tchnew} priority{v#prt} {v#expired} {v#closed}">
@@ -157,8 +188,8 @@
 		<div class="prtclr">{v#prts}</div>
 	</td>
 	<td>
-		<span class="fav-icon-normal">
-			<img id="{i#fav}-{v#id}" class="" src="/images/empty.gif">
+		<span id="{i#fav}-{v#id}" class="fav-icon-normal" title="Добавить в избранное">
+			<img id="{i#favi}-{v#id}" class="{v#fav}" src="/images/empty.gif">
 		</span>
 	</td>
 	<td>

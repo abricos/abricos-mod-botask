@@ -57,6 +57,8 @@
 	margin-top: 0.5em;
 	display: block;
 }
+
+
 .aw-botask .tlist table {
 	table-layout: fixed;
 	border-collapse: collapse;
@@ -68,11 +70,70 @@
 	padding: 0;
 	white-space: nowrap;
 	text-align: left;
-	height: 1.8em;	
 }
-.aw-botask .tlist table th {
-	padding: 0.4em 0.3em;
+
+.aw-botask .tlist th a {
+	color: #000;
 }
+.aw-botask .tlist th a:hover {
+	text-decoration: underline;
+}
+
+.aw-botask .tlist th ul {
+	height: 2.1em;
+}
+.aw-botask .tlist th li {
+	margin-top: 0.4em;
+	float: left;
+}
+.aw-botask .tlist th .sort-asc,
+.aw-botask .tlist th .sort-desc,
+.aw-botask .tlist th .sortstr-asc,
+.aw-botask .tlist th .sortstr-desc,
+.aw-botask .tlist th .sortdate-asc,
+.aw-botask .tlist th .sortdate-desc {
+	display: none;
+	margin-top: 2px;
+	margin-left: 2px;
+	height: 13px;
+	background: url("/modules/botask/images/icons.gif") no-repeat 0 0 transparent;
+}
+.aw-botask .tlist th .sort-asc ,
+.aw-botask .tlist th .sort-desc {
+	width: 3px;
+	background-position: 0 -11px;
+}
+.aw-botask .tlist th .sort-desc {
+	background-position: -4px -11px;
+}
+.aw-botask .tlist th .sortstr-asc {
+	width: 9px;
+	background-position: -7px -11px;
+}
+.aw-botask .tlist th .sortstr-desc {
+	width: 9px;
+	background-position: -16px -11px;
+}
+.aw-botask .tlist th .sortdate-asc {
+	width: 22px;
+	background-position: -25px -11px;
+}
+.aw-botask .tlist th .sortdate-desc {
+	width: 22px;
+	background-position: -47px -11px;
+}
+.aw-botask .tlist th ul.sa .sort-asc,
+.aw-botask .tlist th ul.sa .sortstr-asc, 
+.aw-botask .tlist th ul.sa .sortdate-asc {
+	display: inherit;
+}
+.aw-botask .tlist th ul.sb .sort-desc,
+.aw-botask .tlist th ul.sb .sortstr-desc, 
+.aw-botask .tlist th ul.sb .sortdate-desc {
+	display: inherit;
+}
+
+
 .aw-botask .tlist tr.row td {
 	padding: 0.5em 0.3em 0.6em 0.3em;
 }
@@ -80,16 +141,15 @@
 .aw-botask .tlist table th.tname {
 	width: 75%;
 }
-.aw-botask .tlist table th.tname span {
+.aw-botask .tlist table th.tname .tl {
     margin-left: 30px;
 }
 .aw-botask .tlist .tname .ch-ico {
 	float: left;
-	width: 30px;
 	height: 15px;
 }
 .aw-botask .tlist .tname .ch-tl {
-	margin-left: 30px;
+	margin-left: 20px;
 }
 .aw-botask .tlist div.ch-btn {
     background: url("/modules/botask/images/expd.gif") no-repeat scroll 0 0 transparent;
@@ -122,7 +182,7 @@
 }
 
 .aw-botask .tlist .level0 .tname .ch-ico{}
-.aw-botask .tlist .level0 .tname .ch-tl	{font-size:		1.4em;}
+.aw-botask .tlist .level0 .tname .ch-tl	{font-size:		1.3em;}
 
 .aw-botask .tlist .level1 .tname .ch-ico{margin-left:	15px;}
 .aw-botask .tlist .level1 .tname .ch-tl {font-size:		1.2em;}
@@ -188,10 +248,10 @@
 
 .aw-botask .tlist table th.tprt {
 	width: 9em;
+	text-align: center;	
 }
-.aw-botask .tlist table td.tprt .tl {
+.aw-botask .tlist table td.tprt .prtclr {
 	text-align: center;
-	padding: 1px 0;
 }
 
 .aw-botask .priority1 .prtclr {	color: #C82100; }
@@ -206,7 +266,8 @@
 	color: #C82100; 
 }
 
-.aw-botask .tlist table .closed td, 
+.aw-botask .tlist table .closed td,
+.aw-botask .tlist table .closed td .prtclr,  
 .aw-botask .tlist table .closed td a,
 .aw-botask .tlist table .closed td.tprt .tl {
 	color: #839097; 

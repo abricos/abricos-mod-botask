@@ -89,6 +89,7 @@ Component.entryPoint = function(){
 			
 			this.priority = d['prt']*1;
 			this.order = d['o']*1;
+			this.favorite = d['f']*1>0;
 			
 			this._updateFlagNew(d);
 		},
@@ -156,32 +157,88 @@ Component.entryPoint = function(){
 		return 0;
 	};
 	
+	var sortDeadline = function(tk1, tk2){
+		var t1 = L.isNull(tk1.deadline) || tk1.isClosed() ? 9999999999999 : tk1.deadline.getTime();
+		var t2 = L.isNull(tk2.deadline) || tk2.isClosed() ? 9999999999999 : tk2.deadline.getTime();
+
+		if (t1 < t2) { return -1;}
+		if (t1 > t2) { return 1; }
+		return 0;
+	};
+	
+	var sortFavorite = function(tk1, tk2){
+		var v1 = tk1.favorite ? 1 : 0, v2 = tk2.favorite ? 1 : 0;
+		
+		if (v1 < v2){ return 1; }
+		if (v1 > v2){ return -1; }
+		return 0;
+	};
+	
+	var sortDCPD = function(tk1, tk2){
+		var v = sortDeadline(tk1, tk2);
+		if (v != 0){ return v; }
+		
+		var isClosed = tk1.isClosed() && tk2.isClosed();
+		
+		if (!isClosed){
+			return sortPriority(tk1, tk2);
+		}
+		return sortDate(tk1.stDate, tk2.stDate);
+	};
+	
 	NS.taskSort = {
 	 	'default': function(tk1, tk2){ // сортировка: Наименьший срок, наивысший приоритет
-			var v, t1, t2;
-			
+			var v = sortClosed(tk1, tk2);
+			if (v != 0){ return v; }
+
+			return sortDCPD(tk1, tk2);
+		},
+		'deadline': function(tk1, tk2){ return NS.taskSort['default'](tk1, tk2); },
+		'deadlinedesc': function(tk1, tk2){ return NS.taskSort['deadline'](tk2, tk1); },
+		'name': function(tk1, tk2){
+			if (tk1.title == tk2.title){ return 0; }
+			return (tk1.title < tk2.title) ? -1 : 1;
+		},
+		'namedesc': function(tk1, tk2){return NS.taskSort['name'](tk2, tk1);},
+		'priority': function(tk1, tk2){
+
 			v = sortClosed(tk1, tk2);
 			if (v != 0){ return v; }
 
-			v = sortOrder(tk1, tk2);
-			if (v != 0){ return v; }
-			
-			t1 = L.isNull(tk1.deadline) || tk1.isClosed() ? 9999999999999 : tk1.deadline.getTime();
-			t2 = L.isNull(tk2.deadline) || tk2.isClosed() ? 9999999999999 : tk2.deadline.getTime();
+			var v1 = tk1.priority, v2 = tk2.priority;
+			if (v1 < v2){ return -1; }
+			if (v1 > v2){ return 1; }
 
-			if (t1 < t2) { return -1;}
-			if (t1 > t2) { return 1; }
-			
-			v = sortClosed(tk1, tk2);
+			return 0;
+		},
+		'prioritydesc': function(tk2, tk1){ 
+			v = sortClosed(tk2, tk1);
 			if (v != 0){ return v; }
-			
-			var isClosed = tk1.isClosed() && tk2.isClosed();
-			
-			if (!isClosed){
-				return sortPriority(tk1, tk2);
-			}
-			
-			return sortDate(tk1.stDate, tk2.stDate);
+
+			var v1 = tk1.priority, v2 = tk2.priority;
+			if (v1 < v2){ return -1; }
+			if (v1 > v2){ return 1; }
+			return 0;
+		},
+		'favorite': function(tk1, tk2){
+			var v = sortClosed(tk1, tk2); if (v != 0){ return v; }
+			v = sortFavorite(tk1, tk2); if (v != 0){ return v; }
+			return sortDCPD(tk1, tk2);
+		},
+		'favoritedesc': function(tk1, tk2){ 
+			var v = sortClosed(tk1, tk2); if (v != 0){ return v; }
+			v = sortFavorite(tk2, tk1); if (v != 0){ return v; }
+			return sortDCPD(tk2, tk1);
+		},
+		'voting': function(tk1, tk2){ 
+			var v = sortClosed(tk1, tk2); if (v != 0){ return v; }
+			v = sortOrder(tk1, tk2); if (v != 0){ return v; }
+			return sortDCPD(tk1, tk2);
+		},
+		'votingdesc': function(tk1, tk2){ 
+			var v = sortClosed(tk1, tk2); if (v != 0){ return v; }
+			v = sortOrder(tk2, tk1); if (v != 0){ return v; }
+			return sortDCPD(tk2, tk1);
 		}
 	};
 	
@@ -193,13 +250,19 @@ Component.entryPoint = function(){
 			this._list = [];
 		},
 		// пробег по всем элементам, включая дочерний - если nochild==false 
-		foreach: function(f, nochild, sortMethod){
+		foreach: function(f, nochild, sortMethod, desc){
 			if (!L.isFunction(f)){ return; }
 			nochild = nochild || false;
 			if (L.isString(sortMethod)){
+				
+				if (desc){
+					sortMethod += 'desc';
+				}
 				sortMethod = NS.taskSort[sortMethod];
 			}
-			sortMethod = NS.taskSort['default'];
+			if (!L.isFunction(sortMethod)){
+				sortMethod = NS.taskSort['default'];
+			}
 			
 			var lst = this._list;
 			
@@ -564,6 +627,17 @@ Component.entryPoint = function(){
 			});
 		},
 		
+		taskFavorite: function(taskid, callback){
+			var task = this.list.find(taskid);
+			callback = callback || function(){};
+			var __self = this;
+			this.ajax({'do': 'taskfavorite', 'taskid': taskid, 'val': (!task.favorite ? '1' : '0')}, function(r){
+				callback();
+				if (L.isNull(r)){ return; }
+				task.favorite = r*1>0;
+				__self.taskUserChangedEvent.fire(task);
+			});
+		},
 		taskSetOrder: function(taskid, value, callback){
 			callback = callback || function(){};
 			var __self = this;
