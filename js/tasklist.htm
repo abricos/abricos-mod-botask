@@ -1,107 +1,10 @@
-<!--{panel}-->
-<div class='hd'>{v#tl}</div>
-<div class='bd aw-botask'>
-	<div class="taskview">
-		
-		<div id="{i#nav}"></div>
-		
-		<table class="maintable"><tbody><tr>
-			<td class="leftcol">
-				<div class="colbody">
-					<div id="{i#taskbody}" class="taskbody aw-page-content">
-						<img src="/images/loading.gif" />
-					</div>
-					
-					<div class="manbuttons">
-						<div id="{i#buttons}">
-							<a id="{i#bsetexec}" style="display: none;" class="bsetexec btkbt" href="#" title="Принять в работу эту задачу">Принять</a>
-							<a id="{i#bclose}" style="display: none;" class="bsetexec btkbt" href="#" title="Завершить задачу">Завершить</a>
-							<a id="{i#bclosens}" style="display: none;" class="bsetexec btkbt" href="#" title="Закрыть задачу">Закрыть</a>
-							<a id="{i#bunsetexec}" style="display: none;" class="bsetexec btkbt" href="#" title="Отказаться от выполнения этой задачи">Отклонить</a>
-							<a id="{i#bopen}" style="display: none;" class="bsetexec btkbt" href="#" title="Открыть задачу повторно">Открыть повторно</a>
-							
-							<a id="{i#beditor}" class="beditor btkbt" href="#app=botask/taskeditor/showTaskEditorPanel/{v#id}/">Редактировать</a>
-							<a id="{i#bremove}" class="bremove btkbt" href="#">Удалить</a>
-						</div>
-						<img id="{i#bloading}" src="/images/loading.gif" style="display: none;"/>
-					</div>
-					
-					<div class="sepline"></div>
-					
-					<div class="ptbuttons">
-						<a id="{i#ptlisthide}" class="ptlistsh btkbt" href="#">Скрыть подзадачи</a>
-						<a id="{i#ptlistshow}" class="ptlistsh btkbt" href="#" style="display: none;">Показать подзадачи</a>
-						<a id="{i#ptappend}" class="ptappend btkbt" href="#app=botask/taskeditor/showCreateTaskPanel/{v#id}/">Добавить подзадачу</a>
-					</div>
-					<div class="ptlist" id="{i#ptlist}"></div>
-				</div>
-			</td>
-			<td class="rightcol">
-				<div id="{i#colinfo}" class="colbody colinfo">
-					<div id="{i#status}" class="cirow status">&nbsp;</div>
-					<div class="cirow author">
-						<div class="tl">Автор</div>
-						<div id="{i#author}" class="vl"></div>
-						<div class="clear"></div>
-					</div>
-					<div class="cirow dl">
-						<div class="tl">Старт</div>
-						<div class="vl">
-							<div class="dt vi" id="{i#dl}"></div>
-							<div class="tm vi" id="{i#dlt}"></div>
-						</div>
-						<div class="clear"></div>
-					</div>
-					<div class="cirow ddl">
-						<div class="tl">Срок</div>
-						<div class="vl">
-							<div class="dt vi" id="{i#ddl}"></div>
-							<div class="tm vi" id="{i#ddlt}"></div>
-						</div>
-						<div class="clear"></div>
-					</div>
-					<div class="cirow priority">
-						<div class="tl">Приоритет</div>
-						<div class="vl">
-							<div id="{i#priority}" class="vi prtclr"></div>
-						</div>
-						<div class="clear"></div>
-					</div>
-					<div class="cirow exec">
-						<div class="tl">Исполнитель</div>
-						<div id="{i#exec}" class="vl"></div>
-						<div class="clear"></div>
-					</div>
-					<div class="cirow users">
-						<div class="tl">Участники</div>
-						<div id="{i#users}" class="vl"></div>
-						<div class="clear"></div>
-					</div>
-					<div class="cirow history nobline">
-						<div id="{i#history}">
-							<img src="/images/loading.gif" />
-						</div>
-					</div>
-			
-				</div>
-			</td>
-		</tr></tbody></table>
-		
-	</div>
-</div>
-
-<!--{user}-->
-<div class="user vi">
-	<a href="#" class="show-user-profile user-{v#uid}">{v#unm}</a>
-</div>
-
-
 <!--{list}-->
 <div class="tlist" id="{i#id}">
 	<div class="tlmenu">
-		<div id="{i#all}" class="tlitem current">Все</div>
-		<div id="{i#new}" class="tlitem">Новые</div>
-		<div id="{i#fav}" class="tlitem">Избранное</div>
+		<div id="{i#opened}" class="tlitem current">Открытые</div>
+		<div id="{i#closed}" class="tlitem">Закрытые</div>
+		<div id="{i#removed}" class="tlitem">Удаленные</div>
+		<div id="{i#favorite}" class="tlitem">Избранное</div>
 	</div>
 	<div id="{i#table}" class="ttable"></div>
 </div>
@@ -109,10 +12,6 @@
 <!--{tablepold}-->
 <th class="tautor"><span>Автор</span></th>
 <th class="texec"><span>Ответственный</span></th>
-
-<!--{sorta}-->
-
-<!--{sortd}-->
 
 <!--{table}-->
 <table id="{i#id}">
@@ -176,7 +75,7 @@
 			<div class="ch-btn" id="{i#exp}-{v#id}">&nbsp;</div>
 		</div>
 		<div class="ch-tl">
-			<a href="#app=botask/tasklist/showTaskListPanel/{v#id}/">{v#tl}</a>
+			<a href="#app=botask/taskview/showTaskViewPanel/{v#id}/">{v#tl}</a>
 			<span id="{i#new}-{v#id}" class="new" title="Эта задача новая">New</span>
 			<span id="{i#chnew}-{v#id}" class="chnew" title="Есть новые подзадачи">+New</span>
 		</div>

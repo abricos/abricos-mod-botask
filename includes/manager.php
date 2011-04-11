@@ -10,113 +10,9 @@
 
 require_once 'dbquery.php';
 
-class BotaskHistory {
-	
-	public $userid = 0;
-	public $hitype = 0;
-	public $taskid = 0;
-	
-	public $parenttaskid = 0;
-	public $parenttaskidc = false;
-	
-	public $status = 0;
-	public $prevstatus = 0;
-	public $statuserid = 0;
-	
-	public $priority = 0;
-	public $priorityc = false;
-	
-	public $title = "";
-	public $titlec = false;
-	
-	public $body = "";
-	public $bodyc = false;
-	
-	public $deadline = 0;
-	public $deadlinec = false;
-	
-	public $deadlinebytime = 0;
-	public $deadlinebytimec = false;
-	
-	public $useradded = "";
-	public $userremoved = "";
-	
-	public $change = false;
-	
-	private $userAddArray = array();
-	private $userRemoveArray = array();
-	
-	public function BotaskHistory($userid){
-		$this->userid = $userid;
-	}
-	
-	public function SetStatus($ot, $newStatus, $statUserId){
-		if ($ot['st']*1 == $newStatus*1){ return; }
-		$this->change = true;
-		$this->prevstatus = $ot['st'];
-		$this->status = $newStatus;
-		$this->statuserid = $statUserId;
-		$this->hitype = BotaskHistoryType::TASK_UPDATE;
-		$this->taskid = $ot['id'];
-	}
-	
-	public function CompareTask($nt, $ot){
-		$this->hitype = BotaskHistoryType::TASK_UPDATE;
-		
-		if ($nt->tl != $ot['tl']){
-			$this->title = $ot['tl'];
-			$this->titlec = true;
-			$this->change = true;
-		}
-		if ($nt->bd != $ot['bd']){
-			$this->body = $ot['bd'];
-			$this->bodyc = true;
-			$this->change = true;
-		}
-		if (intval($nt->pid) != intval($ot['pid'])){
-			$this->parenttaskid = $ot['pid'];
-			$this->parenttaskidc = true;
-			$this->change = true;
-		}
-		if (intval($nt->ddl) != intval($ot['ddl'])){
-			$this->deadline = $ot['ddl'];
-			$this->deadlinec = true;
-			$this->change = true;
-		}
-		if (intval($nt->ddlt) != intval($ot['ddlt'])){
-			$this->deadlinebytime = $ot['ddlt'];
-			$this->deadlinebytimec = true;
-			$this->change = true;
-		}
-		if (intval($nt->prt) != intval($ot['prt'])){
-			$this->priority = $ot['prt'];
-			$this->priorityc = true;
-			$this->change = true;
-		}
-	}
-	
-	public function UserAdd($uid){
-		array_push($this->userAddArray, $uid);
-		$this->useradded = implode(",", $this->userAddArray);
-		$this->change = true;
-	}
-	
-	public function UserRemove($uid){
-		array_push($this->userRemoveArray, $uid);
-		$this->userremoved = implode(",", $this->userRemoveArray);
-		$this->change = true;
-	}
-	
-	public function Save(){
-		if ($this->hitype == BotaskHistoryType::TASK_UPDATE && !$this->change){ return; }
-		BotaskQuery::HistoryAppend(CMSRegistry::$instance->db, $this);
-	}
-}
-
 class BotaskManager extends ModuleManager {
 	
 	/**
-	 * 
 	 * @var BotaskModule
 	 */
 	public $module = null;
@@ -153,30 +49,6 @@ class BotaskManager extends ModuleManager {
 		return $this->module->permission->CheckAction(BotaskAction::VIEW) > 0;
 	}
 	
-	public function DSProcess($name, $rows){
-		$p = $rows->p;
-		$db = $this->db;
-		
-		switch ($name){
-			case 'board':
-				/*
-				foreach ($rows->r as $r){
-					if ($r->f == 'a'){ $this->LayerAppend($r->d); }
-					if ($r->f == 'u'){ $this->LayerUpdate($r->d); }
-					if ($r->f == 'd'){ $this->LayerRemove($r->d->id); }
-				}
-				/**/
-				return;
-		}
-	}
-	
-	public function DSGetData($name, $rows){
-		$p = $rows->p;
-		switch ($name){
-			// case 'board': return $this->Board();
-		}
-	}
-	
 	private function _AJAX($d){
 		switch($d->do){
 			case 'task': return $this->Task($d->taskid);
@@ -184,7 +56,11 @@ class BotaskManager extends ModuleManager {
 			case 'tasksetexec': return $this->TaskSetExec($d->taskid);
 			case 'taskunsetexec': return $this->TaskUnsetExec($d->taskid);
 			case 'taskclose': return $this->TaskClose($d->taskid);
+			case 'taskremove': return $this->TaskRemove($d->taskid);
+			case 'taskopen': return $this->TaskOpen($d->taskid);
 			case 'taskvoting': return $this->TaskVoting($d->taskid, $d->val);
+			case 'taskfavorite': return $this->TaskFavorite($d->taskid, $d->val);
+			case 'taskexpand': return $this->TaskExpand($d->taskid, $d->val);
 			case 'history': return $this->History($d->taskid, $d->firstid);
 		}
 		return null;
@@ -222,7 +98,6 @@ class BotaskManager extends ModuleManager {
 		return $o;
 	}
 	
-	
 	private function ToArray($rows){
 		$ret = array();
 		while (($row = $this->db->fetch_array($rows))){
@@ -241,6 +116,8 @@ class BotaskManager extends ModuleManager {
 		$ret->board = array();
 		$ret->users = array();
 		
+		$nusers = array();
+		
 		$lastupdate = 0;
 		// история изменений, последнии 15 записей, если не указан $lastHId
 		$rows = BotaskQuery::BoardHistory($this->db, $this->userid, $lastHId);
@@ -250,8 +127,14 @@ class BotaskManager extends ModuleManager {
 			}
 			$lastupdate = min($lastupdate, $row['dl']*1);
 			array_push($ret->hst, $row);
+			if ($lastHId > 0 && !empty($row['usad'])){
+				$urs = explode(",", $row['usad']);
+				foreach ($urs as $ur){
+					$nusers[intval($ur)] = true;
+				}
+			}
 		}
-		if (count($ret->hst) == 0){ // нет изменений
+		if ($lastHId > 0 && count($ret->hst) == 0){ // нет изменений
 			return null;
 		}
 		if ($lastHId == 0){
@@ -271,9 +154,23 @@ class BotaskManager extends ModuleManager {
 
 		$rows = BotaskQuery::BoardUsers($this->db, $this->userid, $lastupdate);
 		while (($row = $this->db->fetch_array($rows))){
-			$ret->users[$row['id']] = $row;
+			$userid = $row['id'];
+			if ($userid == $this->userid && $lastHId > 0){
+				// нет смыслка каждый раз к списку пользователей добавлять информацию
+				// этого пользователя, лучше это сделать один раз при инициализации данных
+				continue;
+			}
+			if ($lastHId == 0 || ($lastHId>0 && $nusers[intval($userid)])){
+				$ret->users[$userid] = $row;
+			}
 		}
-		
+		if ($lastHId == 0 && count($ret->users) == 0){
+			// если доска не содержит задач, то и таблица пользователей будет пуста
+			// при создании новой задачи, список пользователей в истории придет без информации
+			// по текущему пользователю что приведет к ошибкам
+			// этот запрос исключает эти ошибки
+			$ret->users[$this->userid] = BotaskQuery::MyUserData($this->db, $this->userid, true);
+		}
 		return $ret;
 	}
 
@@ -344,6 +241,12 @@ class BotaskManager extends ModuleManager {
 	public function TaskClose($taskid){
 		if (!$this->TaskAccess($taskid)){ return null; }
 		
+		// сначало закрыть все подзадачи
+		$rows = BotaskQuery::Board($this->db, $this->userid, 0, $taskid);
+		while (($row = $this->db->fetch_array($rows))){
+			$this->TaskClose($row['id']);
+		}
+		
 		$task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
 		
 		if ($task['st'] == BotaskStatus::TASK_CLOSE){ return null; }
@@ -357,10 +260,77 @@ class BotaskManager extends ModuleManager {
 		return $this->Task($taskid);
 	}
 	
+	/**
+	 * Удалить задачу
+	 * 
+	 * @param integer $taskid
+	 */
+	public function TaskRemove($taskid){
+		if (!$this->TaskAccess($taskid)){ return null; }
+		
+		// сначало закрыть все подзадачи
+		$rows = BotaskQuery::Board($this->db, $this->userid, 0, $taskid);
+		while (($row = $this->db->fetch_array($rows))){
+			$this->TaskRemove($row['id']);
+		}
+		
+		$task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
+		
+		if ($task['st'] == BotaskStatus::TASK_REMOVE){ return null; }
+		
+		$history = new BotaskHistory($this->userid);
+		$history->SetStatus($task, BotaskStatus::TASK_REMOVE, $this->userid);
+		$history->Save();
+		
+		BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_REMOVE, $this->userid);
+		
+		return $this->Task($taskid);
+	}
+	
+	/**
+	 * Открыть задачу повторно
+	 * 
+	 * @param integer $taskid
+	 */
+	public function TaskOpen($taskid){
+		if (!$this->TaskAccess($taskid)){ return null; }
+		
+		$task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
+		
+		if ($task['st'] != BotaskStatus::TASK_CLOSE || 
+			$task['st'] != BotaskStatus::TASK_REMOVE ){ 
+			return null; 
+		}
+		
+		$history = new BotaskHistory($this->userid);
+		$history->SetStatus($task, BotaskStatus::TASK_REOPEN, $this->userid);
+		$history->Save();
+		
+		BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_REOPEN, $this->userid);
+		
+		return $this->Task($taskid);
+	}
+	
 	public function TaskVoting($taskid, $value){
 		if (!$this->TaskAccess($taskid)){ return null; }
 		
 		BotaskQuery::TaskVoting($this->db, $taskid, $this->userid, $value);
+		
+		return $value;
+	}
+	
+	public function TaskFavorite($taskid, $value){
+		if (!$this->TaskAccess($taskid)){ return null; }
+		
+		BotaskQuery::TaskFavorite($this->db, $taskid, $this->userid, $value);
+		
+		return $value;
+	}
+
+	public function TaskExpand($taskid, $value){
+		if (!$this->TaskAccess($taskid)){ return null; }
+		
+		BotaskQuery::TaskExpand($this->db, $taskid, $this->userid, $value);
 		
 		return $value;
 	}
@@ -395,19 +365,19 @@ class BotaskManager extends ModuleManager {
 			$pubkey = md5(time().$this->userid);
 			$tk->id = BotaskQuery::TaskAppend($this->db, $tk, $pubkey);
 			
-			$history->hitype = BotaskHistoryType::TASK_CREATE;
-			$history->taskid = $tk->id;
+			$history->SetNewStatus($tk->id);
 			
 		}else{
 			
 			// является ли пользователь участником этой задача, если да, то он может делать с ней все что хошь
 			if (!$this->TaskAccess($tk->id)){ return null; }
 			
-			$history->taskid = $tk->id;
-			
 			$info = BotaskQuery::Task($this->db, $tk->id, $this->userid, true);
 			
-			if ($info['st'] == BotaskStatus::TASK_CLOSE){ return null; }
+			if ($info['st'] == BotaskStatus::TASK_CLOSE ||
+				$info['st'] == BotaskStatus::TASK_REMOVE ){ 
+				return null; 
+			}
 			
 			BotaskQuery::TaskUpdate($this->db, $tk, $this->userid);
 			
@@ -490,6 +460,116 @@ class BotaskManager extends ModuleManager {
 			array_push($hst, $row);
 		}
 		return $hst;
+	}
+}
+
+class BotaskHistory {
+	
+	public $userid = 0;
+	private $hitype = 0; // временно
+	public $taskid = 0;
+	
+	public $parenttaskid = 0;
+	public $parenttaskidc = false;
+	
+	public $status = 0;
+	public $prevstatus = 0;
+	public $statuserid = 0;
+	
+	public $priority = 0;
+	public $priorityc = false;
+	
+	public $title = "";
+	public $titlec = false;
+	
+	public $body = "";
+	public $bodyc = false;
+	
+	public $deadline = 0;
+	public $deadlinec = false;
+	
+	public $deadlinebytime = 0;
+	public $deadlinebytimec = false;
+	
+	public $useradded = "";
+	public $userremoved = "";
+	
+	public $change = false;
+	
+	private $userAddArray = array();
+	private $userRemoveArray = array();
+	
+	public function BotaskHistory($userid){
+		$this->userid = $userid;
+	}
+	
+	public function SetNewStatus($taskid){
+		$this->taskid = $taskid;
+		$this->change = true;
+		$this->prevstatus = 0;
+		$this->status = BotaskStatus::TASK_OPEN;
+	}
+	
+	public function SetStatus($ot, $newStatus, $statUserId){
+		if ($ot['st']*1 == $newStatus*1){ return; }
+		$this->change = true;
+		$this->prevstatus = $ot['st'];
+		$this->status = $newStatus;
+		$this->statuserid = $statUserId;
+		$this->taskid = $ot['id'];
+	}
+	
+	public function CompareTask($nt, $ot){
+		
+		$this->taskid = $nt->id;
+		
+		if ($nt->tl != $ot['tl']){
+			$this->title = $ot['tl'];
+			$this->titlec = true;
+			$this->change = true;
+		}
+		if ($nt->bd != $ot['bd']){
+			$this->body = $ot['bd'];
+			$this->bodyc = true;
+			$this->change = true;
+		}
+		if (intval($nt->pid) != intval($ot['pid'])){
+			$this->parenttaskid = $ot['pid'];
+			$this->parenttaskidc = true;
+			$this->change = true;
+		}
+		if (intval($nt->ddl) != intval($ot['ddl'])){
+			$this->deadline = $ot['ddl'];
+			$this->deadlinec = true;
+			$this->change = true;
+		}
+		if (intval($nt->ddlt) != intval($ot['ddlt'])){
+			$this->deadlinebytime = $ot['ddlt'];
+			$this->deadlinebytimec = true;
+			$this->change = true;
+		}
+		if (intval($nt->prt) != intval($ot['prt'])){
+			$this->priority = $ot['prt'];
+			$this->priorityc = true;
+			$this->change = true;
+		}
+	}
+	
+	public function UserAdd($uid){
+		array_push($this->userAddArray, $uid);
+		$this->useradded = implode(",", $this->userAddArray);
+		$this->change = true;
+	}
+	
+	public function UserRemove($uid){
+		array_push($this->userRemoveArray, $uid);
+		$this->userremoved = implode(",", $this->userRemoveArray);
+		$this->change = true;
+	}
+	
+	public function Save(){
+		if (!$this->change){ return; }
+		BotaskQuery::HistoryAppend(CMSRegistry::$instance->db, $this);
 	}
 }
 

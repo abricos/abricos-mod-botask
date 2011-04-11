@@ -62,3 +62,9 @@
 .clear {
 	clear: both;
 }
+
+.aw-botask .priority1 .prtclr {	color: #C82100; }
+.aw-botask .priority2 .prtclr { color: #FF4E00; }
+.aw-botask .priority3 .prtclr {	color: #006699; }
+.aw-botask .priority4 .prtclr {	color: #DDDDDD; }
+.aw-botask .priority5 .prtclr {	color: #839097; }

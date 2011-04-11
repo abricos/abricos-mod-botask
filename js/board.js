@@ -137,7 +137,7 @@ Component.entryPoint = function(){
 		},
 		taskListShow: function(taskid){
 			Brick.ff('botask', 'tasklist', function(){
-				API.showTaskListPanel(taskid);
+				API.showTaskViewPanel(taskid);
 			});
 		},
 		taskEditorShow: function(taskid, groupkey){

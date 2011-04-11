@@ -62,7 +62,9 @@ if ($updateManager->isInstall()){
 		  `taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор задачи',
 		  `userid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя',
 		  `viewdate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата последнего просмотра',
-		  `ord` int(3) NOT NULL DEFAULT 0 COMMENT 'Вес этой задачи по мнению пользователя',
+		  `ord` int(5) NOT NULL DEFAULT 0 COMMENT 'Вес этой задачи по мнению пользователя',
+		  `favorite` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Избранное',
+		  `expanded` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Развернуты подзадачи',
 		  `deldate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата удаления',
 		  PRIMARY KEY  (`userroleid`), 
 		  UNIQUE KEY `task` (`taskid`,`userid`)
@@ -74,7 +76,6 @@ if ($updateManager->isInstall()){
 	$db->query_write("
 		CREATE TABLE IF NOT EXISTS ".$pfx."btk_history (
 		  `historyid` int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор роли',
-		  `hitype` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Тип записи - значения BotaskHistoryType',
 		  `taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор задачи',
 		  `userid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя',
 		  `dateline` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время',

@@ -25,19 +25,37 @@ Component.entryPoint = function(){
 	
 	var buildTemplate = function(w, ts){w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;};
 	
-	var HType = {
-		'TASK_CREATE'	: 1,	// открыта
-		'TASK_REMOVE'	: 2,	// удалена
-		'TASK_UPDATE'	: 3 	// обновлена
-	}
-	NS.HType = HType;
+	// дополнить эксперементальными функциями менеджер шаблонов
+	var TMP = Brick.Template.Manager.prototype;
+	TMP.elHide = function(els){ this.elShowHide(els, false); };
+	TMP.elShow = function(els){ this.elShowHide(els, true); };
+	TMP.elShowHide = function(els, show){
+		if (L.isString(els)){
+			var arr = els.split(','), tname = '';
+			els = [];
+			for (var i=0;i<arr.length;i++){
+				var arr1 = arr[i].split('.');
+				if (arr1.length == 2){
+					tname = L.trim(arr1[0]);
+					els[els.length] = L.trim(arr[i]);
+				}
+				els[els.length] = tname+'.'+L.trim(arr[i]);
+			}
+		}
+		if (!L.isArray(els)){ return; }
+		for (var i=0;i<els.length;i++){
+			var el = this.getEl(els[i]);
+			Dom.setStyle(el, 'display', show ? '' : 'none');
+		}
+	};
 	
 	var TaskStatus = {
-		'OPEN'		: 0,	// открыта
-		'REOPEN'	: 1,	// открыта повторно
-		'CLOSE'		: 2,	// принята
-		'ACCEPT'	: 3,	// закрыта
-		'ASSIGN'	: 4		// назначена
+		'OPEN'		: 1,	// открыта
+		'REOPEN'	: 2,	// открыта повторно
+		'CLOSE'		: 3,	// принята
+		'ACCEPT'	: 4,	// закрыта
+		'ASSIGN'	: 5,	// назначена
+		'REMOVE'	: 6		// удалена
 	}
 	NS.TaskStatus = TaskStatus;
 
@@ -90,6 +108,7 @@ Component.entryPoint = function(){
 			this.priority = d['prt']*1;
 			this.order = d['o']*1;
 			this.favorite = d['f']*1>0;
+			this.expanded = d['e']*1>0;
 			
 			this._updateFlagNew(d);
 		},
@@ -322,44 +341,17 @@ Component.entryPoint = function(){
 	};
 	
 	// абстрактный класс элемента задачи
-	var HItem = function(classHType, d){
-		if (d['tp']*1 != classHType*1){
-			throw "HItem incorrect data";
-		}
+	var HItem = function(d){
 		this.init(d);
 	}
 	HItem.prototype = {
 		init: function(d){
 			this.id = d['id']*1;		// идентификатор элемента истории
-			this.htype = d['tp']*1;		// тип действия HType
 			this.taskid = d['tid']*1;	// идентификатор задачи
+			this.taskTitle = d['ttl'];
 			this.userid = d['uid'];		// идентификатор пользователя
 			this.date = NS.dateToClient(d['dl']); // дата/время действия
 			this.dl = d['dl']*1;		 // дата/время серверное
-		}
-	};
-	
-	// Элемент действия истории: Задача открыта
-	var HItemTaskOpen = function(d){
-		HItemTaskOpen.superclass.constructor.call(this, HType.TASK_CREATE, d);
-	}
-	YAHOO.extend(HItemTaskOpen, HItem, {});
-	NS.HItemTaskOpen = HItemTaskOpen;
-
-	// Элемент действия истории: Задача удалена
-	var HItemTaskRemove = function(d){
-		HItemTaskRemove.superclass.constructor.call(this, HType.TASK_REMOVE, d);
-	}
-	YAHOO.extend(HItemTaskRemove, HItem, { });
-	NS.HItemTaskRemove = HItemTaskRemove;
-
-	// Элемент действия истории: Обновлена
-	var HItemTaskUpdate = function(d){
-		HItemTaskUpdate.superclass.constructor.call(this, HType.TASK_UPDATE, d);
-	}
-	YAHOO.extend(HItemTaskUpdate, HItem, {
-		init: function(d){
-			HItemTaskUpdate.superclass.init.call(this, d);
 			
 			this.isTitle = d['tlc']*1 > 0;
 			this.isDescript = d['bdc']*1 > 0;
@@ -374,9 +366,9 @@ Component.entryPoint = function(){
 			
 			this.userAdded = d['usad'];
 			this.userRemoved = d['usrm'];
+			
 		}
-	});
-	NS.HItemTaskUpdate = HItemTaskUpdate;
+	};
 
 	// история может быт в трех состояниях:
 	// не загружена вовсе, загружена частично (только параметры - что изменено), 
@@ -385,12 +377,7 @@ Component.entryPoint = function(){
 		this.init();
 	};
 	History.buildItem = function(d){
-		switch(d['tp']*1){
-		case HType.TASK_CREATE:	return new HItemTaskOpen(d);
-		case HType.TASK_REMOVE:	return new HItemTaskRemove(d);
-		case HType.TASK_UPDATE: return new HItemTaskUpdate(d);
-		}
-		return null;
+		return new HItem(d);
 	};
 	var hSort = function(a, b){
 		if (a.id > b.id){ return -1;
@@ -490,7 +477,7 @@ Component.entryPoint = function(){
 		init: function(initData){
 			initData = L.merge({
 				'board': {},
-				'users': [],
+				'users': {},
 				'hst': {}
 			}, initData || {});
 			
@@ -504,8 +491,9 @@ Component.entryPoint = function(){
 			}
 			this._buildTaskTree(list);
 			
-			this.users = initData['users'];
-			
+			this.users = {};
+			this._updateUsers(initData['users']);
+
 			// глобальная коллекция истории
 			var history = this.history = new History(), 
 				hsts = initData['hst'];
@@ -520,6 +508,12 @@ Component.entryPoint = function(){
 			
 			// события внесения изменений пользователя в задачу (добавление в избранное, голосование и т.п.) 
 			this.taskUserChangedEvent = new YAHOO.util.CustomEvent("taskUserChangedEvent");
+		},
+		
+		_updateUsers: function(users){
+			for (var uid in users){
+				this.users[uid] = users[uid];
+			}
 		},
 		
 		_buildTaskTree: function(list){
@@ -559,7 +553,9 @@ Component.entryPoint = function(){
 			this.history.add(item);
 			
 			task = task || this.list.find(item.taskid);
-			task.addHItem(item);
+			if (!L.isNull(task)){
+				task.addHItem(item);
+			}
 			return item;
 		},
 		
@@ -567,13 +563,20 @@ Component.entryPoint = function(){
 			return this.list.find(taskid);
 		},
 		
-		_ajaxResult: function(r){
+		_ajaxBeforeResult: function(r){
 			if (r.u*1 != Brick.env.user.id){ // пользователь разлогинился
 				Brick.Page.reload();
-				return;
+				return false;
 			}
-			if (L.isNull(r['changes'])){ return; } // изменения не зафиксированы
+			if (L.isNull(r['changes'])){ return false; } // изменения не зафиксированы
 			
+			this._updateUsers(r['changes']['users']);
+			
+			return true;
+		},
+		
+		_ajaxResult: function(r){
+
 			// построить архитектуру задач
 			var tups = {};
 			for (var id in r['changes']['board']){
@@ -601,7 +604,7 @@ Component.entryPoint = function(){
 				var item = this.historyItemAdd(hsts[i]);
 				histe.add(item);
 				var task = tups[item.taskid];
-				if (item.htype == HType.TASK_UPDATE && item.isDescript){
+				if (item.isDescript){
 					task.isLoad = false;
 				}
 			}
@@ -619,10 +622,13 @@ Component.entryPoint = function(){
 			Brick.ajax('botask', {
 				'data': d,
 				'event': function(request){
+					var isChanges = __self._ajaxBeforeResult(request.data);
 					// применить результат запроса
 					callback(request.data.r);
-					// прменить возможные изменения в истории
-					__self._ajaxResult(request.data)
+					// применить возможные изменения в истории
+					if (isChanges){
+						__self._ajaxResult(request.data)
+					}
 				}
 			});
 		},
@@ -638,6 +644,19 @@ Component.entryPoint = function(){
 				__self.taskUserChangedEvent.fire(task);
 			});
 		},
+		
+		taskExpand: function(taskid, callback){
+			var task = this.list.find(taskid);
+			callback = callback || function(){};
+			var __self = this;
+			this.ajax({'do': 'taskexpand', 'taskid': taskid, 'val': (!task.expanded ? '1' : '0')}, function(r){
+				callback();
+				if (L.isNull(r)){ return; }
+				task.expanded = r*1>0;
+				__self.taskUserChangedEvent.fire(task);
+			});
+		},
+		
 		taskSetOrder: function(taskid, value, callback){
 			callback = callback || function(){};
 			var __self = this;
@@ -678,8 +697,26 @@ Component.entryPoint = function(){
 				this.newTaskReadEvent.fire(task);
 			}
 		},
+		checkTaskOpenChilds: function(taskid){ // проверить, есть ли открытые подзадачи
+			var task = this.list.find(taskid);
+			if (L.isNull(task)){ return false; }
+			var find = false;
+			task.childs.foreach(function(tk){
+				if (tk.status != TaskStatus.CLOSE){
+					find = true;
+					return true;
+				}
+			});
+			return find;
+		},
+		taskRemove: function(taskid, callback){ // удалить задачу
+			this._taskAJAX(taskid, 'taskremove', callback);
+		},
 		taskClose: function(taskid, callback){ // закрыть задачу
 			this._taskAJAX(taskid, 'taskclose', callback);
+		},
+		taskOpen: function(taskid, callback){ // открыть задачу повторно
+			this._taskAJAX(taskid, 'taskopen', callback);
 		},
 		taskSetExec: function(taskid, callback){ // принять на исполнение
 			this._taskAJAX(taskid, 'tasksetexec', callback);

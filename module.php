@@ -39,31 +39,6 @@ class BotaskModule extends CMSModule {
 }
 
 /**
- * Элемент действия в истории
- */
-class BotaskHistoryType {
-
-	/**
-	 * Создана новая задача
-	 * @var integer
-	 */
-	const TASK_CREATE = 1;
-	
-	/**
-	 * Задача удалена. 
-	 * Примечание: после удаления, задачу нельзя вернуть.
-	 * @var integer
-	 */
-	const TASK_REMOVE = 2;
-	
-	/**
-	 * Задача обновлена
-	 * @var integer
-	 */
-	const TASK_UPDATE = 3;
-}
-
-/**
  * Статус задачи
  */
 class BotaskStatus {
@@ -72,32 +47,37 @@ class BotaskStatus {
 	 * Открытая задача
 	 * @var integer
 	 */
-	const TASK_OPEN = 0;
+	const TASK_OPEN = 1;
 
 	/**
 	 * Открытая задача повторно
 	 * @var integer
 	 */
-	const TASK_REOPEN = 1;
+	const TASK_REOPEN = 2;
 	
 	/**
 	 * Завершенная (закрытая) задача
 	 * @var integer
 	 */
-	const TASK_CLOSE = 2;
+	const TASK_CLOSE = 3;
 	
 	/**
 	 * Задача в работе. Принятая самостоятельно.
 	 * @var integer
 	 */
-	const TASK_ACCEPT = 3;
+	const TASK_ACCEPT = 4;
 
 	/**
 	 * Задача в работе. Назначенная конкретному лицу.
 	 * @var integer
 	 */
-	const TASK_ASSIGN = 4;
+	const TASK_ASSIGN = 5;
 	
+	/**
+	 * Задача удалена.
+	 * @var integer
+	 */
+	const TASK_REMOVE = 6;
 }
 
 class BotaskAction {

@@ -32,7 +32,7 @@ Component.entryPoint = function(){
 	
 	var buildTemplate = function(w, ts){w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;};
 	
-	var TaskStatus = NS.TaskStatus;
+	var TST = NS.TaskStatus;
 	
 	var TaskListWidget = function(container, ptaskid, cfg){
 		this.init(container, ptaskid, cfg);
@@ -40,7 +40,7 @@ Component.entryPoint = function(){
 	TaskListWidget.prototype = {
 		init: function(container, ptaskid, cfg){
 			this.cfg = L.merge({
-				'sort': 'default',
+				'sort': 'deadline',
 				'sortdesc': false,
 				'filter': 'all'
 			}, cfg || {});
@@ -59,7 +59,7 @@ Component.entryPoint = function(){
 				__self.onMouseOut(E.getTarget(e));
 			});
 			
-			var tman = NS.taskManager;
+			var tman = NS.taskManager, TM = this._TM;
 			if (ptaskid == 0){
 				this.list = tman.list;
 			}else{
@@ -67,9 +67,25 @@ Component.entryPoint = function(){
 				this.list = task.childs;
 			}
 			
-			this.expanded = {};
-			
-			this.render();
+			this.tabPage = {
+				'opened':{
+					'name': 'opened',
+					'el': TM.getEl('list.opened')
+				},
+				'closed':{
+					'name': 'closed',
+					'el': TM.getEl('list.closed')
+				},
+				'removed':{
+					'name': 'removed',
+					'el': TM.getEl('list.removed')
+				},
+				'favorite':{
+					'name': 'favorite',
+					'el': TM.getEl('list.favorite')
+				}
+			};
+			this.selectTabPage('opened');
 			
 			// Подписаться на событие изменений в задачах
 			NS.taskManager.historyChangedEvent.subscribe(this.onHistoryChanged, this, true);
@@ -80,6 +96,19 @@ Component.entryPoint = function(){
 			
 			this._timeSelectedRow = 0;
 		},
+		
+		selectTabPage: function(pagename){
+			var page = this.tabPage[pagename];
+			if (!page){ return; }
+			this.selectedTabPage = page;
+			
+			for (var n in this.tabPage){
+				Dom.removeClass(this.tabPage[n]['el'], 'current');
+			}
+			Dom.addClass(page['el'], 'current');
+			this.render();
+		},
+		
 		buildNewInfo: function(){
 			var tnew = {};
 			this.list.foreach(function(tk){
@@ -104,7 +133,7 @@ Component.entryPoint = function(){
 			var author = NS.taskManager.users[tk.userid];
 			
 			var chcls = tk.childs.count() > 0 ? '' : 'nochild';
-			if (this.expanded[tk.id]){
+			if (tk.expanded){
 				chcls = 'expanded';
 			}
 			var tnew = this.tnew[tk.id] || {};
@@ -127,7 +156,7 @@ Component.entryPoint = function(){
 				'ddl': ddl
 			});
 			
-			if (tk.childs.count() > 0 && this.expanded[tk.id]){
+			if (tk.childs.count() > 0 && tk.expanded && this.selectedTabPage['name'] == 'opened'){
 				sRow += this.buildRows(tk.childs, level+1);
 			}
 			
@@ -136,9 +165,25 @@ Component.entryPoint = function(){
 		buildRows: function(list, level){
 			level = level || 0;
 			var lst = "", __self = this, cfg = this.cfg;
-			list.foreach(function(tk){
-				lst += __self.buildRow(tk, level);
-			}, true, cfg['sort'], cfg['sortdesc']);
+			var selTPage = this.selectedTabPage['name'];
+			if (selTPage == 'opened'){
+				list.foreach(function(tk){
+					if (tk.status == TST.CLOSE || tk.status == TST.REMOVE){
+						return;
+					}
+					lst += __self.buildRow(tk, level);
+				}, true, cfg['sort'], cfg['sortdesc']);
+			}else{
+				list.foreach(function(tk){
+					if ((selTPage == 'closed' && tk.status == TST.CLOSE) || 
+							(selTPage == 'removed' && tk.status == TST.REMOVE) ||
+							(selTPage == 'favorite' && tk.favorite) ){ 
+						lst += __self.buildRow(tk, level);
+					}
+					
+				}, false, cfg['sort'], cfg['sortdesc']);
+			}
+			
 			return lst;
 		},
 		render: function(){
@@ -179,7 +224,15 @@ Component.entryPoint = function(){
 		},
 		onClick: function(el){
 			var TId = this._TId;
-			var tp = TId['table'];
+			var tp = TId['list'];
+			switch(el.id){
+			case tp['opened']: this.selectTabPage('opened'); return true;
+			case tp['closed']: this.selectTabPage('closed'); return true;
+			case tp['removed']: this.selectTabPage('removed'); return true;
+			case tp['favorite']: this.selectTabPage('favorite'); return true;
+			}
+			
+			tp = TId['table'];
 			switch(el.id){
 			case tp['sortname']: this.sort('name'); return true;
 			case tp['sortdeadline']: this.sort('deadline'); return true;
@@ -215,7 +268,6 @@ Component.entryPoint = function(){
 		},
 		
 		taskFavorite: function(taskid){
-			var __self = this;
 			NS.taskManager.taskFavorite(taskid);
 		},
 		onMouseOut: function(el){
@@ -268,11 +320,9 @@ Component.entryPoint = function(){
 				Dom.addClass(elRow, 'nochild');
 				return;
 			}
-			
-			var exp = this.expanded;
-			exp[taskid] = exp[taskid] || false;
-			exp[taskid] = !exp[taskid];
-			
+			NS.taskManager.taskExpand(taskid);
+			task.expanded = !task.expanded;
+
 			this.render();
 		},
 		destroy: function(){
@@ -281,7 +331,7 @@ Component.entryPoint = function(){
 			NS.taskManager.taskUserChangedEvent.unsubscribe(this.onTaskUserChanged);
 		},
 		_isHistoryChanged: function(list, ids){
-			var exp = this.expanded, __self = this, find = false;
+			var __self = this, find = false;
 			list.foreach(function(tk){
 				for (var id in ids){
 					if (tk.id*1 == id*1){
@@ -289,7 +339,7 @@ Component.entryPoint = function(){
 						return true;
 					}
 				}
-				if (tk.childs.count() > 0 && exp[tk.id]){
+				if (tk.childs.count() > 0 && tk.expanded){
 					if (__self._isHistoryChanged(tk.childs, ids)){
 						find = true;
 						return true;
@@ -320,222 +370,5 @@ Component.entryPoint = function(){
 		}
 	};
 	NS.TaskListWidget = TaskListWidget;
-	
-	var TaskListPanel = function(taskid){
-		
-		this.task = NS.taskManager.getTask(taskid);
-		
-		TaskListPanel.superclass.constructor.call(this, {
-			fixedcenter: true, width: '790px', height: '400px',
-			overflow: false, 
-			controlbox: 1
-		});
-	};
-	YAHOO.extend(TaskListPanel, Brick.widget.Panel, {
-		initTemplate: function(){
-			buildTemplate(this, 'panel,user');
-			
-			var task = this.task;
-			return this._TM.replace('panel', {
-				'id': task.id,
-				'tl': task.title
-			});
-		},
-		onLoad: function(){
-			var task = this.task,
-				TM = this._TM,
-				__self = this;
-			
-			this.history = null;
-			this.navigate = new NS.TaskNavigateWidget(TM.getEl('panel.nav'), task);
-			
-			// подзадачи
-			this.childs = new NS.TaskListWidget(TM.getEl('panel.ptlist'), task.id);
-			
-			// Подписаться на событие изменений в задачах
-			NS.taskManager.historyChangedEvent.subscribe(this.onHistoryChanged, this, true);
-			
-			// запросить дополнительные данные по задаче (описание, история)
-			NS.taskManager.taskLoad(task.id, function(){
-				__self.renderTask();
-			});
-		},
-		destroy: function(){
-			this.navigate.destroy();
-			this.childs.destroy();
-			if (!L.isNull(this.history)){
-				this.history.destroy();
-			}
-			
-			NS.taskManager.historyChangedEvent.unsubscribe(this.onHistoryChanged);
-			TaskListPanel.superclass.destroy.call(this);
-		},
-		onHistoryChanged: function(type, args){
-			var history = args[0];
-
-			var task = this.task, isRTask = false;
-			history.foreach(function(item){
-				if (item.taskid == task.id){
-					isRTask = true;
-					return true;
-				}
-			});
-			if (isRTask){
-				this.renderTask();
-			}
-		},
-		renderTask: function(){
-			var TM = this._TM, task = this.task;
-			var gel = function(nm){
-				return TM.getEl('panel.'+nm);
-			};
-			
-			gel('taskbody').innerHTML = task.descript;
-			if (L.isNull(this.history)){
-				this.history = new NS.HistoryWidget(gel('history'), task.history, {'taskid': task.id});
-			}
-
-			var elColInfo = gel('colinfo');
-			for (var i=1;i<=5;i++){
-				Dom.removeClass(elColInfo, 'priority'+i);
-				Dom.removeClass(elColInfo, 'status'+i);
-			}
-			Dom.addClass(elColInfo, 'priority'+task.priority);
-			Dom.addClass(elColInfo, 'status'+task.status);
-			
-			// Статус
-			gel('status').innerHTML = LNG['status'][task.status];
-			
-			// Приоритет
-			gel('priority').innerHTML = LNG['priority'][task.priority];
-
-			// Автор
-			var user = NS.taskManager.users[task.userid];
-			gel('author').innerHTML = TM.replace('user', {
-				'uid': user.id, 'unm': UP.builder.getUserName(user)
-			});
-			// Создана
-			gel('dl').innerHTML = Brick.dateExt.convert(task.date, 3, true);
-			gel('dlt').innerHTML = Brick.dateExt.convert(task.date, 4);
-
-			// Исполнитель
-			var s = "";
-			if (task.stUserId*1 > 0){
-				user = NS.taskManager.users[task.stUserId];
-				s = TM.replace('user', {
-					'uid': user.id, 'unm': UP.builder.getUserName(user)
-				});
-			}
-			gel('exec').innerHTML = s;
-			
-			// Участники
-			var lst = "";
-			for (var i=0;i<task.users.length;i++){
-				user = NS.taskManager.users[task.users[i]];
-				lst += TM.replace('user', {
-					'uid': user.id, 'unm': UP.builder.getUserName(user)
-				});
-			}
-			gel('users').innerHTML = lst;
-
-			var sddl = "", sddlt = "";
-			// срок исполнения
-			if (!L.isNull(task.deadline)){
-				sddl = Brick.dateExt.convert(task.deadline, 3, true);
-				if (task.ddlTime){
-					sddlt = Brick.dateExt.convert(task.deadline, 4);
-				}
-			}
-			gel('ddl').innerHTML = sddl;
-			gel('ddlt').innerHTML = sddlt;
-
-			// закрыть все кнопки, открыть те, что соответсуют статусу задачи
-			Dom.setStyle(gel('bsetexec'), 'display', 'none');
-			Dom.setStyle(gel('bunsetexec'), 'display', 'none');
-			Dom.setStyle(gel('bclose'), 'display', 'none');
-			Dom.setStyle(gel('bclosens'), 'display', 'none');
-			Dom.setStyle(gel('bopen'), 'display', 'none');
-
-			// статус
-			switch(task.status){
-			case TaskStatus.OPEN:
-			case TaskStatus.REOPEN:
-				Dom.setStyle(gel('bsetexec'), 'display', '');
-				Dom.setStyle(gel('bclosens'), 'display', '');
-				break;
-			case TaskStatus.ACCEPT:
-				Dom.setStyle(gel('bclose'), 'display', '');
-				Dom.setStyle(gel('bunsetexec'), 'display', '');
-				break;
-			case TaskStatus.CLOSE:
-				Dom.setStyle(gel('bopen'), 'display', '');
-				Dom.setStyle(gel('beditor'), 'display', 'none');
-				Dom.setStyle(gel('bremove'), 'display', 'none');
-				break;
-			}
-		},
-		onClick: function(el){
-			var tp = this._TId['panel'];
-			switch(el.id){
-			case tp['bsetexec']: this.setExecTask(); return true;
-			case tp['bunsetexec']: this.unsetExecTask(); return true;
-			case tp['bclose']: 
-			case tp['bclosens']: 
-				this.closeTask(); return true;
-			case tp['beditor']: this.taskEditorShow(); return true;
-			case tp['ptlisthide']: 
-			case tp['ptlistshow']: 
-				this.showHideChildTaskTable(); return true;
-			
-			}
-			return false;
-		},
-		_shLoading: function(show){
-			var TM = this._TM;
-			Dom.setStyle(TM.getEl('panel.buttons'), 'display', show ? 'none' : '');
-			Dom.setStyle(TM.getEl('panel.bloading'), 'display', show ? '' : 'none');
-		},
-		closeTask: function(){ // закрыть задачу
-			var __self = this;
-			this._shLoading(true);
-			NS.taskManager.taskClose(this.task.id, function(){
-				__self._shLoading(false);
-			});
-		},
-		setExecTask: function(){ // принять задачу в работу 
-			var __self = this;
-			this._shLoading(true);
-			NS.taskManager.taskSetExec(this.task.id, function(){
-				__self._shLoading(false);
-			});
-		},
-		unsetExecTask: function(){ // отказаться от выполнения данной задачи
-			var __self = this;
-			this._shLoading(true);
-			NS.taskManager.taskUnsetExec(this.task.id, function(){
-				__self._shLoading(false);
-			});
-		},
-		showHideChildTaskTable: function(){
-			var TM = this._TM, el = TM.getEl('panel.ptlist');
-			var view = Dom.getStyle(el, 'display');
-			Dom.setStyle(el, 'display', view != 'none' ? 'none' : '')
-			Dom.setStyle(TM.getEl('panel.ptlisthide'), 'display', view != 'none' ? 'none' : '')
-			Dom.setStyle(TM.getEl('panel.ptlistshow'), 'display', view != 'none' ? '' : 'none')
-		},
-		taskEditorShow: function(){
-			var taskid = this.task.id;
-			Brick.ff('botask', 'taskeditor', function(){
-				API.showTaskEditorPanel(taskid);
-			});
-		}
-	});
-	NS.TaskListPanel = TaskListPanel;
-	
-	API.showTaskListPanel = function(taskid){
-		NS.buildTaskManager(function(tm){
-			new TaskListPanel(taskid);
-		});
-	};
 
 };
