@@ -34,23 +34,19 @@ Component.entryPoint = function(){
 	
 	var TST = NS.TaskStatus;
 	
-	var TaskListWidget = function(container, ptaskid, cfg){
-		this.init(container, ptaskid, cfg);
+	var TaskListWidget = function(container, ptaskid){
+		this.init(container, ptaskid);
 	};
 	TaskListWidget.prototype = {
-		init: function(container, ptaskid, cfg){
-			this.cfg = L.merge({
-				'sort': 'deadline',
-				'sortdesc': false,
-				'filter': 'all'
-			}, cfg || {});
-			
+		init: function(container, ptaskid){
+			var tman = NS.taskManager;
+
 			this.ptaskid = ptaskid = ptaskid || 0;
 			
 			buildTemplate(this, 'list,table,row');
 			container.innerHTML = this._TM.replace('list');
 			
-			var __self = this;
+			var __self = this, TM = this._TM;
 			E.on(container, 'click', function(e){
                 if (__self.onClick(E.getTarget(e))){ E.preventDefault(e); }
 			});
@@ -59,7 +55,6 @@ Component.entryPoint = function(){
 				__self.onMouseOut(E.getTarget(e));
 			});
 			
-			var tman = NS.taskManager, TM = this._TM;
 			if (ptaskid == 0){
 				this.list = tman.list;
 			}else{
@@ -91,6 +86,7 @@ Component.entryPoint = function(){
 			NS.taskManager.historyChangedEvent.subscribe(this.onHistoryChanged, this, true);
 			NS.taskManager.newTaskReadEvent.subscribe(this.onNewTaskRead, this, true);
 			NS.taskManager.taskUserChangedEvent.subscribe(this.onTaskUserChanged, this, true);
+			NS.taskManager.userConfigChangedEvent.subscribe(this.onUserConfigChanged, this, true);
 			
 			this.vtMan = null;
 			
@@ -164,7 +160,8 @@ Component.entryPoint = function(){
 		},
 		buildRows: function(list, level){
 			level = level || 0;
-			var lst = "", __self = this, cfg = this.cfg;
+			var lst = "", __self = this, 
+				cfg = NS.taskManager.userConfig;
 			var selTPage = this.selectedTabPage['name'];
 			if (selTPage == 'opened'){
 				list.foreach(function(tk){
@@ -172,7 +169,7 @@ Component.entryPoint = function(){
 						return;
 					}
 					lst += __self.buildRow(tk, level);
-				}, true, cfg['sort'], cfg['sortdesc']);
+				}, true, cfg['tasksort'], cfg['tasksortdesc']);
 			}else{
 				list.foreach(function(tk){
 					if ((selTPage == 'closed' && tk.status == TST.CLOSE) || 
@@ -181,7 +178,7 @@ Component.entryPoint = function(){
 						lst += __self.buildRow(tk, level);
 					}
 					
-				}, false, cfg['sort'], cfg['sortdesc']);
+				}, false, cfg['tasksort'], cfg['tasksortdesc']);
 			}
 			
 			return lst;
@@ -190,7 +187,7 @@ Component.entryPoint = function(){
 			this.buildNewInfo();
 			var TM = this._TM, 
 				lst = this.buildRows(this.list),
-				cfg = this.cfg;
+				cfg = NS.taskManager.userConfig;
 			
 			var d = {
 				'sortname': '',
@@ -200,7 +197,7 @@ Component.entryPoint = function(){
 				'sortvoting': '',
 				'rows': lst
 			};
-			d['sort'+cfg['sort']] = cfg['sortdesc'] ? 'sb' : 'sa';
+			d['sort'+cfg['tasksort']] = cfg['tasksortdesc'] ? 'sb' : 'sa';
 			TM.getEl('list.table').innerHTML = TM.replace('table', d);
 			
 			if (this._timeSelectedRow*1 > 0){
@@ -259,16 +256,21 @@ Component.entryPoint = function(){
 		},
 		
 		sort: function(field){
-			var cfg = this.cfg;
+			var cfg = NS.taskManager.userConfig,
+				desc = cfg['tasksort'] == field;
+
+			cfg['tasksort'] = field;
+			cfg['tasksortdesc'] = desc ? !cfg['tasksortdesc'] : false;
 			
-			var desc = cfg['sort'] == field;
-			cfg['sort'] = field;
-			cfg['sortdesc'] = desc ? !cfg['sortdesc'] : false;
+			NS.taskManager.userConfigSave();
 			this.render();
 		},
 		
 		taskFavorite: function(taskid){
 			NS.taskManager.taskFavorite(taskid);
+			var task = NS.taskManager.list.find(taskid);
+			task.favorite = !task.favorite;
+			this.render();
 		},
 		onMouseOut: function(el){
 			if (L.isNull(this.vtMan)){ return; }
@@ -329,6 +331,7 @@ Component.entryPoint = function(){
 			NS.taskManager.historyChangedEvent.unsubscribe(this.onHistoryChanged);
 			NS.taskManager.newTaskReadEvent.unsubscribe(this.onNewTaskRead);
 			NS.taskManager.taskUserChangedEvent.unsubscribe(this.onTaskUserChanged);
+			NS.taskManager.userConfigChangedEvent.unsubscribe(this.onUserConfigChanged);
 		},
 		_isHistoryChanged: function(list, ids){
 			var __self = this, find = false;
@@ -366,6 +369,9 @@ Component.entryPoint = function(){
 			/**/
 		},
 		onNewTaskRead: function(type, args){
+			this.render();
+		},
+		onUserConfigChanged: function(type, args){
 			this.render();
 		}
 	};

@@ -65,6 +65,8 @@ if ($updateManager->isInstall()){
 		  `ord` int(5) NOT NULL DEFAULT 0 COMMENT 'Вес этой задачи по мнению пользователя',
 		  `favorite` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Избранное',
 		  `expanded` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Развернуты подзадачи',
+		  `meilhistory` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Уведомлять о всех изменениях',
+		  `meilcomment` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Уведомлять о всех комментариях',
 		  `deldate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата удаления',
 		  PRIMARY KEY  (`userroleid`), 
 		  UNIQUE KEY `task` (`taskid`,`userid`)

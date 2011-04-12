@@ -62,6 +62,7 @@ class BotaskManager extends ModuleManager {
 			case 'taskfavorite': return $this->TaskFavorite($d->taskid, $d->val);
 			case 'taskexpand': return $this->TaskExpand($d->taskid, $d->val);
 			case 'history': return $this->History($d->taskid, $d->firstid);
+			case 'usercfgupdate': return $this->UserConfigUpdate($d->cfg);
 		}
 		return null;
 	}
@@ -115,6 +116,10 @@ class BotaskManager extends ModuleManager {
 		$ret->hst = array();
 		$ret->board = array();
 		$ret->users = array();
+		
+		if ($lastHId == 0){
+			$ret->cfg = $this->UserConfigList();
+		}
 		
 		$nusers = array();
 		
@@ -461,6 +466,57 @@ class BotaskManager extends ModuleManager {
 		}
 		return $hst;
 	}
+	
+	private function UserConfigCheckVarName($name){
+		if (!$this->IsViewRole()){ return false; }
+		switch($name){
+			case "tasksort": return true;
+			case "tasksortdesc": return true;
+		}
+		return false;
+	}
+	
+	public function UserConfigList(){
+		if (!$this->IsViewRole()){ return false; }
+		
+		$ret = new stdClass();
+		$rows = CMSRegistry::$instance->user->GetManager()->UserConfigList($this->userid, 'botask');
+		while (($row = $this->db->fetch_array($rows))){
+			if ($this->UserConfigCheckVarName($row['nm'])){
+				$ret->$row['nm'] = $row['vl'];
+			}
+		}
+		
+		return $ret;
+	}
+	
+	public function UserConfigUpdate($newcfg){
+		if (!$this->IsViewRole()){ return null; }
+		
+		$uman = CMSRegistry::$instance->user->GetManager();
+		
+		$rows = $uman->UserConfigList($this->userid, 'botask');
+		$arr = $this->ToArray($rows);
+		
+		$names = array("tasksort", "tasksortdesc");
+		
+		foreach($names as $name){
+			$find = null;
+			foreach ($arr as $cfgid => $crow){
+				if ($name == $crow['nm']){
+					$find = $crow;
+					break;
+				}
+			}
+			if (is_null($find)){
+				$uman->UserConfigAppend($this->userid, 'botask', $name, $newcfg->$name);
+			}else{
+				$uman->UserConfigUpdate($this->userid, $cfgid, $newcfg->$name);
+			}
+		}
+		return $this->UserConfigList();
+	}
+	
 }
 
 class BotaskHistory {

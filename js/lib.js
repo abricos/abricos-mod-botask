@@ -469,6 +469,30 @@ Component.entryPoint = function(){
 			return id;
 		}
 	};
+	
+	var UserConfig = function(d){
+		this.init(d);
+	};
+	UserConfig.prototype = {
+		init: function(d){
+			this.update(d);
+		},
+		update: function(d){
+			d = L.merge({
+				'tasksort': 'deadline',
+				'tasksortdesc': false
+			}, d || {});
+			
+			this.tasksort = NS.taskSort[d['tasksort']] ? d['tasksort'] : 'deadline';
+			this.tasksortdesc = d['tasksortdesc']*1 > 0;
+		},
+		toAjax: function(){
+			return {
+				'tasksort': NS.taskSort[this.tasksort] ? this.tasksort : 'deadline',
+				'tasksortdesc': this.tasksortdesc ? 1 : 0
+			};
+		}
+	};
 
 	var TaskManager = function(initData){
 		this.init(initData);
@@ -478,8 +502,11 @@ Component.entryPoint = function(){
 			initData = L.merge({
 				'board': {},
 				'users': {},
-				'hst': {}
+				'hst': {},
+				'cfg': {}
 			}, initData || {});
+			
+			this.userConfig = new UserConfig(initData['cfg']);
 			
 			var list = {}, tree = {},
 				board = initData['board'];
@@ -508,6 +535,8 @@ Component.entryPoint = function(){
 			
 			// события внесения изменений пользователя в задачу (добавление в избранное, голосование и т.п.) 
 			this.taskUserChangedEvent = new YAHOO.util.CustomEvent("taskUserChangedEvent");
+			
+			this.userConfigChangedEvent = new YAHOO.util.CustomEvent("userConfigChangedEvent");
 		},
 		
 		_updateUsers: function(users){
@@ -630,6 +659,17 @@ Component.entryPoint = function(){
 						__self._ajaxResult(request.data)
 					}
 				}
+			});
+		},
+		
+		userConfigSave: function(callback){
+			callback = callback || function(){};
+			var __self = this;
+			this.ajax({'do': 'usercfgupdate', 'cfg': this.userConfig.toAjax()}, function(r){
+				callback();
+				if (L.isNull(r)){ return; }
+				__self.userConfig.update(r);
+				__self.userConfigChangedEvent.fire(__self.userConfig);
 			});
 		},
 		
