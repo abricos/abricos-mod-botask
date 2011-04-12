@@ -65,6 +65,10 @@ Component.entryPoint = function(){
 			new BoardPanel();
 		});
 	};
+	
+	API.showBoardPanelWebos = function(){
+		Brick.Page.reload('/bos/#app=botask/board/showBoardPanel');
+	};
 
 	var BoardExpPanel = function(){
 		BoardExpPanel.superclass.constructor.call(this, {

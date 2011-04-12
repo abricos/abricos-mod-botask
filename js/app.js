@@ -17,7 +17,7 @@ Component.entryPoint = function(){
 	var app = new os.Application(this.moduleName);
 	app.icon = '/modules/botask/images/app_icon.gif';
 	app.entryComponent = 'board';
-	app.entryPoint = 'Brick.mod.botask.API.showBoardPanel';
+	app.entryPoint = 'Brick.mod.botask.API.showBoardPanelWebos';
 	
 	os.ApplicationManager.register(app);
 };

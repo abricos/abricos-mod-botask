@@ -477,6 +477,8 @@ class BotaskManager extends ModuleManager {
 		switch($name){
 			case "tasksort": return true;
 			case "tasksortdesc": return true;
+			case "taskviewchild": return true;
+			case "taskviewcmts": return true;
 		}
 		return false;
 	}
@@ -503,7 +505,7 @@ class BotaskManager extends ModuleManager {
 		$rows = $uman->UserConfigList($this->userid, 'botask');
 		$arr = $this->ToArray($rows);
 		
-		$names = array("tasksort", "tasksortdesc");
+		$names = array("tasksort", "tasksortdesc", "taskviewchild", "taskviewcmts");
 		
 		foreach($names as $name){
 			$find = null;

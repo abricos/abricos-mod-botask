@@ -55,6 +55,7 @@
 .aw-botask .taskview .ptlist {
 	clear: both;
 	margin-top: 0.5em;
+	margin-bottom: 1.3em;
 	display: block;
 }
 .aw-botask .taskview .author {

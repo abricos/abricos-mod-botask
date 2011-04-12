@@ -220,7 +220,7 @@ Component.entryPoint = function(){
 			}
 			
 			// скрыть/показать подзадачи
-			var view = task.expanded;
+			var view = NS.taskManager.userConfig['taskviewchild'];
 			Dom.setStyle(TM.getEl('panel.ptlist'), 'display', view ? '' : 'none')
 			Dom.setStyle(TM.getEl('panel.ptlisthide'), 'display', view ? '' : 'none')
 			Dom.setStyle(TM.getEl('panel.ptlistshow'), 'display', view ? 'none' : '')
@@ -228,9 +228,9 @@ Component.entryPoint = function(){
 			this.renderComments();
 		},
 		renderComments: function(){
-			var TM = this._TM, task = this.task;
+			var TM = this._TM;
 			// скрыть/показать комментарии
-			var view = task.showcmt;
+			var view = NS.taskManager.userConfig['taskviewcmts'];
 			Dom.setStyle(TM.getEl('panel.comments'), 'display', view ? '' : 'none')
 			Dom.setStyle(TM.getEl('panel.cmthide'), 'display', view ? '' : 'none')
 			Dom.setStyle(TM.getEl('panel.cmtshow'), 'display', view ? 'none' : '')
@@ -299,7 +299,7 @@ Component.entryPoint = function(){
 		taskClose: function(){ // закрыть задачу
 			if (!NS.taskManager.checkTaskOpenChilds(this.task.id)){
 				this.taskCloseMethod();
-				retur;
+				return;
 			}
 			var TM = this._TM;
 			TM.elHide('panel.manbuttons');
@@ -335,15 +335,15 @@ Component.entryPoint = function(){
 			});
 		},
 		showHideChildTaskTable: function(){
-			var task = this.task;
-			NS.taskManager.taskExpand(task.id);
-			task.expanded = !task.expanded;
+			var cfg = NS.taskManager.userConfig;
+			cfg['taskviewchild'] = !cfg['taskviewchild'];
+			NS.taskManager.userConfigSave();
 			this.renderTask();
 		},
 		showHideComments: function(){
-			var task = this.task;
-			NS.taskManager.taskShowComments(task.id);
-			task.showcmt = !task.showcmt;
+			var cfg = NS.taskManager.userConfig;
+			cfg['taskviewcmts'] = !cfg['taskviewcmts'];
+			NS.taskManager.userConfigSave();
 			this.renderTask();
 		},
 		taskEditorShow: function(){

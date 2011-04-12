@@ -486,16 +486,22 @@ Component.entryPoint = function(){
 		update: function(d){
 			d = L.merge({
 				'tasksort': 'deadline',
-				'tasksortdesc': false
+				'tasksortdesc': false,
+				'taskviewchild': true,
+				'taskviewcmts': true
 			}, d || {});
 			
 			this.tasksort = NS.taskSort[d['tasksort']] ? d['tasksort'] : 'deadline';
 			this.tasksortdesc = d['tasksortdesc']*1 > 0;
+			this.taskviewchild = d['taskviewchild']*1 > 0;
+			this.taskviewcmts = d['taskviewcmts']*1 > 0;
 		},
 		toAjax: function(){
 			return {
 				'tasksort': NS.taskSort[this.tasksort] ? this.tasksort : 'deadline',
-				'tasksortdesc': this.tasksortdesc ? 1 : 0
+				'tasksortdesc': this.tasksortdesc ? 1 : 0,
+				'taskviewchild': this.taskviewchild ? 1 : 0,
+				'taskviewcmts': this.taskviewcmts ? 1 : 0,
 			};
 		}
 	};
