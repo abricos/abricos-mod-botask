@@ -117,7 +117,7 @@
 }
 .aw-botask .tlist .tchnew .tname .chnew,
 .aw-botask .tlist .tnew .tname .new {
-		display: inline;
+	display: inline;
 }
 
 .aw-botask .tlist .level0 .tname .ch-ico{}
@@ -192,6 +192,9 @@
 .aw-botask .tlist table td.tprt .prtclr {
 	text-align: center;
 }
+.aw-botask .tlist table td a {
+	text-decoration: none;
+}
 
 .aw-botask .tlist table .expired td, 
 .aw-botask .tlist table .expired td a,
@@ -205,6 +208,15 @@
 .aw-botask .tlist table .closed td.tprt .tl {
 	color: #839097; 
 }
+
+.aw-botask .tlist table .removed td,
+.aw-botask .tlist table .removed td .prtclr,  
+.aw-botask .tlist table .removed td a,
+.aw-botask .tlist table .removed td.tprt .tl {
+	color: #839097; 
+	text-decoration: line-through;
+}
+
 
 .aw-botask .tlist tr.row:hover, 
 .aw-botask .tlist tr.row-hover {

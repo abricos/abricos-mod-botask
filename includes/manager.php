@@ -61,6 +61,7 @@ class BotaskManager extends ModuleManager {
 			case 'taskvoting': return $this->TaskVoting($d->taskid, $d->val);
 			case 'taskfavorite': return $this->TaskFavorite($d->taskid, $d->val);
 			case 'taskexpand': return $this->TaskExpand($d->taskid, $d->val);
+			case 'taskshowcmt': return $this->TaskShowComments($d->taskid, $d->val);
 			case 'history': return $this->History($d->taskid, $d->firstid);
 			case 'usercfgupdate': return $this->UserConfigUpdate($d->cfg);
 		}
@@ -334,9 +335,13 @@ class BotaskManager extends ModuleManager {
 
 	public function TaskExpand($taskid, $value){
 		if (!$this->TaskAccess($taskid)){ return null; }
-		
 		BotaskQuery::TaskExpand($this->db, $taskid, $this->userid, $value);
-		
+		return $value;
+	}
+	
+	public function TaskShowComments($taskid, $value){
+		if (!$this->TaskAccess($taskid)){ return null; }
+		BotaskQuery::TaskShowComments($this->db, $taskid, $this->userid, $value);
 		return $value;
 	}
 	
@@ -516,6 +521,111 @@ class BotaskManager extends ModuleManager {
 		}
 		return $this->UserConfigList();
 	}
+	
+	////////////////////////////// комментарии /////////////////////////////
+	
+	public function IsCommentList($contentid){
+		$task = BotaskQuery::TaskByContentId($this->db, $this->userid, $contentid, true);
+		if (!$this->TaskAccess($task['id'])){ return false; }
+		return true;
+	}
+	
+	public function IsCommentAppend($contentid){
+		$task = BotaskQuery::TaskByContentId($this->db, $this->userid, $contentid, true);
+		if (!$this->TaskAccess($task['id'])){ return false; }
+		return true;
+	}
+	
+	/**
+	 * Отправить уведомление о новом комментарии.
+	 * 
+	 * @param object $data
+	 */
+	public function CommentSendNotify($data){
+		/*
+		// данные по комментарию:
+		// $data->id	- идентификатор комментария
+		// $data->pid	- идентификатор родительского комментария
+		// $data->uid	- пользователь оставивший комментарий
+		// $data->bd	- текст комментария
+		// $data->cid	- идентификатор контента
+		
+		$prj = BoprosQuery::ProjectByContentId($this->db, $data->cid, true);
+		if (empty($prj)){ return; }
+		
+		$emails = array();
+		
+		$brick = Brick::$builder->LoadBrickS('bopros', 'templates', null, null);
+		$host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_ENV['HTTP_HOST'];
+		$plnk = "http://".$host."/webos/start/bopros/project/showProjectPanel/".$prj['id']."/";
+		
+		// уведомление "комментарий на комментарий"
+		if ($data->pid > 0){
+			$parent = CommentQuery::Comment($this->db, $data->pid, $data->cid, true);
+			if (!empty($parent) && $parent['uid'] != $this->userid){
+				$user = UserQuery::User($this->db, $parent['uid']);
+				$email = $user['email'];
+				if (!empty($email)){
+					$emails[$email] = true;
+					$subject = Brick::ReplaceVarByData($brick->param->var['cmtemlsubject'], array(
+						"tl" => $prj['tl']
+					));
+					$body = Brick::ReplaceVarByData($brick->param->var['cmtemlbody'], array(
+						"tl" => $prj['tl'],
+						"plnk" => $plnk,
+						"unm" => $this->user->info['username'],
+						"cmt1" => $parent['bd']." ",
+						"cmt2" => $data->bd." ",
+						"sitename" => Brick::$builder->phrase->Get('sys', 'site_name')
+					));
+					CMSRegistry::$instance->GetNotification()->SendMail($email, $subject, $body);
+				}
+			}
+		}
+		
+		// уведомление автору
+		if ($prj['uid'] != $this->userid){
+			$autor = UserQuery::User($this->db, $prj['uid']);
+			$email = $autor['email'];
+			if (!empty($email) && !$emails[$email]){
+				$emails[$email] = true;
+				$subject = Brick::ReplaceVarByData($brick->param->var['cmtemlautorsubject'], array(
+					"tl" => $prj['tl']
+				));
+				$body = Brick::ReplaceVarByData($brick->param->var['cmtemlautorbody'], array(
+					"tl" => $prj['tl'],
+					"plnk" => $plnk,
+					"unm" => $this->user->info['username'],
+					"cmt" => $data->bd." ",
+					"sitename" => Brick::$builder->phrase->Get('sys', 'site_name')
+				));
+				CMSRegistry::$instance->GetNotification()->SendMail($email, $subject, $body);
+			}
+		}
+		
+		// уведомление подписчикам
+		$users = $this->ToArray(BoprosQuery::ProjectSubscribeUserList($this->db, $prj['id']));
+		foreach ($users as $user){
+			$email = $user['email'];
+			
+			if (empty($email) || $emails[$email] || $user['id'] == $this->userid){
+				continue;
+			}
+			$emails[$email] = true;
+			$subject = Brick::ReplaceVarByData($brick->param->var['cmtemlsubject'], array(
+				"tl" => $prj['tl']
+			));
+			$body = Brick::ReplaceVarByData($brick->param->var['cmtemlbody'], array(
+				"tl" => $prj['tl'],
+				"plnk" => $plnk,
+				"unm" => $this->user->info['username'],
+				"cmt" => $data->bd." ",
+				"sitename" => Brick::$builder->phrase->Get('sys', 'site_name')
+			));
+			CMSRegistry::$instance->GetNotification()->SendMail($email, $subject, $body);
+		}
+		/**/
+	}	
 	
 }
 

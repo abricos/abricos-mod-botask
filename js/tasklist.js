@@ -128,8 +128,19 @@ Component.entryPoint = function(){
 			
 			var author = NS.taskManager.users[tk.userid];
 			
-			var chcls = tk.childs.count() > 0 ? '' : 'nochild';
-			if (tk.expanded){
+			var chcls = 'nochild';
+			
+			selTPage = this.selectedTabPage['name'];
+			if (selTPage == 'opened'){
+				tk.childs.foreach(function(ctk){
+					if (!ctk.isClosed() && !ctk.isRemoved()){
+						chcls = '';
+						return true;
+					}
+				}, true);
+			}
+			
+			if (chcls == '' && tk.expanded){
 				chcls = 'expanded';
 			}
 			var tnew = this.tnew[tk.id] || {};
@@ -141,6 +152,7 @@ Component.entryPoint = function(){
 				'ord': n != 0 ? ((n>0?'+':'')+n) : '&mdash;',
 				'expired': tk.isExpired() ? 'expired' : '',
 				'closed': tk.isClosed() ? 'closed' : '',
+				'removed': tk.isRemoved() ? 'removed' : '',
 				'prts': LNG['priority'][tk.priority],
 				'tnew': tnew['n'] ? 'tnew' : '',
 				'tchnew': tnew['cn'] ? 'tchnew' : '',
@@ -165,7 +177,7 @@ Component.entryPoint = function(){
 			var selTPage = this.selectedTabPage['name'];
 			if (selTPage == 'opened'){
 				list.foreach(function(tk){
-					if (tk.status == TST.CLOSE || tk.status == TST.REMOVE){
+					if (tk.isClosed() || tk.isRemoved()){
 						return;
 					}
 					lst += __self.buildRow(tk, level);

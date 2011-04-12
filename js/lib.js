@@ -109,12 +109,14 @@ Component.entryPoint = function(){
 			this.order = d['o']*1;
 			this.favorite = d['f']*1>0;
 			this.expanded = d['e']*1>0;
+			this.showcmt = d['c']*1>0;
 			
 			this._updateFlagNew(d);
 		},
 		setData: function(d){
 			this.isLoad = true;
 			this.descript = d['bd'];
+			this.ctid = d['ctid'];
 			this.update(d);
 		},
 		_updateFlagNew: function(d){
@@ -138,6 +140,10 @@ Component.entryPoint = function(){
 
 		isClosed: function(){
 			return this.status*1 == NS.TaskStatus.CLOSE;
+		},
+		
+		isRemoved: function(){
+			return this.status*1 == NS.TaskStatus.REMOVE;
 		},
 
 		toString: function(){
@@ -546,7 +552,7 @@ Component.entryPoint = function(){
 		},
 		
 		_buildTaskTree: function(list){
-
+			
 			this.list.clear();
 			var tlist = this.list;
 			
@@ -682,6 +688,18 @@ Component.entryPoint = function(){
 				if (L.isNull(r)){ return; }
 				task.favorite = r*1>0;
 				__self.taskUserChangedEvent.fire(task);
+			});
+		},
+		
+		taskShowComments: function(taskid, callback){
+			var task = this.list.find(taskid);
+			callback = callback || function(){};
+			var __self = this;
+			this.ajax({'do': 'taskshowcmt', 'taskid': taskid, 'val': (!task.showcmt ? '1' : '0')}, function(r){
+				callback();
+				if (L.isNull(r)){ return; }
+				task.showcmt = r*1>0;
+				// __self.taskUserChangedEvent.fire(task);
 			});
 		},
 		

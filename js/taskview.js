@@ -34,6 +34,19 @@ Component.entryPoint = function(){
 	
 	var TST = NS.TaskStatus;
 	
+	var aTargetBlank = function(el){
+		if (el.tagName == 'A'){
+			el.target = "_blank";
+		}else if (el.tagName == 'IMG'){
+			el.style.maxWidth = "100%";
+			el.style.height = "auto";
+		}
+		var chs = el.childNodes;
+		for (var i=0;i<chs.length;i++){
+			if (chs[i]){ aTargetBlank(chs[i]); }
+		}
+	};
+	
 	var TaskViewPanel = function(taskid){
 		
 		this.task = NS.taskManager.getTask(taskid);
@@ -67,6 +80,7 @@ Component.entryPoint = function(){
 			
 			// Подписаться на событие изменений в задачах
 			NS.taskManager.historyChangedEvent.subscribe(this.onHistoryChanged, this, true);
+			NS.taskManager.userConfigChangedEvent.subscribe(this.onUserConfigChanged, this, true);
 			
 			// запросить дополнительные данные по задаче (описание, история)
 			NS.taskManager.taskLoad(task.id, function(){
@@ -81,6 +95,8 @@ Component.entryPoint = function(){
 			}
 			
 			NS.taskManager.historyChangedEvent.unsubscribe(this.onHistoryChanged);
+			NS.taskManager.userConfigChangedEvent.unsubscribe(this.onUserConfigChanged);
+			
 			TaskViewPanel.superclass.destroy.call(this);
 		},
 		onHistoryChanged: function(type, args){
@@ -97,15 +113,36 @@ Component.entryPoint = function(){
 				this.renderTask();
 			}
 		},
+		onUserConfigChanged: function(type, args){
+			this.renderTask();
+		},
 		renderTask: function(){
-			var TM = this._TM, task = this.task;
+			var TM = this._TM, task = this.task, __self = this;
 			var gel = function(nm){
 				return TM.getEl('panel.'+nm);
 			};
 			
 			gel('taskbody').innerHTML = task.descript;
-			if (L.isNull(this.history)){
+			if (L.isNull(this.history)){ // первичная рендер
 				this.history = new NS.HistoryWidget(gel('history'), task.history, {'taskid': task.id});
+				
+				// Инициализировать менеджер комментариев
+				Brick.ff('comment', 'comment', function(){
+					Brick.mod.comment.API.buildCommentTree({
+						'container': TM.getEl('panel.comments'),
+						'dbContentId': task.ctid,
+						'config': {
+							'onLoadComments': function(){
+								aTargetBlank(TM.getEl('panel.taskbody'));
+								aTargetBlank(TM.getEl('panel.comments'));
+							}
+							// ,
+							// 'readOnly': project.w*1 == 0,
+							// 'manBlock': L.isFunction(config['buildManBlock']) ? config.buildManBlock() : null
+						},
+						'instanceCallback': function(b){ }
+					});
+				});
 			}
 
 			var elColInfo = gel('colinfo');
@@ -181,6 +218,22 @@ Component.entryPoint = function(){
 				TM.elShow('panel.bopen');
 				break;
 			}
+			
+			// скрыть/показать подзадачи
+			var view = task.expanded;
+			Dom.setStyle(TM.getEl('panel.ptlist'), 'display', view ? '' : 'none')
+			Dom.setStyle(TM.getEl('panel.ptlisthide'), 'display', view ? '' : 'none')
+			Dom.setStyle(TM.getEl('panel.ptlistshow'), 'display', view ? 'none' : '')
+			
+			this.renderComments();
+		},
+		renderComments: function(){
+			var TM = this._TM, task = this.task;
+			// скрыть/показать комментарии
+			var view = task.showcmt;
+			Dom.setStyle(TM.getEl('panel.comments'), 'display', view ? '' : 'none')
+			Dom.setStyle(TM.getEl('panel.cmthide'), 'display', view ? '' : 'none')
+			Dom.setStyle(TM.getEl('panel.cmtshow'), 'display', view ? 'none' : '')
 		},
 		onClick: function(el){
 			var tp = this._TId['panel'];
@@ -205,7 +258,11 @@ Component.entryPoint = function(){
 			case tp['ptlisthide']: 
 			case tp['ptlistshow']: 
 				this.showHideChildTaskTable(); return true;
-			
+
+			case tp['cmthide']: 
+			case tp['cmtshow']: 
+				this.showHideComments(); return true;
+
 			}
 			return false;
 		},
@@ -278,11 +335,16 @@ Component.entryPoint = function(){
 			});
 		},
 		showHideChildTaskTable: function(){
-			var TM = this._TM, el = TM.getEl('panel.ptlist');
-			var view = Dom.getStyle(el, 'display');
-			Dom.setStyle(el, 'display', view != 'none' ? 'none' : '')
-			Dom.setStyle(TM.getEl('panel.ptlisthide'), 'display', view != 'none' ? 'none' : '')
-			Dom.setStyle(TM.getEl('panel.ptlistshow'), 'display', view != 'none' ? '' : 'none')
+			var task = this.task;
+			NS.taskManager.taskExpand(task.id);
+			task.expanded = !task.expanded;
+			this.renderTask();
+		},
+		showHideComments: function(){
+			var task = this.task;
+			NS.taskManager.taskShowComments(task.id);
+			task.showcmt = !task.showcmt;
+			this.renderTask();
 		},
 		taskEditorShow: function(){
 			var taskid = this.task.id;

@@ -26,7 +26,8 @@ class BotaskQuery {
 		IF (ur.viewdate > 0, 0, 1) as n,
 		ur.ord as o,
 		ur.favorite as f,
-		ur.expanded as e
+		ur.expanded as e,
+		ur.showcomments as c
 	";
 	
 	private static function BoardWhere($lastupdate = 0, $parenttaskid = 0, $status = 0){
@@ -262,6 +263,21 @@ class BotaskQuery {
 		return $retarray ? $db->query_first($sql) : $db->query_read($sql);
 	}
 	
+	public static function TaskByContentId(CMSDatabase $db, $userid, $contentid, $retarray = false){
+		$sql = "
+			SELECT
+				".BotaskQuery::TASK_FIELDS.",
+				c.body as bd,
+				p.contentid as ctid
+			FROM ".$db->prefix."btk_task p
+			INNER JOIN ".$db->prefix."btk_userrole ur ON p.taskid=ur.taskid AND ur.userid=".bkint($userid)."
+			INNER JOIN ".$db->prefix."content c ON p.contentid=c.contentid
+			WHERE p.contentid=".bkint($contentid)." 
+			LIMIT 1
+		";
+		return $retarray ? $db->query_first($sql) : $db->query_read($sql);
+	}
+	
 	public static function TaskAppend(CMSDatabase $db, $tk, $pubkey){
 		$contentid = CoreQuery::ContentAppend($db, $tk->bd, 'botask');
 		
@@ -406,6 +422,16 @@ class BotaskQuery {
 		$sql = "
 			UPDATE ".$db->prefix."btk_userrole
 			SET expanded=".bkint($value)."
+			WHERE taskid=".bkint($taskid)." AND userid=".bkint($userid)."
+			LIMIT 1
+		";
+		$db->query_write($sql);
+	}
+	
+	public static function TaskShowComments(CMSDatabase $db, $taskid, $userid, $value){
+		$sql = "
+			UPDATE ".$db->prefix."btk_userrole
+			SET showcomments=".bkint($value)."
 			WHERE taskid=".bkint($taskid)." AND userid=".bkint($userid)."
 			LIMIT 1
 		";
