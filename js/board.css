@@ -17,44 +17,26 @@
 .aw-botask .board {
 	width: 100%; 
 }
-
-.aw-botask .board .node {
-	background-color: #F9F5DF;
-	margin: 0 10px 10px 0;
-	float: left;
-	width: 230px; 
-	height: 160px;
-	border:1px solid #9db1c0;
-	position: relative; 
+.aw-botask .board .mainmenu {
+	padding-bottom: 10px;
+	border-bottom: 1px dotted #73A110;
+    clear: both;
 }
-.aw-botask .board .node {
-	
+.aw-botask .board .mainmenu li {
+	margin-top: 10px;
+	text-align: center;
 }
-.aw-botask .board .node .title {
-	/* cursor: pointer; /**/
-	padding: 5px;
-	text-align:center;
-	height: 76px;
-	overflow: hidden;
-	border-bottom:1px solid #9db1c0;
+.aw-botask .board .mainmenu li a {
+	color: #000;
+	text-decoration: none;
 }
-
-.aw-botask .board .node .info {
-	padding: 5px;
+.aw-botask .board .mainmenu li a:hover {
+	text-decoration: underline;
 }
-
-.aw-botask .board .node .line {
-    height: 1.5em;
-	position: relative;
-	white-space: nowrap;
-	overflow: hidden;	
-}
-
-.aw-botask .board .node .shadow {
-    background: url("/modules/botask/images/shadow.png") repeat-y scroll 0 0 transparent;
-    height: 1.3em;
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 16px;
+.aw-botask .board .mainmenu li .cmtnew {
+	font-weight: bold;
+	margin-left: 2px;
+	color: red;
+	vertical-align: top;
+	font-size: 0.7em;
 }

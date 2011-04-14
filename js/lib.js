@@ -15,6 +15,7 @@ Component.requires = {
 Component.entryPoint = function(){
 
 	var Dom = YAHOO.util.Dom,
+		E = YAHOO.util.Event,
 		L = YAHOO.lang,
 		TMG = this.template,
 		NS = this.namespace,
@@ -549,6 +550,26 @@ Component.entryPoint = function(){
 			this.taskUserChangedEvent = new YAHOO.util.CustomEvent("taskUserChangedEvent");
 			
 			this.userConfigChangedEvent = new YAHOO.util.CustomEvent("userConfigChangedEvent");
+			
+			this.lastUpdateTime = new Date();
+			
+			// система автоматического обновления
+			// проверяет по движению мыши в документе, срабатывает по задержке обновления
+			// более 5 минут
+			E.on(document.body, 'mousemove', this.onMouseMove, this, true);
+		},
+		
+		onMouseMove: function(evt){
+			var ctime = (new Date()).getTime(), ltime = this.lastUpdateTime.getTime();
+			
+			if ((ctime-ltime)/(1000*60) < 5){ return; }
+			this.lastUpdateTime = new Date();
+			
+			// получения времени сервера необходимое для синхронизации
+			// и проверка обновлений в задачах
+			this.ajax({'do': 'sync'}, function(r){ 
+				
+			});
 		},
 		
 		_updateUsers: function(users){
@@ -605,6 +626,7 @@ Component.entryPoint = function(){
 		},
 		
 		_ajaxBeforeResult: function(r){
+			if (L.isNull(r)){ return false; }
 			if (r.u*1 != Brick.env.user.id){ // пользователь разлогинился
 				Brick.Page.reload();
 				return false;
@@ -663,6 +685,7 @@ Component.entryPoint = function(){
 			Brick.ajax('botask', {
 				'data': d,
 				'event': function(request){
+					if (L.isNull(request.data)){ return; }
 					var isChanges = __self._ajaxBeforeResult(request.data);
 					// применить результат запроса
 					callback(request.data.r);
@@ -875,7 +898,7 @@ Component.entryPoint = function(){
 		init: function(container, task){
 			buildTemplate(this, 'nav,navrow,navrowadd');
 			
-			this.container= container;
+			this.container = container;
 			this.task = task;
 			
 			// Подписаться на событие изменений в задачах
@@ -918,6 +941,7 @@ Component.entryPoint = function(){
 	};
 	
 	var TZ_OFFSET = NS.getDate().getTimezoneOffset();
+	// TZ_OFFSET = 0;
 	
 	NS.dateToServer = function(date){
 		if (L.isNull(date)){ return 0; }

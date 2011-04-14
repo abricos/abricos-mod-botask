@@ -1,0 +1,48 @@
+<!--{panel}-->
+<div class='hd'>{v#tl}</div>
+<div class='bd aw-botask'>
+	<div class="comments">
+		
+		<div class="navigate">
+			<span class="item">
+				<a href="#app=botask/board/showBoardPanel">Доска задач</a>
+			</span>
+			<span class="item"> → Комментарии</span>
+		</div>
+		
+		<table class="maintable"><tbody><tr>
+			<td class="leftcol">
+				<div class="colbody">
+					<div id="{i#comments}" class>
+						<span><img src="/images/loading.gif" /> Идет загрузка данных. Пожалуйста, подождите...</span>
+					</div>
+				</div>
+			</td>
+			<td class="rightcol">
+				<div id="{i#colinfo}" class="colbody colinfo">
+			
+				</div>
+			</td>
+		</tr></tbody></table>
+		
+	</div>
+</div>
+
+<!--{comment}-->
+<ul class="tkitem">
+	<li class="task">
+		<div class="navlist">
+			{v#nav}
+		</div>
+	</li>
+	<li class="comment">
+		<div class="mod-comment">
+			<ul>{v#cmt}</ul>
+		</div>
+	</li>
+	<div style="clear: both;"></div>
+</ul>
+<div class="delim">&nbsp;</div>
+
+<!--{task}-->
+<a href="#app=botask/taskview/showTaskViewPanel/{v#id}/">{v#tl}</a>

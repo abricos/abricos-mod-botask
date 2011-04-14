@@ -52,6 +52,7 @@ class BotaskManager extends ModuleManager {
 	private function _AJAX($d){
 		switch($d->do){
 			case 'task': return $this->Task($d->taskid);
+			case 'sync': return $this->Sync();
 			case 'tasksave': return $this->TaskSave($d->task);
 			case 'tasksetexec': return $this->TaskSetExec($d->taskid);
 			case 'taskunsetexec': return $this->TaskUnsetExec($d->taskid);
@@ -64,6 +65,7 @@ class BotaskManager extends ModuleManager {
 			case 'taskshowcmt': return $this->TaskShowComments($d->taskid, $d->val);
 			case 'history': return $this->History($d->taskid, $d->firstid);
 			case 'usercfgupdate': return $this->UserConfigUpdate($d->cfg);
+			case 'lastcomments': return $this->CommentList();
 		}
 		return null;
 	}
@@ -106,6 +108,10 @@ class BotaskManager extends ModuleManager {
 			$ret[$row['id']] = $row;
 		}
 		return $ret;
+	}
+	
+	public function Sync(){
+		return TIMENOW;
 	}
 
 	/**
@@ -524,15 +530,25 @@ class BotaskManager extends ModuleManager {
 		return $this->UserConfigList();
 	}
 	
+	public function CommentList(){
+		if (!$this->IsViewRole()){ return null; }
+		
+		$rows = BotaskQuery::CommentList($this->db, $this->userid);
+		return $this->ToArray($rows);
+	}
+	
 	////////////////////////////// комментарии /////////////////////////////
 	
 	public function IsCommentList($contentid){
+		if (!$this->IsViewRole()){ return null; }
 		$task = BotaskQuery::TaskByContentId($this->db, $this->userid, $contentid, true);
 		if (!$this->TaskAccess($task['id'])){ return false; }
 		return true;
 	}
 	
 	public function IsCommentAppend($contentid){
+		if (!$this->IsViewRole()){ return null; }
+		
 		$task = BotaskQuery::TaskByContentId($this->db, $this->userid, $contentid, true);
 		if (!$this->TaskAccess($task['id'])){ return false; }
 		return true;

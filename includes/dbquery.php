@@ -445,6 +445,34 @@ class BotaskQuery {
 		";
 		$db->query_write($sql);
 	}
+	
+	public static function CommentList(CMSDatabase $db, $userid){
+		$sql = "
+			SELECT 
+				a.commentid as id,
+				a.parentcommentid as pid,
+				t1.taskid as tkid,
+				a.body as bd, 
+				a.dateedit as de,
+				a.status as st, 
+				u.userid as uid, 
+				u.username as unm,
+				u.avatar as avt,
+				u.firstname as fnm,
+				u.lastname as lnm
+			FROM ".$db->prefix."cmt_comment a
+			INNER JOIN (SELECT
+					p.taskid, 
+					p.contentid
+				FROM ".$db->prefix."btk_userrole ur
+				INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
+				WHERE ur.userid=".bkint($userid).") t1 ON t1.contentid=a.contentid
+			LEFT JOIN ".$db->prefix."user u ON u.userid = a.userid
+			ORDER BY a.commentid DESC  
+			LIMIT 10
+		";
+		return $db->query_read($sql);
+	}
 }
 
 ?>
