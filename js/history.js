@@ -96,6 +96,8 @@ Component.entryPoint = function(){
 						}
 					}else if (hst.status == TS.CLOSE){
 						fa[fa.length] = LNGA['close'];
+					}else if (hst.status == TS.ARHIVE){
+						fa[fa.length] = LNGA['arhive'];
 					}else if (hst.status == TS.REMOVE){
 						fa[fa.length] = LNGA['remove'];
 					}else if (hst.status == TS.REOPEN){

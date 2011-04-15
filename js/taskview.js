@@ -200,30 +200,22 @@ Component.entryPoint = function(){
 			gel('ddlt').innerHTML = sddlt;
 
 			// закрыть все кнопки, открыть те, что соответсуют статусу задачи
-			TM.elHide('panel.bsetexec,bunsetexec,bclose,bclosens,bopen,beditor,bremove')
+			TM.elHide('panel.bsetexec,bunsetexec,bclose,bclosens,bopen,beditor,bremove,brestore,barhive');
 
 			// статус
 			switch(task.status){
 			case TST.OPEN:
-			case TST.REOPEN:
-				TM.elShow('panel.bsetexec,bclosens,beditor,bremove')
-				break;
-			case TST.ACCEPT:
-				TM.elShow('panel.bclose,bunsetexec,beditor,bremove');
-				break;
-			case TST.CLOSE:
-				TM.elShow('panel.bopen');
-				break;
-			case TST.REMOVE:
-				TM.elShow('panel.bopen');
-				break;
+			case TST.REOPEN:	TM.elShow('panel.bsetexec,bclosens,beditor,bremove'); break;
+			case TST.ACCEPT:	TM.elShow('panel.bclose,bunsetexec,beditor,bremove'); break;
+			case TST.CLOSE:		TM.elShow('panel.bopen,barhive'); break;
+			case TST.REMOVE:	TM.elShow('panel.brestore'); break;
 			}
 			
 			// скрыть/показать подзадачи
 			var view = NS.taskManager.userConfig['taskviewchild'];
-			Dom.setStyle(TM.getEl('panel.ptlist'), 'display', view ? '' : 'none')
-			Dom.setStyle(TM.getEl('panel.ptlisthide'), 'display', view ? '' : 'none')
-			Dom.setStyle(TM.getEl('panel.ptlistshow'), 'display', view ? 'none' : '')
+			Dom.setStyle(TM.getEl('panel.ptlist'), 'display', view ? '' : 'none');
+			Dom.setStyle(TM.getEl('panel.ptlisthide'), 'display', view ? '' : 'none');
+			Dom.setStyle(TM.getEl('panel.ptlistshow'), 'display', view ? 'none' : '');
 			
 			this.renderComments();
 		},
@@ -231,9 +223,9 @@ Component.entryPoint = function(){
 			var TM = this._TM;
 			// скрыть/показать комментарии
 			var view = NS.taskManager.userConfig['taskviewcmts'];
-			Dom.setStyle(TM.getEl('panel.comments'), 'display', view ? '' : 'none')
-			Dom.setStyle(TM.getEl('panel.cmthide'), 'display', view ? '' : 'none')
-			Dom.setStyle(TM.getEl('panel.cmtshow'), 'display', view ? 'none' : '')
+			Dom.setStyle(TM.getEl('panel.comments'), 'display', view ? '' : 'none');
+			Dom.setStyle(TM.getEl('panel.cmthide'), 'display', view ? '' : 'none');
+			Dom.setStyle(TM.getEl('panel.cmtshow'), 'display', view ? 'none' : '');
 		},
 		onClick: function(el){
 			var tp = this._TId['panel'];
@@ -244,13 +236,21 @@ Component.entryPoint = function(){
 			case tp['bclose']: 
 			case tp['bclosens']: 
 				this.taskClose(); return true;
+			
 			case tp['bcloseno']: this.taskCloseCancel(); return true;
 			case tp['bcloseyes']: this.taskCloseMethod(); return true;
 
 			case tp['bremove']: 
 				this.taskRemove(); return true;
+			
 			case tp['bremoveno']: this.taskRemoveCancel(); return true;
 			case tp['bremoveyes']: this.taskRemoveMethod(); return true;
+
+			case tp['brestore']: 
+				this.taskRestore(); return true;
+
+			case tp['barhive']: 
+				this.taskArhive(); return true;
 
 			case tp['bopen']:  this.taskOpen(); return true;
 			case tp['beditor']: this.taskEditorShow(); return true;
@@ -287,6 +287,20 @@ Component.entryPoint = function(){
 			var __self = this;
 			this._shLoading(true);
 			NS.taskManager.taskRemove(this.task.id, function(){
+				__self._shLoading(false);
+			});
+		},
+		taskRestore: function(){
+			var __self = this;
+			this._shLoading(true);
+			NS.taskManager.taskRestore(this.task.id, function(){
+				__self._shLoading(false);
+			});
+		},
+		taskArhive: function(){
+			var __self = this;
+			this._shLoading(true);
+			NS.taskManager.taskArhive(this.task.id, function(){
 				__self._shLoading(false);
 			});
 		},

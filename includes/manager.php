@@ -58,6 +58,8 @@ class BotaskManager extends ModuleManager {
 			case 'taskunsetexec': return $this->TaskUnsetExec($d->taskid);
 			case 'taskclose': return $this->TaskClose($d->taskid);
 			case 'taskremove': return $this->TaskRemove($d->taskid);
+			case 'taskrestore': return $this->TaskRestore($d->taskid);
+			case 'taskarhive': return $this->TaskArhive($d->taskid);
 			case 'taskopen': return $this->TaskOpen($d->taskid);
 			case 'taskvoting': return $this->TaskVoting($d->taskid, $d->val);
 			case 'taskfavorite': return $this->TaskFavorite($d->taskid, $d->val);
@@ -300,6 +302,36 @@ class BotaskManager extends ModuleManager {
 	}
 	
 	/**
+	 * Восстановить удаленную задачу
+	 */
+	public function TaskRestore($taskid){
+		if (!$this->TaskAccess($taskid)){ return null; }
+		
+		$task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
+		if ($task['st'] != BotaskStatus::TASK_REMOVE){ return null; }
+		
+		// восстановить задачу
+		$rows = BotaskQuery::TaskHistory($this->db, $taskid);
+		$i=0; 
+		$prevStatus=BotaskStatus::TASK_OPEN;
+		while (($row = $this->db->fetch_array($rows))){
+			if ($i == 1){
+				$prevStatus = $row['st'];
+				break;
+			}
+			$i++;
+		}
+		
+		$history = new BotaskHistory($this->userid);
+		$history->SetStatus($task, $prevStatus, $this->userid);
+		$history->Save();
+		
+		BotaskQuery::TaskSetStatus($this->db, $taskid, $prevStatus, $this->userid);
+		
+		return $this->Task($taskid);
+	}
+	
+	/**
 	 * Открыть задачу повторно
 	 * 
 	 * @param integer $taskid
@@ -309,7 +341,7 @@ class BotaskManager extends ModuleManager {
 		
 		$task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
 		
-		if ($task['st'] != BotaskStatus::TASK_CLOSE || 
+		if ($task['st'] != BotaskStatus::TASK_CLOSE &&  
 			$task['st'] != BotaskStatus::TASK_REMOVE ){ 
 			return null; 
 		}
@@ -319,6 +351,27 @@ class BotaskManager extends ModuleManager {
 		$history->Save();
 		
 		BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_REOPEN, $this->userid);
+		
+		return $this->Task($taskid);
+	}
+	
+	/**
+	 * Переместить задачу в архив
+	 * 
+	 * @param integer $taskid
+	 */
+	public function TaskArhive($taskid){
+		if (!$this->TaskAccess($taskid)){ return null; }
+		
+		$task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
+		
+		if ($task['st'] != BotaskStatus::TASK_CLOSE){ return null; }
+		
+		$history = new BotaskHistory($this->userid);
+		$history->SetStatus($task, BotaskStatus::TASK_ARHIVE, $this->userid);
+		$history->Save();
+		
+		BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_ARHIVE, $this->userid);
 		
 		return $this->Task($taskid);
 	}

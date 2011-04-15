@@ -67,9 +67,9 @@ Component.entryPoint = function(){
 					'name': 'opened',
 					'el': TM.getEl('list.opened')
 				},
-				'closed':{
-					'name': 'closed',
-					'el': TM.getEl('list.closed')
+				'arhive':{
+					'name': 'arhive',
+					'el': TM.getEl('list.arhive')
 				},
 				'removed':{
 					'name': 'removed',
@@ -133,7 +133,7 @@ Component.entryPoint = function(){
 			selTPage = this.selectedTabPage['name'];
 			if (selTPage == 'opened'){
 				tk.childs.foreach(function(ctk){
-					if (!ctk.isClosed() && !ctk.isRemoved()){
+					if (!ctk.isRemoved() && !ctk.isArhive()){
 						chcls = '';
 						return true;
 					}
@@ -177,7 +177,7 @@ Component.entryPoint = function(){
 			var selTPage = this.selectedTabPage['name'];
 			if (selTPage == 'opened'){
 				list.foreach(function(tk){
-					if (tk.isClosed() || tk.isRemoved()){
+					if (tk.isRemoved() || tk.isArhive()){
 						return;
 					}
 					lst += __self.buildRow(tk, level);
@@ -185,6 +185,7 @@ Component.entryPoint = function(){
 			}else{
 				list.foreach(function(tk){
 					if ((selTPage == 'closed' && tk.status == TST.CLOSE) || 
+							(selTPage == 'arhive' && tk.status == TST.ARHIVE) ||
 							(selTPage == 'removed' && tk.status == TST.REMOVE) ||
 							(selTPage == 'favorite' && tk.favorite) ){ 
 						lst += __self.buildRow(tk, level);
@@ -236,7 +237,7 @@ Component.entryPoint = function(){
 			var tp = TId['list'];
 			switch(el.id){
 			case tp['opened']: this.selectTabPage('opened'); return true;
-			case tp['closed']: this.selectTabPage('closed'); return true;
+			case tp['arhive']: this.selectTabPage('arhive'); return true;
 			case tp['removed']: this.selectTabPage('removed'); return true;
 			case tp['favorite']: this.selectTabPage('favorite'); return true;
 			}

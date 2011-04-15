@@ -243,7 +243,7 @@ class BotaskQuery {
 			INNER JOIN ".$db->prefix."btk_task p ON h.taskid=p.taskid
 			WHERE h.taskid=".bkint($taskid)." ".$where."
 			ORDER BY h.dateline DESC
-			LIMIT 15 
+			LIMIT 7 
 		";
 		return $db->query_read($sql);
 	}
@@ -335,7 +335,7 @@ class BotaskQuery {
 	public static function TaskUnsetStatus(CMSDatabase $db, $taskid){
 		$sql = "
 			UPDATE ".$db->prefix."btk_task
-			SET status=0, statuserid=0, statdate=0
+			SET status=".BotaskStatus::TASK_OPEN.", statuserid=0, statdate=0
 			WHERE taskid=".bkint($taskid)."
 		";
 		$db->query_write($sql);
@@ -469,7 +469,7 @@ class BotaskQuery {
 				WHERE ur.userid=".bkint($userid).") t1 ON t1.contentid=a.contentid
 			LEFT JOIN ".$db->prefix."user u ON u.userid = a.userid
 			ORDER BY a.commentid DESC  
-			LIMIT 10
+			LIMIT 15
 		";
 		return $db->query_read($sql);
 	}

@@ -89,7 +89,24 @@
 }
 .aw-botask .tlist .tname .ch-tl {
 	margin-left: 20px;
+	white-space: nowrap;
+	overflow: hidden;
+	position: relative;
 }
+.aw-botask .tlist .tname .ch-tl .shadow {
+    background: url("/modules/botask/images/shadow.png") repeat-y scroll 0 0 transparent;
+    height: 1.3em;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 16px;
+}
+
+.aw-botask .tlist tr.row:hover .tname .ch-tl .shadow,
+.aw-botask .tlist tr.row-hover .tname .ch-tl .shadow {
+    background: url("/modules/botask/images/shadow-row.png") repeat-y scroll 0 0 transparent;
+}
+
 .aw-botask .tlist div.ch-btn {
     background: url("/modules/botask/images/expd.gif") no-repeat scroll 0 0 transparent;
     cursor: pointer;
@@ -173,7 +190,13 @@
 
 .aw-botask .tlist table th.tddl {
 	width: 9em;
-} 
+}
+
+.aw-botask .tlist table td.tddl {
+	vertical-align: middle;
+	font-size: 0.9em;
+}
+
 .aw-botask .tlist table th.tautor, 
 .aw-botask .tlist table th.texec {
 	width: 25%;
@@ -181,13 +204,23 @@
 .aw-botask .tlist table th.tfav {
 	width: 32px;
 }
+.aw-botask .tlist table th.tfav ul {
+	margin-left: 2px;
+}
+
 .aw-botask .tlist table th.tvot {
-	width: 50px;
+	width: 60px;
+}
+.aw-botask .tlist table th.tvot ul {
+	margin-left: 15px;
 }
 
 .aw-botask .tlist table th.tprt {
-	width: 9em;
+	width: 8em;
 	text-align: center;	
+}
+.aw-botask .tlist table th.tprt ul {
+	margin-left: 10px;
 }
 .aw-botask .tlist table td.tprt .prtclr {
 	text-align: center;

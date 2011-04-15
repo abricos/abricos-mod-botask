@@ -75,9 +75,15 @@ Component.entryPoint = function(){
 				});
 			};
 			
-			for (var id in r){
-				
-				var item = r[id],
+			var cmts = [];
+			for (var id in r){ cmts[cmts.length] = r[id]; }
+			cmts = cmts.sort(function(a, b){
+				if (a.de*1 > b.de*1){ return -1; }
+				if (a.de*1 < b.de*1){ return 1; }
+				return 0;
+			});
+			for (var i=0;i<cmts.length;i++){
+				var item = cmts[i],
 					task = NS.taskManager.list.find(item['tkid']),
 					arr = [];
 				tpath(arr, task);
@@ -86,6 +92,7 @@ Component.entryPoint = function(){
 					'cmt': this.builder.buildHTML(item)
 				});
 			}
+			
 			TM.getEl('panel.comments').innerHTML = lst;
 		}
 	});

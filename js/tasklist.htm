@@ -2,9 +2,9 @@
 <div class="tlist" id="{i#id}">
 	<div class="tlmenu">
 		<div id="{i#opened}" class="tlitem current">Открытые</div>
-		<div id="{i#closed}" class="tlitem">Завершенные</div>
-		<div id="{i#removed}" class="tlitem">Удаленные</div>
 		<div id="{i#favorite}" class="tlitem">Избранное</div>
+		<div id="{i#arhive}" class="tlitem">Архив</div>
+		<div id="{i#removed}" class="tlitem">Удаленные</div>
 	</div>
 	<div id="{i#table}" class="ttable"></div>
 </div>
@@ -75,12 +75,13 @@
 			<div class="ch-btn" id="{i#exp}-{v#id}">&nbsp;</div>
 		</div>
 		<div class="ch-tl">
-			<a href="#app=botask/taskview/showTaskViewPanel/{v#id}/">{v#tl}</a>
+			<a href="#app=botask/taskview/showTaskViewPanel/{v#id}/" title="{v#tl}">{v#tl}</a>
 			<span id="{i#new}-{v#id}" class="new" title="Эта задача новая">New</span>
 			<span id="{i#chnew}-{v#id}" class="chnew" title="Есть новые подзадачи">+New</span>
+			<div class="shadow"></div>
 		</div>
 	</td>
-	<td>
+	<td class="tddl">
 		{v#ddl}
 	</td>
 	<td class="tprt">

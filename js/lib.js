@@ -56,7 +56,8 @@ Component.entryPoint = function(){
 		'CLOSE'		: 3,	// принята
 		'ACCEPT'	: 4,	// закрыта
 		'ASSIGN'	: 5,	// назначена
-		'REMOVE'	: 6		// удалена
+		'REMOVE'	: 6,	// удалена
+		'ARHIVE'	: 7		// в архиве
 	}
 	NS.TaskStatus = TaskStatus;
 
@@ -146,6 +147,10 @@ Component.entryPoint = function(){
 		isRemoved: function(){
 			return this.status*1 == NS.TaskStatus.REMOVE;
 		},
+		
+		isArhive: function(){
+			return this.status*1 == NS.TaskStatus.ARHIVE;
+		},
 
 		toString: function(){
 			return "'"+this.title+"', Child: "+this.childs.count();
@@ -204,6 +209,9 @@ Component.entryPoint = function(){
 		var v = sortDeadline(tk1, tk2);
 		if (v != 0){ return v; }
 		
+		v = sortPriority(tk1, tk2); if (v != 0){ return v; }
+		v = sortOrder(tk1, tk2); if (v != 0){ return v; }
+		
 		var isClosed = tk1.isClosed() && tk2.isClosed();
 		
 		if (!isClosed){
@@ -228,7 +236,7 @@ Component.entryPoint = function(){
 		'namedesc': function(tk1, tk2){return NS.taskSort['name'](tk2, tk1);},
 		'priority': function(tk1, tk2){
 
-			v = sortClosed(tk1, tk2);
+			var v = sortClosed(tk1, tk2);
 			if (v != 0){ return v; }
 
 			var v1 = tk1.priority, v2 = tk2.priority;
@@ -238,7 +246,7 @@ Component.entryPoint = function(){
 			return 0;
 		},
 		'prioritydesc': function(tk2, tk1){ 
-			v = sortClosed(tk2, tk1);
+			var v = sortClosed(tk2, tk1);
 			if (v != 0){ return v; }
 
 			var v1 = tk1.priority, v2 = tk2.priority;
@@ -799,8 +807,14 @@ Component.entryPoint = function(){
 		taskRemove: function(taskid, callback){ // удалить задачу
 			this._taskAJAX(taskid, 'taskremove', callback);
 		},
+		taskRestore: function(taskid, callback){ // восстановить удаленную задачу
+			this._taskAJAX(taskid, 'taskrestore', callback);
+		},
 		taskClose: function(taskid, callback){ // закрыть задачу
 			this._taskAJAX(taskid, 'taskclose', callback);
+		},
+		taskArhive: function(taskid, callback){ // Переместить задачу в архив
+			this._taskAJAX(taskid, 'taskarhive', callback);
 		},
 		taskOpen: function(taskid, callback){ // открыть задачу повторно
 			this._taskAJAX(taskid, 'taskopen', callback);

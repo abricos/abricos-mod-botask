@@ -78,6 +78,12 @@ class BotaskStatus {
 	 * @var integer
 	 */
 	const TASK_REMOVE = 6;
+
+	/**
+	 * Задача в архиве.
+	 * @var integer
+	 */
+	const TASK_ARHIVE = 7;
 }
 
 class BotaskAction {

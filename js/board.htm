@@ -1,14 +1,15 @@
 <!--{panel}-->
-<div class='hd'>Доска задач</div>
+<div class='hd'>Задачи</div>
 <div class='bd aw-botask'>
 
 	<div class="board" id="{i#id}">
 	
-		<div id="{i#nav}"></div>
-		
 		<table class="maintable"><tbody><tr>
 			<td class="leftcol">
 				<div class="colbody">
+				
+					<div id="{i#nav}"></div>
+					
 					<div id="{i#list}" class="list">
 						Идет загрузка задач. Пожалуйста, подождите...
 					</div>
@@ -19,13 +20,13 @@
 				
 					<ul class="mainmenu">
 						<li>
-							<a href="#app=botask/comments/showLastCommentsPanel">
-								Все комментарии
+							<a href="#app=botask/comments/showLastCommentsPanel" title="Просмотреть ленту комментариев">
+								Лента комментариев
 							</a>
 							<span class="cmtnew" style="display: none;">+10</span>
 						</li>
 					</ul>
-					
+					<span style="font-weight: bold; line-height: 1.5em">История</span>
 					<div id="{i#history}"></div>
 					
 				</div>
