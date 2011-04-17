@@ -1,0 +1,43 @@
+.aw-botask .twuser {
+	margin-bottom: 15px;
+	position: relative;
+}
+
+.aw-botask .twuser .twavatar {
+	position: absolute;
+	left: 10px;
+	top: 0;
+}
+
+.aw-botask .twuser .twtop {
+	margin-left: 65px;
+}
+.aw-botask .twuser .twtop .twunm {
+	margin-bottom: 10px;
+}
+.aw-botask .twuser .twtop .twunm a {
+  	color: #666666;
+    font-size: 1.1em;
+    font-weight: bold;
+    text-decoration: none;	
+}
+
+.aw-botask .twuser .twitem {
+	cursor: pointer;
+	float: left;
+	background-color: #E3E3D7;
+	margin: 0 1px;
+	padding: 5px 15px; 
+}
+.aw-botask .twuser .twitem:hover, 
+.aw-botask .twuser .current:hove {
+	text-decoration: underline;
+	
+}
+.aw-botask .twuser .twmenu .current {
+	background-color: #F4F4EE;
+}
+
+.aw-botask .twuser .twendline {
+	height: 10px;
+}

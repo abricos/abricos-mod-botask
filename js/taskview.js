@@ -72,6 +72,8 @@ Component.entryPoint = function(){
 				TM = this._TM,
 				__self = this;
 			
+			this.gmenu = new NS.GlobalMenuWidget(TM.getEl('panel.gmenu'), 'task');
+
 			this.history = null;
 			this.navigate = new NS.TaskNavigateWidget(TM.getEl('panel.nav'), task);
 			

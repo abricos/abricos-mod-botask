@@ -24,12 +24,43 @@
 	font-size: 1.5em;
 	margin-bottom: 0.6em;
 }
+.aw-botask .navigate .first .arrow {
+	display: none;
+}
+.aw-botask .navigate .current a {
+	color: #666666;
+}
 
-.aw-botask .navigate .baddtask {
-    color: #73A110;
-    border-bottom: 1px dotted;
-    margin-right: 1em;
-    text-decoration: none;
+
+.aw-botask .gbmenu a {
+	text-decoration: none;
+	font-size: 1.2em;
+	color: #000;
+}
+.aw-botask .gbmenu .gbitems {
+	margin-left: 10px;
+}
+.aw-botask .gbmenu .gbitem {
+	background-color: #F4F4EE;
+	text-align: center;
+	width: 100px;
+	cursor: pointer;
+	float: left;
+	margin: 0 1px;
+	padding: 5px 15px; 
+}
+.aw-botask .gbmenu .gbitem:hover {
+	text-decoration: underline;	
+}
+.aw-botask .gbmenu .current {
+	background-color: #E3E3D7;
+}
+.aw-botask .gbmenu .current:hover {
+	text-decoration: none;	
+}
+.aw-botask .gbmenu .line {
+    background: url("/modules/botask/images/gmshadow.png") repeat-x scroll 0 0 transparent;
+	height: 16px;
 }
 
 .aw-botask .ui-form dl {

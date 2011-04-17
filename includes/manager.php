@@ -68,6 +68,7 @@ class BotaskManager extends ModuleManager {
 			case 'history': return $this->History($d->taskid, $d->firstid);
 			case 'usercfgupdate': return $this->UserConfigUpdate($d->cfg);
 			case 'lastcomments': return $this->CommentList();
+			case 'towork': return $this->ToWork();
 		}
 		return null;
 	}
@@ -587,6 +588,18 @@ class BotaskManager extends ModuleManager {
 		if (!$this->IsViewRole()){ return null; }
 		
 		$rows = BotaskQuery::CommentList($this->db, $this->userid);
+		return $this->ToArray($rows);
+	}
+
+	/**
+	 * Отчет по участникам
+	 */
+	public function ToWork(){
+		if (!$this->IsViewRole()){ return null; }
+		
+		$fromtime = TIMENOW - 60*60*24*31;
+		
+		$rows = BotaskQuery::ToWork($this->db, $this->userid, $fromtime);
 		return $this->ToArray($rows);
 	}
 	

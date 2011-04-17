@@ -48,7 +48,8 @@ Component.entryPoint = function(){
 		},
 		onLoad: function(){
 			var TM = this._TM;
-			this.navigate = new NS.TaskNavigateWidget(TM.getEl('panel.nav'));
+			
+			this.gmenu = new NS.GlobalMenuWidget(TM.getEl('panel.gmenu'), 'task');
 			this.history = new NS.HistoryWidget(TM.getEl('panel.history'));
 			this.list = new NS.TaskListWidget(TM.getEl('panel.list'), 0);
 		},

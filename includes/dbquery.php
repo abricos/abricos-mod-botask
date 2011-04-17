@@ -473,6 +473,26 @@ class BotaskQuery {
 		";
 		return $db->query_read($sql);
 	}
+	
+	public static function ToWork(CMSDatabase $db, $userid, $fromtime){
+		$sql = "
+			SELECT
+				h.historyid as id,
+				h.taskid as tid,
+				h.dateline as dl,
+				h.status as st,
+				h.prevstatus as pst,
+				h.statuserid as uid
+			FROM ".$db->prefix."btk_userrole ur 
+			INNER JOIN ".$db->prefix."btk_task p ON ur.taskid=p.taskid
+			INNER JOIN ".$db->prefix."btk_history h ON ur.taskid=h.taskid
+			WHERE ur.userid=".bkint($userid)." AND p.deldate=0 AND h.dateline >= ".bkint($fromtime)." AND
+			(h.status = ".BotaskStatus::TASK_ACCEPT." OR h.prevstatus = ".BotaskStatus::TASK_ACCEPT.")
+			ORDER BY h.dateline DESC
+			LIMIT 500
+		";
+		return $db->query_read($sql);
+	}
 }
 
 ?>

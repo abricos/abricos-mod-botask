@@ -2,13 +2,15 @@
 <div class='hd'>Задачи</div>
 <div class='bd aw-botask'>
 
+	<div id="{i#gmenu}"></div>
+	
 	<div class="board" id="{i#id}">
 	
 		<table class="maintable"><tbody><tr>
 			<td class="leftcol">
 				<div class="colbody">
-				
-					<div id="{i#nav}"></div>
+					
+					<a class="baddtask" href="#app=botask/taskeditor/showCreateTaskPanel/0/">Добавить задачу</a>
 					
 					<div id="{i#list}" class="list">
 						Идет загрузка задач. Пожалуйста, подождите...
@@ -17,15 +19,6 @@
 			</td>
 			<td class="rightcol">
 				<div class=colbody>
-				
-					<ul class="mainmenu">
-						<li>
-							<a href="#app=botask/comments/showLastCommentsPanel" title="Просмотреть ленту комментариев">
-								Лента комментариев
-							</a>
-							<span class="cmtnew" style="display: none;">+10</span>
-						</li>
-					</ul>
 					<span style="font-weight: bold; line-height: 1.5em">История</span>
 					<div id="{i#history}"></div>
 					

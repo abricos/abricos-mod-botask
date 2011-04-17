@@ -49,6 +49,9 @@ Component.entryPoint = function(){
 			return this._TM.replace('panel');
 		},
 		onLoad: function(){
+			
+			this.gmenu = new NS.GlobalMenuWidget(this._TM.getEl('panel.gmenu'), 'comments');
+
 			this.builder = new Brick.mod.comment.CommentManager(true);
 			this.loadLastComments();
 		},

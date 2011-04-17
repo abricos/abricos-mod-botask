@@ -53,8 +53,8 @@ Component.entryPoint = function(){
 	var TaskStatus = {
 		'OPEN'		: 1,	// открыта
 		'REOPEN'	: 2,	// открыта повторно
-		'CLOSE'		: 3,	// принята
-		'ACCEPT'	: 4,	// закрыта
+		'CLOSE'		: 3,	// завершена
+		'ACCEPT'	: 4,	// в работе
 		'ASSIGN'	: 5,	// назначена
 		'REMOVE'	: 6,	// удалена
 		'ARHIVE'	: 7		// в архиве
@@ -112,6 +112,8 @@ Component.entryPoint = function(){
 			this.favorite = d['f']*1>0;
 			this.expanded = d['e']*1>0;
 			this.showcmt = d['c']*1>0;
+			
+			this.work = null;
 			
 			this._updateFlagNew(d);
 		},
@@ -354,6 +356,7 @@ Component.entryPoint = function(){
 			return this._list.length;
 		}
 	};
+	NS.TaskList = TaskList;
 	
 	// абстрактный класс элемента задачи
 	var HItem = function(d){
@@ -923,7 +926,9 @@ Component.entryPoint = function(){
 			this.render();
 		},
 		render: function(){
-			var TM = this._TM;
+			var TM = this._TM,
+				task = this.task,
+				first = true;
 			
 			var get = function(tk){
 				var lst = "";
@@ -932,13 +937,16 @@ Component.entryPoint = function(){
 				}
 				lst += TM.replace('navrow', {
 					'id': tk.id,
-					'tl': tk.title
+					'tl': tk.title,
+					'first': first ? 'first' : '',
+					'current': tk.id == task.id ? 'current' : ''
 				});
+				first = false;
 				return lst;
 			};
 			
 			this.container.innerHTML = TM.replace('nav', {
-				'rows': L.isNull(this.task) ? TM.replace('navrowadd') : get(this.task)
+				'rows': L.isNull(task) ? TM.replace('navrowadd') : get(task)
 			});
 		},
 		destroy: function(){
@@ -946,6 +954,23 @@ Component.entryPoint = function(){
 		}
 	};
 	NS.TaskNavigateWidget = TaskNavigateWidget;
+	
+	
+	var GlobalMenuWidget = function(container, page){
+		this.init(container, page);
+	};
+	GlobalMenuWidget.prototype = {
+		init: function(container, page){
+			buildTemplate(this, 'gbmenu');
+			
+			container.innerHTML = this._TM.replace('gbmenu', {
+				'task': page == 'task' ? 'current' : '',
+				'comments': page == 'comments' ? 'current' : '',
+				'towork': page == 'towork' ? 'current' : ''
+			});
+		}
+	};
+	NS.GlobalMenuWidget = GlobalMenuWidget;
 	
 	NS.getDate = function(){ return new Date(); };
 	
@@ -955,7 +980,7 @@ Component.entryPoint = function(){
 	};
 	
 	var TZ_OFFSET = NS.getDate().getTimezoneOffset();
-	// TZ_OFFSET = 0;
+	TZ_OFFSET = 0;
 	
 	NS.dateToServer = function(date){
 		if (L.isNull(date)){ return 0; }

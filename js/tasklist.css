@@ -225,6 +225,14 @@
 .aw-botask .tlist table td.tprt .prtclr {
 	text-align: center;
 }
+
+.aw-botask .tlist table th.twork {
+	width: 7em;
+}
+.aw-botask .tlist table td.twork {
+	vertical-align: middle;
+}
+
 .aw-botask .tlist table td a {
 	text-decoration: none;
 }

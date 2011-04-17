@@ -1,0 +1,48 @@
+<!--{panel}-->
+<div class='hd'>{v#tl}</div>
+<div class='bd aw-botask'>
+	<div class="towork">
+		
+		<div id="{i#gmenu}"></div>
+		
+		<table class="maintable"><tbody><tr>
+			<td class="leftcol">
+				<div class="colbody">
+					<div id="{i#users}">
+						<span><img src="/images/loading.gif" /> Идет загрузка данных. Пожалуйста, подождите...</span>
+					</div>
+				</div>
+			</td>
+			<td class="rightcol">
+				<div id="{i#colinfo}" class="colbody colinfo">
+			
+				</div>
+			</td>
+		</tr></tbody></table>
+		
+	</div>
+</div>
+
+<!--{row}--><div class="twuser" id="{i#id}-{v#uid}"></div>
+
+<!--{user}-->
+<div class="twavatar">
+	<a class="show-user-profile user-{v#uid}" href="#" title="{v#unm}">{v#avatar}</a>
+</div>
+<div class="manger">
+
+	<div class="twtop">
+		<div class="twunm">
+			<a href="#" class="username show-user-profile user-{v#uid}">{v#unm}</a>
+		</div>
+		<div class="twmenu">
+			<div id="{i#towork}" class="twitem current">В работе</div>
+			<div id="{i#month}" class="twitem">За последнии 31 день</div>
+		</div>
+	</div>
+	
+	<div class="tlist">
+		<div id="{i#table}" class="ttable"></div>
+	</div>
+</div>
+<div class="twendline"></div>

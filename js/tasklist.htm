@@ -54,19 +54,20 @@
 				<li><div class="sort sort-asc"></div></li>
 				<li><div class="sort sort-desc"></div></li>
 			</ul>
-		
 		</th>
+		{v#cols}
 	</tr></thead>
 	<tbody>{v#rows}</tbody>
 </table>
 
-<!--{rowold}-->
-<td class="tautor">
-	<a href="#" class="show-user-profile user-{v#auid}">
-		{v#aunm}
-	</a>
-</td>
-<td></td>
+<!--{hcolwork}-->
+<th class="twork">
+	<ul class="{v#sortwork}">
+		<li class="tl"><a id="{i#sortwork}" href="#" title="Затрачено времени в работе над задачей">Время</a></li>
+		<li><div class="sort sort-asc"></div></li>
+		<li><div class="sort sort-desc"></div></li>
+	</ul>
+</th>
 
 <!--{row}-->
 <tr id="{i#id}-{v#id}" class="row {v#classch} level{v#level} {v#tnew} {v#tchnew} priority{v#prt} {v#expired} {v#closed} {v#removed}">
@@ -99,4 +100,8 @@
 			<li id="{i#down}-{v#id}" class="down" title="Вниз"></li>
 		</ul>
 	</td>
+	{v#cols}
 </tr>
+
+<!--{rcolwork}-->
+<td class="twork">{v#work}</td>

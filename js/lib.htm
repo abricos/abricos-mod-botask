@@ -1,18 +1,24 @@
 <!--{nav}-->
 <div class="navigate">
-
-	<span class="item">
-		<a href="#app=botask/board/showBoardPanel">Задачи</a>
-	</span>
 	{v#rows}
 </div>
 
 <!--{navrow}-->
-<span class="item">
- → <a href="#app=botask/taskview/showTaskViewPanel/{v#id}/">{v#tl}</a>
+<span class="item {v#first} {v#current}">
+	<span class="arrow"> → </span><a href="#app=botask/taskview/showTaskViewPanel/{v#id}/">{v#tl}</a>
 </span>
 
-<!--{navrowadd}-->
-<span class="item">
- → <a href="#app=botask/taskeditor/showCreateTaskPanel/0/" class="baddtask">Добавить задачу</a>
-</span>
+<!--{gbmenu}-->
+<div class="gbmenu">
+	
+	<div class="gbitems">
+		<a class="gbitem {v#task}" href="#app=botask/board/showBoardPanel">Задачи</a>
+		<a class="gbitem {v#towork}" href="#app=botask/towork/showToWorkPanel">Сводка</a>
+		<a class="gbitem {v#comments}" href="#app=botask/comments/showLastCommentsPanel">
+			Комментарии
+			<span class="cmtnew" style="display: none;">+10</span>
+		</a>
+	</div>
+	<br class="clear" />
+	<div class="line"></div>
+</div>

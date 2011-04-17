@@ -24,3 +24,14 @@
 	vertical-align: top;
 	font-size: 0.7em;
 }
+
+.aw-botask .board .baddtask {
+    color: #73A110;
+    border-bottom: 1px dotted;
+    margin-right: 1em;
+    text-decoration: none;
+    font-size: 1.5em;
+}
+.aw-botask .board .colbody .list {
+	margin-top: 1em;
+}
