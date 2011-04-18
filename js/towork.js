@@ -131,11 +131,23 @@ Component.entryPoint = function(){
 			}
 			var ntws = {};
 			for (var id in tws){
-				if (tws[id].seconds > 0){
+				if (tws[id].seconds > 59){
 					ntws[id] = tws[id];
 				}
 			}
 			this.taskWorks = ntws;
+			
+			var __self = this;
+			// обновить информацию в задачах
+			NS.taskManager.list.foreach(function(tk){
+				tk.work = null;
+				__self.foreach(function(tw){
+					if (tw.taskid*1 == tk.id*1){
+						tk.work = tw;
+						return true;
+					}
+				});
+			});
 		}, 
 		foreach: function(f){
 			if (!L.isFunction(f)){ return null; }
@@ -147,26 +159,29 @@ Component.entryPoint = function(){
 		}
 	};
 	
-	var UserTaskWidget = function(container, userid, workManager){
-		this.init(container, userid, workManager);
+	var WorkTaskListWidget = function(container, userid, workManager){
+		WorkTaskListWidget.superclass.constructor.call(this, container, NS.taskManager.list, {
+			'workmanager': workManager,
+			'workuserid': userid,
+			'childs': false
+		});
 	};
-	UserTaskWidget.prototype = {
-		init: function(container, userid, workManager){
-			buildTemplate(this, 'user');
-			this.container = container;
-			this.worker = workManager;
+	YAHOO.extend(WorkTaskListWidget, NS.TaskTableWidget, {
+		init: function(wtlContainer, list, config){
 
-			var TM = this._TM, user = this.user = NS.taskManager.users[userid]
-			container.innerHTML = TM.replace('user', {
+			buildTemplate(this, 'user');
+		
+			this.wtlContainer = wtlContainer;
+			var TM = this._TM, user = this.user = NS.taskManager.users[config['workuserid']];
+			
+			wtlContainer.innerHTML = TM.replace('user', {
 				'uid': user.id,
 				'avatar': UP.avatar.get45(user),
 				'unm': UP.viewer.buildUserName(user),
 			})
-			
-			this.taskList = new NS.TaskList();
-			
-			this.tableWidget = new NS.TaskTableWidget(TM.getEl('user.table'), this.taskList);
-			
+		
+			WorkTaskListWidget.superclass.init.call(this, TM.getEl('user.table'), list, config);
+
 			this.tabPage = {
 				'towork':{
 					'name': 'towork',
@@ -179,9 +194,6 @@ Component.entryPoint = function(){
 			};
 			this.selectedTabPage = this.tabPage['towork'];
 		},
-		destroy: function (){
-			this.tableWidget.destroy();
-		},
 		selectTabPage: function(pagename){
 			var page = this.tabPage[pagename];
 			if (!page){ return; }
@@ -192,54 +204,37 @@ Component.entryPoint = function(){
 			}
 			Dom.addClass(page['el'], 'current');
 			
-			var cfg = this.tableWidget.cfg;
+			var cfg = this.cfg;
 			if (pagename == 'month'){
 				cfg['showwork'] = true;
-				cfg['workuserid'] = this.user.id;
 			}else{
 				cfg['showwork'] = false;
-				cfg['workuserid'] = 0;
 			}
 			this.render();
 		},
 		render: function(){
-			var taskList = new NS.TaskList(),
-				user = this.user;
 			
-			NS.taskManager.list.foreach(function(tk){
-				tk.work = null;
-				if (user.id*1 == tk.stUserId*1 && tk.status == NS.TaskStatus.ACCEPT){
-					taskList.add(tk);
-				}
-			});
+			this.taskViewCounter = 0;
 			
-			// кол-во затраченых часов на 
-			var wtList = new NS.TaskList();
-			this.worker.foreach(function(tw){
-				
-				var sc = tw.secondsByUser(user.id);
-				var tk = NS.taskManager.list.find(tw.taskid);
-				tk.work = tw;
-				
-				if (sc < 1){ return; }
-				
-				wtList.add(tk);
-			});
-			if (user.id*1 != Brick.env.user.id*1){
-				if (wtList.count() == 0 && taskList.count() == 0){
-					Dom.setStyle(this.container, 'display', 'none');
-					return;
-				}
-				Dom.setStyle(this.container, 'display', '');
+			WorkTaskListWidget.superclass.render.call(this);
+		},
+		isRenderTask: function(tk){
+			var selTPage = this.selectedTabPage['name'], user = this.user;
+			
+			var forwork = user.id*1 == tk.stUserId*1 && tk.status == NS.TaskStatus.ACCEPT;
+			
+			var formonth = false;
+			if (!L.isNull(tk.work)){ 
+				formonth = tk.work.secondsByUser(user.id) > 0;
 			}
-			
-			if (this.selectedTabPage['name'] == 'towork'){
-				this.tableWidget.list = taskList;
-			}else{
-				this.tableWidget.list = wtList;
+			if (forwork || formonth){
+				this.taskViewCounter++;
 			}
-			
-			this.tableWidget.render();
+
+			if (selTPage == 'towork'){
+				return forwork;
+			}			
+			return formonth;
 		},
 		onClick: function(el){
 			var tp = this._TId['user'];
@@ -249,13 +244,13 @@ Component.entryPoint = function(){
 			}
 			return false;
 		}
-	};
-	UserTaskWidget.sort = function(w1, w2){
+	});
+	
+	WorkTaskListWidget.sort = function(w1, w2){
 		if (w1.user.id*1 == Brick.env.user.id*1){ return -1; }
 		return 0;
 	};
-	NS.UserTaskWidget = UserTaskWidget;
-	
+	NS.WorkTaskListWidget = WorkTaskListWidget;
 	
 	var ToWorkPanel = function(){
 		ToWorkPanel.superclass.constructor.call(this, {
@@ -314,7 +309,7 @@ Component.entryPoint = function(){
 			var el = div.childNodes[0];
 			TM.getEl('panel.users').appendChild(el);
 			
-			var w = new UserTaskWidget(el, userid, this.worker);
+			var w = new WorkTaskListWidget(el, userid, this.worker);
 			ws[ws.length] = w;
 		},
 		renderWidgets: function(r){
@@ -329,11 +324,12 @@ Component.entryPoint = function(){
 			}
 			this.foreach(function(w){
 				w.render();
+				Dom.setStyle(w.wtlContainer, 'display', w.taskViewCounter > 0 ? '' : 'none');
 			});
 			
 			var resort = false;
 			ws = ws.sort(function(w1, w2){
-				var ret = UserTaskWidget.sort(w1, w2);
+				var ret = WorkTaskListWidget.sort(w1, w2);
 				if (ret != 0){
 					resort = true;
 				}
@@ -343,13 +339,12 @@ Component.entryPoint = function(){
 			
 			if (!resort){ return; }
 			
-			this.foreach(function(w){
-				w.container.parentNode.removeChild(w.container);
-			});
 			var elTable = this._TM.getEl('panel.users');
-			
 			this.foreach(function(w){
-				elTable.appendChild(w.container);
+				elTable.removeChild(w.wtlContainer);
+			});
+			this.foreach(function(w){
+				elTable.appendChild(w.wtlContainer);
 			});
 		},
 		onClick: function(el){

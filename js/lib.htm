@@ -1,10 +1,13 @@
 <!--{nav}-->
 <div class="navigate">
+	<span class="item {v#first}">
+		<a href="#app=botask/board/showBoardPanel">Доска задач</a>
+	</span>
 	{v#rows}
 </div>
 
 <!--{navrow}-->
-<span class="item {v#first} {v#current}">
+<span class="item {v#current}">
 	<span class="arrow"> → </span><a href="#app=botask/taskview/showTaskViewPanel/{v#id}/">{v#tl}</a>
 </span>
 

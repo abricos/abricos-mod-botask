@@ -43,8 +43,8 @@ Component.entryPoint = function(){
 		this.init(container, taskList, config);
 	};
 	TaskTableWidget.prototype = {
-		init: function(container, taskList, config){
-			this.container = container;
+		init: function(elTaskTable, taskList, config){
+			this.elTaskTable = elTaskTable;
 			this.list = taskList;
 			this.setConfig(config);
 			this.t = {};
@@ -61,11 +61,11 @@ Component.entryPoint = function(){
 			NS.taskManager.userConfigChangedEvent.subscribe(this.onUserConfigChanged, this, true);
 			
 			var __self = this;
-			E.on(container, 'click', function(e){
+			E.on(elTaskTable, 'click', function(e){
                 if (__self._onClick(E.getTarget(e))){ E.preventDefault(e); }
 			});
 			
-			E.on(container, 'mouseout', function(e){
+			E.on(elTaskTable, 'mouseout', function(e){
 				__self.onMouseOut(E.getTarget(e));
 			});
 		},
@@ -99,7 +99,7 @@ Component.entryPoint = function(){
 			return tk.childs.count() > 0 && tk.expanded;
 		},
 		isChildExpanded: function(task){ // проверка, есть ли у задачи подзадачи, и если есть, нужно ли их раскрывать
-			if (task.childs.count() == 0){ return null; }
+			if (!this.cfg['childs'] || task.childs.count() == 0){ return null; }
 			return task.expanded;
 		},
 		buildRow: function(tk, level){
@@ -215,7 +215,7 @@ Component.entryPoint = function(){
 			}
 			
 			d['sort'+cfg['tasksort']] = cfg['tasksortdesc'] ? 'sb' : 'sa';
-			this.container.innerHTML = TM.replace('table', d);
+			this.elTaskTable.innerHTML = TM.replace('table', d);
 
 			if (this._timeSelectedRow*1 > 0){
 				var __self = this,
