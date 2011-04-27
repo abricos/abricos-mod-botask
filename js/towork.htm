@@ -4,22 +4,11 @@
 	<div class="towork">
 		
 		<div id="{i#gmenu}"></div>
-		
-		<table class="maintable"><tbody><tr>
-			<td class="leftcol">
-				<div class="colbody">
-					<div id="{i#users}">
-						<span><img src="/images/loading.gif" /> Идет загрузка данных. Пожалуйста, подождите...</span>
-					</div>
-				</div>
-			</td>
-			<td class="rightcol">
-				<div id="{i#colinfo}" class="colbody colinfo">
-			
-				</div>
-			</td>
-		</tr></tbody></table>
-		
+
+		<div id="{i#users}">
+			<span><img src="/images/loading.gif" /> Идет загрузка данных. Пожалуйста, подождите...</span>
+		</div>
+
 	</div>
 </div>
 
@@ -37,12 +26,14 @@
 		</div>
 		<div class="twmenu">
 			<div id="{i#towork}" class="twitem current">В работе</div>
-			<div id="{i#month}" class="twitem">За последнии 31 день</div>
+			<div id="{i#monthchart}" class="twitem">Деятельность - график</div>
+			<div id="{i#month}" class="twitem">Деятельность - таблица</div>
 		</div>
 	</div>
-	
+	<div class="clear"></div>
 	<div class="tlist">
 		<div id="{i#table}" class="ttable"></div>
+		<div id="{i#chart}" class="" style="display: none;"></div>
 	</div>
 </div>
 <div class="twendline"></div>

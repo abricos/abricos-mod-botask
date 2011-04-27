@@ -1,5 +1,5 @@
 /*
-@version $Id: taskview.js 981 2011-04-12 12:48:44Z roosit $
+@version $Id$
 @package Abricos
 @copyright Copyright (C) 2011 Abricos All rights reserved.
 @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
@@ -10,7 +10,7 @@ Component.requires = {
 	mod:[
 		{name: 'sys', files: ['container.js']},
         {name: 'uprofile', files: ['users.js']},
-        {name: 'botask', files: ['tasklist.js']}
+        {name: 'botask', files: ['tasklist.js', 'chart.js']}
 	]
 };
 Component.entryPoint = function(){
@@ -30,8 +30,9 @@ Component.entryPoint = function(){
 	var initCSS = false,
 		buildTemplate = function(w, ts){
 		if (!initCSS){
-			Brick.util.CSS.update(Brick.util.CSS['botask']['towork']);
-			delete Brick.util.CSS['botask']['towork'];
+			var CSS = Brick.util.CSS;
+			CSS.update(CSS['botask']['towork']);
+			delete CSS['botask']['towork'];
 			initCSS = true;
 		}
 		w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;
@@ -86,6 +87,10 @@ Component.entryPoint = function(){
 					}
 				}
 			}else if (d['pst'] == TST.ACCEPT && it['st'] == TST.ACCEPT){ // завершена работа
+				if (!it['pd']){
+					it['pd'] = [];
+				}
+				it['pd'][it['pd'].length] = [it['vl'], d['dl']];
 				it['sm'] += d['dl']-it['vl'];
 				it['st'] = 0;
 				it['vl'] = 0;
@@ -158,6 +163,7 @@ Component.entryPoint = function(){
 			return null;
 		}
 	};
+	NS.WorkManager = WorkManager;
 	
 	var WorkTaskListWidget = function(container, userid, workManager){
 		WorkTaskListWidget.superclass.constructor.call(this, container, NS.taskManager.list, {
@@ -177,8 +183,8 @@ Component.entryPoint = function(){
 			wtlContainer.innerHTML = TM.replace('user', {
 				'uid': user.id,
 				'avatar': UP.avatar.get45(user),
-				'unm': UP.viewer.buildUserName(user),
-			})
+				'unm': UP.viewer.buildUserName(user)
+			});
 		
 			WorkTaskListWidget.superclass.init.call(this, TM.getEl('user.table'), list, config);
 
@@ -190,12 +196,16 @@ Component.entryPoint = function(){
 				'month':{
 					'name': 'month',
 					'el': TM.getEl('user.month')
+				},
+				'monthchart':{
+					'name': 'monthchart',
+					'el': TM.getEl('user.monthchart')
 				}
 			};
 			this.selectedTabPage = this.tabPage['towork'];
 		},
 		selectTabPage: function(pagename){
-			var page = this.tabPage[pagename];
+			var page = this.tabPage[pagename], TM = this._TM;
 			if (!page){ return; }
 			this.selectedTabPage = page;
 			
@@ -203,20 +213,34 @@ Component.entryPoint = function(){
 				Dom.removeClass(this.tabPage[n]['el'], 'current');
 			}
 			Dom.addClass(page['el'], 'current');
-			
+
+			TM.elHide('user.table,chart');
+
 			var cfg = this.cfg;
-			if (pagename == 'month'){
-				cfg['showwork'] = true;
-			}else{
+			switch(pagename){
+			case 'towork':
 				cfg['showwork'] = false;
+				TM.elShow('user.table');
+				break;
+			case 'month':
+				cfg['showwork'] = true;
+				TM.elShow('user.table');
+				break;
+			case 'monthchart':
+				TM.elShow('user.chart');
+				break;
 			}
 			this.render();
 		},
 		render: function(){
-			
+			this._taskListForChart = null;
 			this.taskViewCounter = 0;
-			
 			WorkTaskListWidget.superclass.render.call(this);
+			
+			if (!L.isNull(this._taskListForChart)){
+				new NS.WorkChartWidget(this._TM.getEl('user.chart'), this._taskListForChart, this.user.id);
+			}
+			this._taskListForChart = null;
 		},
 		isRenderTask: function(tk){
 			var selTPage = this.selectedTabPage['name'], user = this.user;
@@ -230,16 +254,27 @@ Component.entryPoint = function(){
 			if (forwork || formonth){
 				this.taskViewCounter++;
 			}
-
+			
 			if (selTPage == 'towork'){
 				return forwork;
-			}			
+			}
+			
+			if (selTPage == 'monthchart' && formonth){
+				
+				if (L.isNull(this._taskListForChart)){
+					this._taskListForChart = new NS.TaskList();
+				}
+				this._taskListForChart.add(tk);
+			}
+			
 			return formonth;
 		},
 		onClick: function(el){
+			
 			var tp = this._TId['user'];
 			switch(el.id){
 			case tp['towork']: this.selectTabPage('towork'); return true;
+			case tp['monthchart']: this.selectTabPage('monthchart'); return true;
 			case tp['month']: this.selectTabPage('month'); return true;
 			}
 			return false;
@@ -269,7 +304,7 @@ Component.entryPoint = function(){
 			
 			this.worker = new WorkManager();
 			
-			var __self = this
+			var __self = this;
 			NS.taskManager.ajax({'do': 'towork'}, function(r){ 
 				__self.renderWidgets(r);
 			});

@@ -102,6 +102,9 @@ Component.entryPoint = function(){
 			if (!this.cfg['childs'] || task.childs.count() == 0){ return null; }
 			return task.expanded;
 		},
+		renderRow: function(tk, data){
+			return this.t._TM.replace('row', data);
+		},
 		buildRow: function(tk, level){
 			if (!this.isRenderTask(tk)){ return ""; }
 
@@ -118,7 +121,8 @@ Component.entryPoint = function(){
 			
 			var tnew = this.tnew[tk.id] || {};
 			var n = tk.order;
-			var sRow = TM.replace('row', {
+			
+			var sRow = this.renderRow(tk, {
 				'id': tk.id,
 				'prt': tk.priority,
 				'fav': tk.favorite ? 'fav-checked' : '',

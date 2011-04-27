@@ -1,5 +1,5 @@
 /*
-@version $Id: taskview.js 981 2011-04-12 12:48:44Z roosit $
+@version $Id$
 @package Abricos
 @copyright Copyright (C) 2011 Abricos All rights reserved.
 @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php

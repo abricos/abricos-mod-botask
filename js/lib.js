@@ -23,6 +23,7 @@ Component.entryPoint = function(){
 		R = NS.roles; 
 
 	Brick.util.CSS.update(Brick.util.CSS['botask']['lib']);
+	delete Brick.util.CSS['botask']['lib'];
 	
 	var buildTemplate = function(w, ts){w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;};
 	
@@ -58,7 +59,7 @@ Component.entryPoint = function(){
 		'ASSIGN'	: 5,	// назначена
 		'REMOVE'	: 6,	// удалена
 		'ARHIVE'	: 7		// в архиве
-	}
+	};
 	NS.TaskStatus = TaskStatus;
 
 	var Task = function(data){
@@ -166,7 +167,7 @@ Component.entryPoint = function(){
 		if (v1 < v2){ return -1; }
 		return 0;
 	};
-	var sortDateDesc = function(d1, d2){ return sortDate(d2, d1); }
+	var sortDateDesc = function(d1, d2){ return sortDate(d2, d1); };
 	
 	var sortPriority = function(tk1, tk2){
 		var v1 = tk1.priority, v2 = tk2.priority;
@@ -219,6 +220,8 @@ Component.entryPoint = function(){
 		if (!isClosed){
 			return sortPriority(tk1, tk2);
 		}
+		v = sortDate(tk1.date, tk2.date); if (v != 0){ return v; }
+		
 		return sortDate(tk1.stDate, tk2.stDate);
 	};
 	
@@ -361,7 +364,7 @@ Component.entryPoint = function(){
 	// абстрактный класс элемента задачи
 	var HItem = function(d){
 		this.init(d);
-	}
+	};
 	HItem.prototype = {
 		init: function(d){
 			this.id = d['id']*1;		// идентификатор элемента истории
@@ -426,7 +429,7 @@ Component.entryPoint = function(){
 			if (!L.isFunction(f)){ return; }
 			var lst = this._list;
 			if (desc){ // сортировка по дате
-				lst = lst.sort(hSortDesc)				
+				lst = lst.sort(hSortDesc);
 			}
 			for (var i=0;i<lst.length;i++){
 				if (f(lst[i])){ break; };
@@ -454,7 +457,7 @@ Component.entryPoint = function(){
 			if (this.exist(item.id)){ return; }
 			var lst = this._list;
 			lst[lst.length] = item;
-			this._list = lst.sort(hSort)				
+			this._list = lst.sort(hSort);
 		},
 		remove: function(hstid){
 			var nlist = [];
@@ -475,14 +478,14 @@ Component.entryPoint = function(){
 		lastTime: function(){ // последнее время изменений
 			var time = 0;
 			this.foreach(function(hst){
-				time = Math.max(time, hst.dl)
+				time = Math.max(time, hst.dl);
 			});
 			return time;
 		},
 		lastId: function(){ // последний идентификатор действия в истории
 			var id = 0;
 			this.foreach(function(hst){
-				id = Math.max(id, hst.id)
+				id = Math.max(id, hst.id);
 			});
 			return id;
 		}
@@ -513,7 +516,7 @@ Component.entryPoint = function(){
 				'tasksort': NS.taskSort[this.tasksort] ? this.tasksort : 'deadline',
 				'tasksortdesc': this.tasksortdesc ? 1 : 0,
 				'taskviewchild': this.taskviewchild ? 1 : 0,
-				'taskviewcmts': this.taskviewcmts ? 1 : 0,
+				'taskviewcmts': this.taskviewcmts ? 1 : 0
 			};
 		}
 	};
@@ -702,7 +705,7 @@ Component.entryPoint = function(){
 					callback(request.data.r);
 					// применить возможные изменения в истории
 					if (isChanges){
-						__self._ajaxResult(request.data)
+						__self._ajaxResult(request.data);
 					}
 				}
 			});
@@ -1018,14 +1021,14 @@ Component.entryPoint = function(){
 	
 	NS.timeToString = function(date){
 		if (L.isNull(date)){ return ''; }
-		return lz(date.getHours()) +':'+lz(date.getMinutes())
-	}
+		return lz(date.getHours()) +':'+lz(date.getMinutes());
+	};
 	NS.parseTime = function(str){
 		var a = str.split(':');
 		if (a.length != 2){ return null; }
 		var h = a[0]*1, m = a[1]*1;
 		if (!(h>=0 && h<=23 && m>=0&&m<=59)){ return null; }
 		return [h, m];
-	}
+	};
 	
 };
