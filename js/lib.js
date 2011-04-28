@@ -1031,4 +1031,25 @@ Component.entryPoint = function(){
 		return [h, m];
 	};
 	
+	// кол-во дней, часов, минут (параметр в секундах)
+	NS.timeToSSumma = function(hr){
+		var ahr = [];
+		var d = Math.floor(hr / (60*60*24));
+		if (d > 0){
+			hr = hr-d*60*60*24;
+			ahr[ahr.length] = d+'д';
+		}
+		var h = Math.floor(hr / (60*60));
+		if (h > 0){
+			hr = hr-h*60*60;
+			ahr[ahr.length] = h+'ч';
+		}
+		var m = Math.floor(hr / 60);
+		if (m > 0){
+			hr = hr-m*60;
+			ahr[ahr.length] = m+'м';
+		}
+		return ahr.join(' ');
+	};
+	
 };

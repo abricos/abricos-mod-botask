@@ -96,7 +96,6 @@ Component.entryPoint = function(){
 		}
 		w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;
 	};
-	
 
 	// линия на графике
 	var TaskBarFeature = function(cfg){
@@ -110,7 +109,7 @@ Component.entryPoint = function(){
 	YAHOO.extend(TaskBarFeature, NSChart.Feature, {
 		draw: function(chart, points){
 			var g = chart.graphics, __self = this, cfg = this.cfg;
-
+			
 			var offset = chart.cfg.offset,
 				vScale = chart.vScale,
 				hScale = chart.hScale,
@@ -125,9 +124,12 @@ Component.entryPoint = function(){
 				from = cfg['worker']['from'],
 				to = cfg['worker']['to'],
 				oneday = 60*60*24,
-				tkColors = cfg['worker']['tkColors'];
-			
+				tkColors = cfg['worker']['tkColors'],
+				__self = this;
+
 			var tkColMan = new TaskColumnManager();
+			
+			var barList = g.set();
 			
 			for (var i=0;i<days.length;i++){
 				var day = days[i];
@@ -151,47 +153,48 @@ Component.entryPoint = function(){
 					var dx = wobar*index;
 					
 					var clr = tkColors[tk.id];
-					
-					g.rect(px-wbar/2+dx, y1, wobar, hbar).attr({
+
+					barList.push(g.rect(px-wbar/2+dx, y1, wobar, hbar).attr({
 						'stroke': clr['border'], 'stroke-width': 1,
-						'fill': clr['body']
-					});
-				});
-
-				/*
-				for (var id in day['tk']){
-					var tk = day['tk'][id]['task'];
-					var pds = day['tk'][id]['pds'];
+						'fill': clr['body'],
+						'cursor': 'pointer'
+					}));
+					var rect = barList[barList.length-1];
 					
-					for (var ii=0;ii<pds.length;ii++){
-						var pd = pds[ii];
-
-						var m1 = L.isNull(pd[0]) ? cfg['worker']['minTime'] : pd[0],
-							m2 = L.isNull(pd[1]) ? cfg['worker']['maxTime'] : pd[1];
-						
-						var px = hScale.transform(rday),
-							py1 = vScale.transform(m1),
-							py2 = vScale.transform(m2);
-						
-						var y1 = Math.min(py1, py2),
-							y2 = Math.max(py1, py2);
-	
-						var hbar = Math.max(Math.abs(y2-y1), 1);
-						
-						var dx = wobar*index;
-						
-						var clr = tkColors[tk.id];
-						
-						g.rect(px-wbar/2+dx, y1, wobar, hbar).attr({
-							'stroke': clr['border'], 'stroke-width': 1,
-							'fill': clr['body']
-						});
-						index++;
-					}
-				}/**/
-				
+					var prv = {'rect': rect, 'tk':tk, 'rday':rday, 'pd':pd};
+					
+					rect.click(function(evt){__self._barClickHandle(evt, prv);});
+					rect.mouseover(function(evt){__self._barMouseHandle(evt, prv);});
+					rect.mouseout(function(evt){__self._barMouseHandle(evt, prv);});
+					rect.mousemove(function(evt){__self._barMouseHandle(evt, prv);});
+				});
 			}
-		}		
+			barList.toFront();
+		},
+		_barMouseHandle: function(evt, p){
+			var rect=p.rect, tk=p.tk, rday=p.rday, pd=p.pd;
+			
+			var cfg = this.cfg,
+				tooltip = cfg['tooltip'],
+			x = evt.layerX, y = evt.layerY+22;
+			
+			switch(evt.type){
+			case 'mouseover':
+				tooltip.show(x, y, tk, rday, pd);
+				rect.attr({'opacity': .8});
+				break;
+			case 'mouseout':
+				tooltip.hide();
+				rect.attr({'opacity': 1});
+				break;
+			case 'mousemove':
+				tooltip.move(x, y);
+				break;
+			}
+		},
+		_barClickHandle: function(evt, prv){
+			window.location.href = "#app=botask/taskview/showTaskViewPanel/"+prv.tk.id+"/";
+		}
 	});
 	NS.TaskBarFeature = TaskBarFeature;
 	
@@ -389,6 +392,8 @@ Component.entryPoint = function(){
 			points[points.length] = [gmin, days['minTime']];
 			points[points.length] = [gmax, days['maxTime']];
 			
+			var TM = this._TM;
+			
 			new NSChart.LineChart(this._TM.getEl('work.id'), {
 				'offset': {
 					'left': 90
@@ -415,15 +420,59 @@ Component.entryPoint = function(){
 				},
 				'features': [
 		             new TaskBarFeature({
-		            	 'worker': days,
-		            	 'color': '#FF0000',
-		            	 'background': "#FFF",
-		            	 'points': points
+						'worker': days,
+						'color': '#FF0000',
+						'background': "#FFF",
+						'points': points,
+		 				'tooltip': new TaskBarTooltipWidget(TM.getEl('work.tooltip'))
 		             })
 				]
 			});
 		}
 	};
 	NS.WorkChartWidget = WorkChartWidget;
+	
+	var TaskBarTooltipWidget = function(element){
+		this.init(element);
+	};
+	TaskBarTooltipWidget.prototype = {
+		init: function(element){
+			this.element = element;
+			this.hide();
+			buildTemplate(this, 'tooltip');
+		},
+		show: function(x, y, task, rday, pd){
+			var el = this.element;
+			this.move(x, y);
+			if (this._isShow){ return; }
+			this._isShow = true;
+			
+			var zr = function(n){return n<10 ? '0'+n: n;};
+			var toTime = function(t){
+				var h = Math.floor(t/60);
+				var m = t-h*60;
+				return zr(h)+':'+zr(m);
+			};
+			el.innerHTML = this._TM.replace('tooltip', {
+				'tl': task.title,
+				'dl': Brick.dateExt.convert(rday, 2),
+				'tfrom': L.isNull(pd[0]) ? '...' : toTime(pd[0]),
+				'tto': L.isNull(pd[1]) ? '...' : toTime(pd[1]),
+				'hm': (L.isNull(pd[0]) || L.isNull(pd[1])) ? '...' : NS.timeToSSumma((pd[1]*1-pd[0]*1)*60)
+			});
+			
+			Dom.setStyle(el, 'display', '');
+		},
+		move: function(x, y){
+			var el = this.element;
+
+			Dom.setStyle(el, 'left', x+'px');
+			Dom.setStyle(el, 'top', y+'px');
+		},
+		hide: function(){
+			this._isShow = false;
+			Dom.setStyle(this.element, 'display', 'none');
+		}
+	};
 	
 };

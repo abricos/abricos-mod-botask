@@ -1,0 +1,16 @@
+.aw-botask .twuser .twchart {
+	position: relative;
+}
+.aw-botask .twuser .twtooltip {
+	position: absolute;
+	background-color: #ffffcf;
+	border: 1px dotted;
+	
+	width: 300px;
+	left: 100px;
+	top: 100px;
+	
+}
+.aw-botask .twuser .twtooltip .twtext {
+	padding: 10px;
+}

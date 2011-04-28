@@ -1,4 +1,22 @@
 <!--{work}-->
-<div id="{i#id}" style="width: 100%; height: 400px">
+<div class="twchart">
+	<div id="{i#id}" style="width: 100%; height: 400px"></div>
+	<div id="{i#tooltip}" class="twtooltip" style="display: none;"></div>
+</div>
 
+<!--{tooltip}-->
+<div class="twtext">
+	<h2>{v#tl}</h2>
+
+	<dl>
+		<dd>Дата:</dd>
+		<dt>{v#dl}</dt>
+	</dl>
+	<dl>
+		<dd>Время:</dd>
+		<dt>c {v#tfrom} до {v#tto}</dt>
+	</dl>
+	<dl>
+		<dd>В работе:</dd><dt>{v#hm}</dt>
+	</dl>
 </div>
