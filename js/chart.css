@@ -14,3 +14,19 @@
 .aw-botask .twuser .twtooltip .twtext {
 	padding: 10px;
 }
+.aw-botask .twuser .twtooltip .twtext h2 {
+	font-weight: bold;
+	margin-bottom: 7px;
+}
+.aw-botask .twuser .twtooltip .twtext dl {
+}
+.aw-botask .twuser .twtooltip .twtext dt {
+    clear: left;
+    float: left;
+    width: 10em;
+}
+.aw-botask .twuser .twtooltip .twtext dd {
+    float: none;
+    margin-left: 10em;
+    font-style: oblique;
+}
