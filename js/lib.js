@@ -325,6 +325,7 @@ Component.entryPoint = function(){
 			return this._list[index];
 		},
 		
+		// поиск задачи. если nochild=false, то поиск так же в подзадачах 
 		find: function(taskid, nochild){
 			var find = null;
 			this.foreach(function(task){
@@ -336,7 +337,7 @@ Component.entryPoint = function(){
 			return find;
 		},
 		exist: function(taskid){ 
-			return !L.isNull(this.find(taskid)); 
+			return !L.isNull(this.find(taskid, true)); 
 		},
 		add: function(task){
 			if (this.exist(task.id)){ return; }

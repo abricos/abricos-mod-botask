@@ -124,7 +124,6 @@ Component.entryPoint = function(){
 				if (w1.id*1 < w2.id*1){ return 1;}
 				return 0;
 			});
-			
 			var tws = this.taskWorks;
 			
 			for (var i=0;i<arr.length;i++){
@@ -260,7 +259,6 @@ Component.entryPoint = function(){
 			}
 			
 			if (selTPage == 'monthchart' && formonth){
-				
 				if (L.isNull(this._taskListForChart)){
 					this._taskListForChart = new NS.TaskList();
 				}

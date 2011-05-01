@@ -204,7 +204,7 @@ Component.entryPoint = function(){
 				this.render();
 			}
 			
-			TM.getEl('widget.end').scrollIntoView(true);
+			// TM.getEl('widget.end').scrollIntoView(true);
 		}
 	};
 	NS.HistoryWidget = HistoryWidget;
