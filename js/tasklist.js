@@ -114,7 +114,7 @@ Component.entryPoint = function(){
 				ddl = Brick.dateExt.convert(tk.deadline.getTime()/1000, 0, !tk.ddlTime);
 			}
 			
-			var author = NS.taskManager.users[tk.userid];
+			var author = NS.taskManager.users.get(tk.userid);
 			
 			var expd = this.isChildExpanded(tk);
 			var chcls = L.isNull(expd) ? 'nochild' : (expd ? 'expanded' : '');
@@ -136,7 +136,7 @@ Component.entryPoint = function(){
 				'level': level,
 				'classch': chcls,
 				'tl': tk.title,
-				'aunm': UP.builder.getUserName(author),
+				'aunm': author.getUserName(),
 				'auid': author.id,
 				'ddl': ddl,
 				'cols': function(){

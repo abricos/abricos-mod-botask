@@ -186,6 +186,7 @@ class BotaskQuery {
 	const HISTORY_FIELDS = "
 		h.historyid 		as id,
 		h.taskid 			as tid,
+		h.taskid 			as sid,
 		p.title 			as ttl,
 		h.userid 			as uid,
 		h.dateline 			as dl,
@@ -478,6 +479,7 @@ class BotaskQuery {
 		$sql = "
 			SELECT
 				h.historyid as id,
+				h.taskid as sid,
 				h.taskid as tid,
 				h.dateline as dl,
 				h.status as st,

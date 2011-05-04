@@ -65,7 +65,7 @@ class BotaskManager extends ModuleManager {
 			case 'taskfavorite': return $this->TaskFavorite($d->taskid, $d->val);
 			case 'taskexpand': return $this->TaskExpand($d->taskid, $d->val);
 			case 'taskshowcmt': return $this->TaskShowComments($d->taskid, $d->val);
-			case 'history': return $this->History($d->taskid, $d->firstid);
+			case 'history': return $this->History($d->socid, $d->firstid);
 			case 'usercfgupdate': return $this->UserConfigUpdate($d->cfg);
 			case 'lastcomments': return $this->CommentList();
 			case 'towork': return $this->ToWork();

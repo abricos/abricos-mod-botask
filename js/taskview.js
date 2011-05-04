@@ -162,9 +162,9 @@ Component.entryPoint = function(){
 			gel('priority').innerHTML = LNG['priority'][task.priority];
 
 			// Автор
-			var user = NS.taskManager.users[task.userid];
+			var user = NS.taskManager.users.get(task.userid);
 			gel('author').innerHTML = TM.replace('user', {
-				'uid': user.id, 'unm': UP.builder.getUserName(user)
+				'uid': user.id, 'unm': user.getUserName()
 			});
 			// Создана
 			gel('dl').innerHTML = Brick.dateExt.convert(task.date, 3, true);
@@ -173,9 +173,9 @@ Component.entryPoint = function(){
 			// Исполнитель
 			var s = "";
 			if (task.stUserId*1 > 0){
-				user = NS.taskManager.users[task.stUserId];
+				user = NS.taskManager.users.get(task.stUserId);
 				s = TM.replace('user', {
-					'uid': user.id, 'unm': UP.builder.getUserName(user)
+					'uid': user.id, 'unm': user.getUserName()
 				});
 			}
 			gel('exec').innerHTML = s;
@@ -183,9 +183,9 @@ Component.entryPoint = function(){
 			// Участники
 			var lst = "";
 			for (var i=0;i<task.users.length;i++){
-				user = NS.taskManager.users[task.users[i]];
+				user = NS.taskManager.users.get(task.users[i]);
 				lst += TM.replace('user', {
-					'uid': user.id, 'unm': UP.builder.getUserName(user)
+					'uid': user.id, 'unm': user.getUserName()
 				});
 			}
 			gel('users').innerHTML = lst;

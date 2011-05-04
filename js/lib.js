@@ -9,6 +9,7 @@ var Component = new Brick.Component();
 Component.requires = { 
 	mod:[
         {name: 'uprofile', files: ['users.js']},
+        {name: 'social', files: ['lib.js']},
         {name: 'botask', files: ['roles.js']}
 	]		
 };
@@ -20,7 +21,8 @@ Component.entryPoint = function(){
 		TMG = this.template,
 		NS = this.namespace,
 		API = NS.API,
-		R = NS.roles; 
+		R = NS.roles;
+	var SC = Brick.mod.social;
 
 	Brick.util.CSS.update(Brick.util.CSS['botask']['lib']);
 	delete Brick.util.CSS['botask']['lib'];
@@ -282,18 +284,15 @@ Component.entryPoint = function(){
 	};
 	
 	var TaskList = function(){
-		this.init();
+		TaskList.superclass.constructor.call(this);
 	};
-	TaskList.prototype = {
-		init: function(){
-			this._list = [];
-		},
+	YAHOO.extend(TaskList, SC.SocialItemList, {
+		
 		// пробег по всем элементам, включая дочерний - если nochild==false 
 		foreach: function(f, nochild, sortMethod, desc){
 			if (!L.isFunction(f)){ return; }
 			nochild = nochild || false;
 			if (L.isString(sortMethod)){
-				
 				if (desc){
 					sortMethod += 'desc';
 				}
@@ -319,12 +318,6 @@ Component.entryPoint = function(){
 			}
 		},
 		
-		getByIndex: function(index){
-			index = index || 0;
-			if (index < 0 || index >= this.count()){ return null; }
-			return this._list[index];
-		},
-		
 		// поиск задачи. если nochild=false, то поиск так же в подзадачах 
 		find: function(taskid, nochild){
 			var find = null;
@@ -336,44 +329,27 @@ Component.entryPoint = function(){
 			}, nochild);
 			return find;
 		},
+		
 		exist: function(taskid){ 
 			return !L.isNull(this.find(taskid, true)); 
-		},
-		add: function(task){
-			if (this.exist(task.id)){ return; }
-			this._list[this._list.length] = task;
-		},
-		remove: function(taskid){
-			var nlist = [];
-			
-			this.foreach(function(task){
-				if (taskid*1 != task.id*1){
-					nlist[nlist.length] = task;
-				}
-			});
-			this._list = nlist;
-		},
-		clear: function(){
-			this._list = [];
-		},
-		count: function(){
-			return this._list.length;
 		}
-	};
+	});
 	NS.TaskList = TaskList;
 	
-	// абстрактный класс элемента задачи
-	var HItem = function(d){
-		this.init(d);
+
+	var HItem = function(di){
+		HItem.superclass.constructor.call(this, di);
 	};
-	HItem.prototype = {
+	YAHOO.extend(HItem, SC.HistoryItem, {
 		init: function(d){
-			this.id = d['id']*1;		// идентификатор элемента истории
+			HItem.superclass.init.call(this, d);
+		
 			this.taskid = d['tid']*1;	// идентификатор задачи
+			
+			this.socid = this.taskid;  
+
+			
 			this.taskTitle = d['ttl'];
-			this.userid = d['uid'];		// идентификатор пользователя
-			this.date = NS.dateToClient(d['dl']); // дата/время действия
-			this.dl = d['dl']*1;		 // дата/время серверное
 			
 			this.isTitle = d['tlc']*1 > 0;
 			this.isDescript = d['bdc']*1 > 0;
@@ -385,112 +361,20 @@ Component.entryPoint = function(){
 			this.stUserId = d['stuid']*1;
 			this.status = d['st']*1;
 			this.pstatus = d['pst']*1;
-			
-			this.userAdded = d['usad'];
-			this.userRemoved = d['usrm'];
-			
 		}
-	};
+	});
 
 	// история может быт в трех состояниях:
 	// не загружена вовсе, загружена частично (только параметры - что изменено), 
 	// загружена полностью (параметры + сами данные из истории)
-	var History = function(){
-		this.init();
+	var History = function(data){
+		History.superclass.constructor.call(this, data);
 	};
-	History.buildItem = function(d){
-		return new HItem(d);
-	};
-	var hSort = function(a, b){
-		if (a.id > b.id){ return -1;
-		}else if(a.id < b.id){ return 1; }
-		return 0;
-	};
-	var hSortDesc = function(a, b){
-		if (a.id > b.id){ return 1;
-		}else if(a.id < b.id){ return -1; }
-		return 0;
-	};
-	History.prototype = {
-		init: function(){
-			this._list = [];
-			
-			// последний загруженный идентификатор в этой коллекции
-			this.firstLoadedId = 0;
-			this.isFullLoaded = false;
-		},
-		setFirstLoadedId: function(id){
-			if (this.firstLoadedId == 0){
-				this.firstLoadedId = id;
-			}
-			this.firstLoadedId = Math.min(this.firstLoadedId, id*1);
-		},
-
-		foreach: function(f, desc){
-			if (!L.isFunction(f)){ return; }
-			var lst = this._list;
-			if (desc){ // сортировка по дате
-				lst = lst.sort(hSortDesc);
-			}
-			for (var i=0;i<lst.length;i++){
-				if (f(lst[i])){ break; };
-			}
-		},
-		getByIndex: function(index){
-			index = index || 0;
-			if (index < 0 || index >= this.count()){ return null; }
-			return this._list[index];
-		},
-		find: function(id){
-			var find = null;
-			this.foreach(function(hst){
-				if (id*1 == hst.id*1){
-					find = hst;
-					return true;
-				}
-			});
-			return find;
-		},
-		exist: function(itemid){ 
-			return !L.isNull(this.find(itemid)); 
-		},
-		add: function(item){
-			if (this.exist(item.id)){ return; }
-			var lst = this._list;
-			lst[lst.length] = item;
-			this._list = lst.sort(hSort);
-		},
-		remove: function(hstid){
-			var nlist = [];
-			
-			this.foreach(function(hst){
-				if (hstid*1 != hst.id*1){
-					nlist[nlist.length] = hst;
-				}
-			});
-			this._list = nlist;
-		},
-		clear: function(){
-			this._list = [];
-		},
-		count: function(){
-			return this._list.length;
-		},
-		lastTime: function(){ // последнее время изменений
-			var time = 0;
-			this.foreach(function(hst){
-				time = Math.max(time, hst.dl);
-			});
-			return time;
-		},
-		lastId: function(){ // последний идентификатор действия в истории
-			var id = 0;
-			this.foreach(function(hst){
-				id = Math.max(id, hst.id);
-			});
-			return id;
+	YAHOO.extend(History, SC.History, {
+		itemInstance: function(di){
+			return new HItem(di);
 		}
-	};
+	});
 	
 	var UserConfig = function(d){
 		this.init(d);
@@ -521,42 +405,13 @@ Component.entryPoint = function(){
 			};
 		}
 	};
-
+	
 	var TaskManager = function(initData){
-		this.init(initData);
+		TaskManager.superclass.constructor.call(this, 'botask', initData);
 	};
-	TaskManager.prototype = {
-		init: function(initData){
-			initData = L.merge({
-				'board': {},
-				'users': {},
-				'hst': {},
-				'cfg': {}
-			}, initData || {});
-			
-			this.userConfig = new UserConfig(initData['cfg']);
-			
-			var list = {}, tree = {},
-				board = initData['board'];
-			
-			this.list = new TaskList();
-
-			for (var id in board){
-				list[id] = new Task(board[id]);
-			}
-			this._buildTaskTree(list);
-			
-			this.users = {};
-			this._updateUsers(initData['users']);
-
-			// глобальная коллекция истории
-			var history = this.history = new History(), 
-				hsts = initData['hst'];
-			for (var i=0;i<hsts.length;i++){
-				var item = this.historyItemAdd(hsts[i]);
-				history.setFirstLoadedId(item.id);
-			}
-			this.historyChangedEvent = new YAHOO.util.CustomEvent("historyChangedEvent");
+	YAHOO.extend(TaskManager, SC.SocialManager, {
+		init: function(modname, initData){
+			TaskManager.superclass.init.call(this, modname, initData);
 			
 			// событие, когда прочитали новую задачу
 			this.newTaskReadEvent = new YAHOO.util.CustomEvent("newTaskReadEvent");
@@ -564,163 +419,64 @@ Component.entryPoint = function(){
 			// события внесения изменений пользователя в задачу (добавление в избранное, голосование и т.п.) 
 			this.taskUserChangedEvent = new YAHOO.util.CustomEvent("taskUserChangedEvent");
 			
-			this.userConfigChangedEvent = new YAHOO.util.CustomEvent("userConfigChangedEvent");
-			
-			this.lastUpdateTime = new Date();
-			
-			// система автоматического обновления
-			// проверяет по движению мыши в документе, срабатывает по задержке обновления
-			// более 5 минут
-			E.on(document.body, 'mousemove', this.onMouseMove, this, true);
 		},
 		
-		onMouseMove: function(evt){
-			var ctime = (new Date()).getTime(), ltime = this.lastUpdateTime.getTime();
+		initUserConfig: function(d){ return new UserConfig(d); },
+		initHistory: function(){ return new History(); },
+
+		initSocialList: function(data){ return new TaskList(); },
+		socialUpdate: function(data){
 			
-			if ((ctime-ltime)/(1000*60) < 5){ return; }
-			this.lastUpdateTime = new Date();
+			// обновить данные по задачам: новые - создать, существующие - обновить
+			var objs = {};
+			for (var id in data){
+				var di = data[id];
+				var task = this.list.find(id); 
+				if (L.isNull(task)){ // новая задача
+					task = new Task(di);
+				}else{
+					task.update(di);
+				}
+				objs[id] = task;
+			}
 			
-			// получения времени сервера необходимое для синхронизации
-			// и проверка обновлений в задачах
-			this.ajax({'do': 'sync'}, function(r){ 
-				
+			// не тронутые обновлением задачи
+			this.list.foreach(function(task){
+				if (!objs[task.id]){
+					objs[task.id]= task;
+				}
 			});
-		},
-		
-		_updateUsers: function(users){
-			for (var uid in users){
-				this.users[uid] = users[uid];
+
+			// очистить информацию для древовидной структуры
+			for (var id in objs){
+				objs[id].parent = null;
+				objs[id].childs.clear();
 			}
-		},
-		
-		_buildTaskTree: function(list){
-			
-			this.list.clear();
-			var tlist = this.list;
-			
-			for (var id in list){
-				var task = list[id];
-				task.parent = null;
-				task.childs.clear();
-			}
-			
-			for (var id in list){
-				var task = list[id],
-					pid = task.parentTaskId,
-					ptask = list[pid];
+
+			// заполнить древовидную структуру
+			for (var id in objs){
+				var task = objs[id],
+					ptask = objs[task.parentTaskId];
 				
-				if (pid*1 > 0 && ptask){
+				if (task.parentTaskId*1 > 0 && ptask){
 					task.parent = ptask;
 					ptask.childs.add(task);
 				}
 			}
-			
-			for (var id in list){
-				var task = list[id];
-				if (L.isNull(task.parent)){
-					tlist.add(task);
+
+			// все те, что не содержат родителя поместить в корень списка
+			this.list.clear();
+			for (var id in objs){
+				if (L.isNull(objs[id].parent)){
+					this.list.add(objs[id]);
 				}
 			}
 		},
 		
-		historyItemAdd: function(d, task){
-			var item = this.history.find(d.id);
-			if (!L.isNull(item)){ return item; }
-			item = History.buildItem(d);
-			this.history.add(item);
-			
-			task = task || this.list.find(item.taskid);
-			if (!L.isNull(task)){
-				task.addHItem(item);
-			}
-			return item;
-		},
-		
+
+		/************************* OLD **********************/
 		getTask: function(taskid){
 			return this.list.find(taskid);
-		},
-		
-		_ajaxBeforeResult: function(r){
-			if (L.isNull(r)){ return false; }
-			if (r.u*1 != Brick.env.user.id){ // пользователь разлогинился
-				Brick.Page.reload();
-				return false;
-			}
-			if (L.isNull(r['changes'])){ return false; } // изменения не зафиксированы
-			
-			this._updateUsers(r['changes']['users']);
-			
-			return true;
-		},
-		
-		_ajaxResult: function(r){
-
-			// построить архитектуру задач
-			var tups = {};
-			for (var id in r['changes']['board']){
-				var d = r['changes']['board'][id];
-				var task = this.list.find(id); 
-				if (L.isNull(task)){ // новая задача
-					task = new Task(d);
-				}else{
-					task.update(d);
-				}
-				tups[id] = task;
-			}
-			this.list.foreach(function(task){
-				if (!tups[task.id]){
-					tups[task.id]= task;
-				}
-			});
-			this._buildTaskTree(tups);
-
-			var histe = new History(), 
-				hsts = r['changes']['hst'];
-
-			// применить изменения зафиксированные сервером
-			for (var i=0;i<hsts.length;i++){
-				var item = this.historyItemAdd(hsts[i]);
-				histe.add(item);
-				var task = tups[item.taskid];
-				if (item.isDescript){
-					task.isLoad = false;
-				}
-			}
-			this.historyChangedEvent.fire(histe);
-		},
-		
-		ajax: function(d, callback){
-			d['hlid'] = this.history.lastId();
-			
-			// все запросы по модулю проходят через этот менеджер.
-			// ко всем запросам добавляется идентификатор последнего обновления
-			// если на сервере произошли изменения, то они будут 
-			// зафиксированны у этого пользователя
-			var __self = this;
-			Brick.ajax('botask', {
-				'data': d,
-				'event': function(request){
-					if (L.isNull(request.data)){ return; }
-					var isChanges = __self._ajaxBeforeResult(request.data);
-					// применить результат запроса
-					callback(request.data.r);
-					// применить возможные изменения в истории
-					if (isChanges){
-						__self._ajaxResult(request.data);
-					}
-				}
-			});
-		},
-		
-		userConfigSave: function(callback){
-			callback = callback || function(){};
-			var __self = this;
-			this.ajax({'do': 'usercfgupdate', 'cfg': this.userConfig.toAjax()}, function(r){
-				callback();
-				if (L.isNull(r)){ return; }
-				__self.userConfig.update(r);
-				__self.userConfigChangedEvent.fire(__self.userConfig);
-			});
 		},
 		
 		taskFavorite: function(taskid, callback){
@@ -786,15 +542,9 @@ Component.entryPoint = function(){
 			
 			var isNew = task.isNew;
 			task.setData(d);
-			var history = null;
-			for (var i=0;i<d['hst'].length;i++){
-				var item = this.historyItemAdd(d['hst'][i], task);
-				if (L.isNull(history)){
-					history = task.history;
-				}
-				history.setFirstLoadedId(item.id);
-			}
-
+			
+			this.historyUpdate(d['hst']);
+			
 			if (isNew){
 				this.newTaskReadEvent.fire(task);
 			}
@@ -835,7 +585,7 @@ Component.entryPoint = function(){
 		taskLoad: function(taskid, callback){
 			callback = callback || function(){};
 			var task = this.list.find(taskid);
-
+	
 			if (L.isNull(task) || task.isLoad){
 				callback();
 				return true;
@@ -873,26 +623,8 @@ Component.entryPoint = function(){
 				__self._setLoadedTaskData(r);
 				callback();
 			});
-		},
-		
-		loadHistory: function(history, taskid, callback){
-			callback = callback || function(){};
-			var __self = this;
-			this.ajax({
-				'do': 'history',
-				'taskid': taskid,
-				'firstid': history.firstLoadedId
-			}, function(r){
-				r = L.isArray(r) ? r : [];
-				history.isFullLoaded = r.length == 0;
-				for (var i=0;i<r.length;i++){
-					var item = __self.historyItemAdd(r[i]);
-					history.setFirstLoadedId(item.id);
-				}
-				callback();
-			});
 		}
-	};
+	});
 	NS.taskManager = null;
 	
 	NS.buildTaskManager = function(callback){

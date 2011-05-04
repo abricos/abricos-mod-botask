@@ -177,12 +177,12 @@ Component.entryPoint = function(){
 			buildTemplate(this, 'user');
 		
 			this.wtlContainer = wtlContainer;
-			var TM = this._TM, user = this.user = NS.taskManager.users[config['workuserid']];
+			var TM = this._TM, user = this.user = NS.taskManager.users.get(config['workuserid']);
 			
 			wtlContainer.innerHTML = TM.replace('user', {
 				'uid': user.id,
-				'avatar': UP.avatar.get45(user),
-				'unm': UP.viewer.buildUserName(user)
+				'avatar': user.avatar45(),
+				'unm': user.getUserName()
 			});
 		
 			WorkTaskListWidget.superclass.init.call(this, TM.getEl('user.table'), list, config);
@@ -350,11 +350,10 @@ Component.entryPoint = function(){
 			
 			this.worker.update(r);
 			
-			var ws = this.widgets;
-			var users = NS.taskManager.users;
-			for (var uid in users){
-				this.buildWidget(uid);
-			}
+			var ws = this.widgets, __self = this;
+			var users = NS.taskManager.users.foreach(function(user){
+				__self.buildWidget(user.id);
+			});
 			this.foreach(function(w){
 				w.render();
 				Dom.setStyle(w.wtlContainer, 'display', w.taskViewCounter > 0 ? '' : 'none');

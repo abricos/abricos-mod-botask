@@ -79,7 +79,7 @@ Component.entryPoint = function(){
 		buildRow: function(hst){
 			var TM = this._TM,
 				tman = NS.taskManager,
-				user = tman.users[hst.userid];
+				user = tman.users.get(hst.userid);
 			
 			var shead = "";
 			if (this.cfg['taskid']*1 > 0){
@@ -140,7 +140,7 @@ Component.entryPoint = function(){
 				'hd': shead,
 				'dl': Brick.dateExt.convert(hst.date.getTime()/1000),
 				'uid': user.id,
-				'unm': UP.builder.getUserName(user, true)
+				'unm': user.getUserName(true)
 			});
 		},
 		render: function(){

@@ -24,8 +24,6 @@ Component.entryPoint = function(){
 		API = NS.API,
 		R = NS.roles;
 
-	var UP = Brick.mod.uprofile;
-	
 	if (!NS.data){
 		NS.data = new Brick.util.data.byid.DataSet('botask');
 	}
