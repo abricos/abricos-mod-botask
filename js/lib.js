@@ -293,9 +293,7 @@ Component.entryPoint = function(){
 			if (!L.isFunction(f)){ return; }
 			nochild = nochild || false;
 			if (L.isString(sortMethod)){
-				if (desc){
-					sortMethod += 'desc';
-				}
+				if (desc){ sortMethod += 'desc'; }
 				sortMethod = NS.taskSort[sortMethod];
 			}
 			if (!L.isFunction(sortMethod)){
