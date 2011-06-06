@@ -7,7 +7,7 @@
 var Component = new Brick.Component();
 Component.entryPoint = function(){
 	
-	if (Brick.Permission.check('bopros', '10') != 1){ return; }
+	if (Brick.Permission.check('botask', '10') != 1){ return; }
 	
 	var os = Brick.mod.bos;
 	
