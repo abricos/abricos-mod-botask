@@ -8,9 +8,6 @@
  * @author Alexander Kuzmin (roosit@abricos.org)
  */
 
-$mod = new BotaskModule();
-CMSRegistry::$instance->modules->Register($mod);;
-
 class BotaskModule extends CMSModule {
 	
 	public function __construct(){
@@ -117,4 +114,8 @@ class BotaskPermission extends AbricosPermission {
 		);
 	}
 }
+
+$mod = new BotaskModule();
+CMSRegistry::$instance->modules->Register($mod);;
+
 ?>
