@@ -111,6 +111,14 @@
 	clear: both;
 }
 
+.aw-botask .baddtask {
+    color: #73A110;
+    border-bottom: 1px dotted;
+    margin-right: 1em;
+    text-decoration: none;
+    font-size: 1.5em;
+}
+
 .aw-botask .priority1 .prtclr {	color: #C82100; }
 .aw-botask .priority2 .prtclr { color: #FF4E00; }
 .aw-botask .priority3 .prtclr {	color: #006699; }

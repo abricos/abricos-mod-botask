@@ -9,6 +9,7 @@
  */
 
 require_once 'dbquery.php';
+require_once 'history.php';
 
 class BotaskManager extends ModuleManager {
 	
@@ -192,6 +193,12 @@ class BotaskManager extends ModuleManager {
 	public function TaskUserList($taskid, $retarray = false){
 		if (!$this->IsViewRole()){ return null; }
 		$rows = BotaskQuery::TaskUserList($this->db, $taskid);
+		if (!$retarray){ return $rows; }
+		return $this->ToArray($rows);
+	}
+	
+	private function TaskUserListForNotify($taskid, $retarray = false){
+		$rows = BotaskQuery::TaskUserListForNotify($this->db, $taskid);
 		if (!$retarray){ return $rows; }
 		return $this->ToArray($rows);
 	}
@@ -428,6 +435,7 @@ class BotaskManager extends ModuleManager {
 		}
 
 		$history = new BotaskHistory($this->userid);
+		$sendNewNotify = false;
 		
 		$publish = false;
 		if ($tk->id == 0){
@@ -436,7 +444,7 @@ class BotaskManager extends ModuleManager {
 			$tk->id = BotaskQuery::TaskAppend($this->db, $tk, $pubkey);
 			
 			$history->SetNewStatus($tk->id);
-			
+			$sendNewNotify = true;
 		}else{
 			
 			// является ли пользователь участником этой задача, если да, то он может делать с ней все что хошь
@@ -486,8 +494,39 @@ class BotaskManager extends ModuleManager {
 		}
 		
 		$history->Save();
+		$taskid = $tk->id;
+		$task = $this->Task($tk->id);
 		
-		return $this->Task($tk->id);
+		if ($sendNewNotify){
+	
+			$brick = Brick::$builder->LoadBrickS('botask', 'templates', null, null);
+			$v = $brick->param->var;
+			$host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_ENV['HTTP_HOST'];
+			$plnk = "http://".$host."/bos/#app=botask/taskview/showTaskViewPanel/".$task['id']."/";
+			
+			$users = $this->TaskUserListForNotify($taskid, true);
+			foreach($users as $user){
+				if ($user['id'] == $this->userid){ continue; }
+				
+				$email = $user['email'];
+				if (empty($email)){ continue; }
+				
+				$subject = Brick::ReplaceVarByData($v['newprojectsubject'], array(
+					"tl" => $task['tl']
+				));
+				$body = Brick::ReplaceVarByData($v['newprojectbody'], array(
+					"tl" => $task['tl'],
+					"plnk" => $plnk,
+					"unm" => $this->UserNameBuild($this->user->info),
+					"prj" => $task['bd'],
+					"sitename" => Brick::$builder->phrase->Get('sys', 'site_name')
+				));
+				CMSRegistry::$instance->GetNotification()->SendMail($email, $subject, $body);
+			}
+		}
+		
+		
+		return $task;
 	}
 	
 	public function Task($taskid){
@@ -620,29 +659,40 @@ class BotaskManager extends ModuleManager {
 		return true;
 	}
 	
+	private function UserNameBuild($user){
+		$firstname = !empty($user['fnm']) ? $user['fnm'] : $user['firstname']; 
+		$lastname = !empty($user['lnm']) ? $user['lnm'] : $user['lastname']; 
+		$username = !empty($user['unm']) ? $user['unm'] : $user['username'];
+		return (!empty($firstname) && !empty($lastname)) ? $firstname." ".$lastname : $username;
+	}
+	
+	
 	/**
 	 * Отправить уведомление о новом комментарии.
 	 * 
 	 * @param object $data
 	 */
 	public function CommentSendNotify($data){
-		/*
+		if (!$this->IsViewRole()){ return; }
+		
 		// данные по комментарию:
 		// $data->id	- идентификатор комментария
 		// $data->pid	- идентификатор родительского комментария
 		// $data->uid	- пользователь оставивший комментарий
 		// $data->bd	- текст комментария
 		// $data->cid	- идентификатор контента
-		
-		$prj = BoprosQuery::ProjectByContentId($this->db, $data->cid, true);
-		if (empty($prj)){ return; }
+
+		$task = BotaskQuery::TaskByContentId($this->db, $this->userid, $data->cid, true);
+		if (empty ($task) || !$this->TaskAccess($task['id'])){ return; }
+
+		$brick = Brick::$builder->LoadBrickS('botask', 'templates', null, null);
+		$v = &$brick->param->var;
+		$host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_ENV['HTTP_HOST'];
+		$plnk = "http://".$host."/bos/#app=botask/taskview/showTaskViewPanel/".$task['id']."/";
 		
 		$emails = array();
-		
-		$brick = Brick::$builder->LoadBrickS('bopros', 'templates', null, null);
-		$host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_ENV['HTTP_HOST'];
-		$plnk = "http://".$host."/webos/start/bopros/project/showProjectPanel/".$prj['id']."/";
-		
+		$users = $this->TaskUserListForNotify($task['id'], true);
+
 		// уведомление "комментарий на комментарий"
 		if ($data->pid > 0){
 			$parent = CommentQuery::Comment($this->db, $data->pid, $data->cid, true);
@@ -651,13 +701,13 @@ class BotaskManager extends ModuleManager {
 				$email = $user['email'];
 				if (!empty($email)){
 					$emails[$email] = true;
-					$subject = Brick::ReplaceVarByData($brick->param->var['cmtemlsubject'], array(
-						"tl" => $prj['tl']
+					$subject = Brick::ReplaceVarByData($v['cmtemlanssubject'], array(
+						"tl" => $task['tl']
 					));
-					$body = Brick::ReplaceVarByData($brick->param->var['cmtemlbody'], array(
-						"tl" => $prj['tl'],
+					$body = Brick::ReplaceVarByData($v['cmtemlansbody'], array(
+						"tl" => $task['tl'],
 						"plnk" => $plnk,
-						"unm" => $this->user->info['username'],
+						"unm" => $this->UserNameBuild($this->user->info),
 						"cmt1" => $parent['bd']." ",
 						"cmt2" => $data->bd." ",
 						"sitename" => Brick::$builder->phrase->Get('sys', 'site_name')
@@ -668,18 +718,18 @@ class BotaskManager extends ModuleManager {
 		}
 		
 		// уведомление автору
-		if ($prj['uid'] != $this->userid){
-			$autor = UserQuery::User($this->db, $prj['uid']);
+		if ($task['uid'] != $this->userid){
+			$autor = UserQuery::User($this->db, $task['uid']);
 			$email = $autor['email'];
 			if (!empty($email) && !$emails[$email]){
 				$emails[$email] = true;
-				$subject = Brick::ReplaceVarByData($brick->param->var['cmtemlautorsubject'], array(
-					"tl" => $prj['tl']
+				$subject = Brick::ReplaceVarByData($v['cmtemlautorsubject'], array(
+					"tl" => $task['tl']
 				));
-				$body = Brick::ReplaceVarByData($brick->param->var['cmtemlautorbody'], array(
-					"tl" => $prj['tl'],
+				$body = Brick::ReplaceVarByData($v['cmtemlautorbody'], array(
+					"tl" => $task['tl'],
 					"plnk" => $plnk,
-					"unm" => $this->user->info['username'],
+					"unm" => $this->UserNameBuild($this->user->info),
 					"cmt" => $data->bd." ",
 					"sitename" => Brick::$builder->phrase->Get('sys', 'site_name')
 				));
@@ -688,7 +738,6 @@ class BotaskManager extends ModuleManager {
 		}
 		
 		// уведомление подписчикам
-		$users = $this->ToArray(BoprosQuery::ProjectSubscribeUserList($this->db, $prj['id']));
 		foreach ($users as $user){
 			$email = $user['email'];
 			
@@ -696,131 +745,20 @@ class BotaskManager extends ModuleManager {
 				continue;
 			}
 			$emails[$email] = true;
-			$subject = Brick::ReplaceVarByData($brick->param->var['cmtemlsubject'], array(
-				"tl" => $prj['tl']
+			$subject = Brick::ReplaceVarByData($v['cmtemlsubject'], array(
+				"tl" => $task['tl']
 			));
-			$body = Brick::ReplaceVarByData($brick->param->var['cmtemlbody'], array(
-				"tl" => $prj['tl'],
+			$body = Brick::ReplaceVarByData($v['cmtemlbody'], array(
+				"tl" => $task['tl'],
 				"plnk" => $plnk,
-				"unm" => $this->user->info['username'],
+				"unm" => $this->UserNameBuild($this->user->info),
 				"cmt" => $data->bd." ",
 				"sitename" => Brick::$builder->phrase->Get('sys', 'site_name')
 			));
 			CMSRegistry::$instance->GetNotification()->SendMail($email, $subject, $body);
 		}
-		/**/
 	}	
 	
-}
-
-class BotaskHistory {
-	
-	public $userid = 0;
-	private $hitype = 0; // временно
-	public $taskid = 0;
-	
-	public $parenttaskid = 0;
-	public $parenttaskidc = false;
-	
-	public $status = 0;
-	public $prevstatus = 0;
-	public $statuserid = 0;
-	
-	public $priority = 0;
-	public $priorityc = false;
-	
-	public $title = "";
-	public $titlec = false;
-	
-	public $body = "";
-	public $bodyc = false;
-	
-	public $deadline = 0;
-	public $deadlinec = false;
-	
-	public $deadlinebytime = 0;
-	public $deadlinebytimec = false;
-	
-	public $useradded = "";
-	public $userremoved = "";
-	
-	public $change = false;
-	
-	private $userAddArray = array();
-	private $userRemoveArray = array();
-	
-	public function BotaskHistory($userid){
-		$this->userid = $userid;
-	}
-	
-	public function SetNewStatus($taskid){
-		$this->taskid = $taskid;
-		$this->change = true;
-		$this->prevstatus = 0;
-		$this->status = BotaskStatus::TASK_OPEN;
-	}
-	
-	public function SetStatus($ot, $newStatus, $statUserId){
-		if ($ot['st']*1 == $newStatus*1){ return; }
-		$this->change = true;
-		$this->prevstatus = $ot['st'];
-		$this->status = $newStatus;
-		$this->statuserid = $statUserId;
-		$this->taskid = $ot['id'];
-	}
-	
-	public function CompareTask($nt, $ot){
-		
-		$this->taskid = $nt->id;
-		
-		if ($nt->tl != $ot['tl']){
-			$this->title = $ot['tl'];
-			$this->titlec = true;
-			$this->change = true;
-		}
-		if ($nt->bd != $ot['bd']){
-			$this->body = $ot['bd'];
-			$this->bodyc = true;
-			$this->change = true;
-		}
-		if (intval($nt->pid) != intval($ot['pid'])){
-			$this->parenttaskid = $ot['pid'];
-			$this->parenttaskidc = true;
-			$this->change = true;
-		}
-		if (intval($nt->ddl) != intval($ot['ddl'])){
-			$this->deadline = $ot['ddl'];
-			$this->deadlinec = true;
-			$this->change = true;
-		}
-		if (intval($nt->ddlt) != intval($ot['ddlt'])){
-			$this->deadlinebytime = $ot['ddlt'];
-			$this->deadlinebytimec = true;
-			$this->change = true;
-		}
-		if (intval($nt->prt) != intval($ot['prt'])){
-			$this->priority = $ot['prt'];
-			$this->priorityc = true;
-			$this->change = true;
-		}
-	}
-	
-	public function UserAdd($uid){
-		array_push($this->userAddArray, $uid);
-		$this->useradded = implode(",", $this->userAddArray);
-		$this->change = true;
-	}
-	
-	public function UserRemove($uid){
-		array_push($this->userRemoveArray, $uid);
-		$this->userremoved = implode(",", $this->userRemoveArray);
-		$this->change = true;
-	}
-	
-	public function Save(){
-		if (!$this->change){ return; }
-		BotaskQuery::HistoryAppend(CMSRegistry::$instance->db, $this);
-	}
 }
 
 ?>

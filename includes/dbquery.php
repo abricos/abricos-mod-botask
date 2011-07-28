@@ -361,6 +361,28 @@ class BotaskQuery {
 		return $db->query_read($sql);
 	}
 	
+	/**
+	 * Список участников проекта с расшириными полями для служебных целей (отправка уведомлений и т.п.)
+	 * 
+	 * @param CMSDatabase $db
+	 * @param integer $drawid
+	 */
+	public static function TaskUserListForNotify(CMSDatabase $db, $taskid){
+		$sql = "
+			SELECT 
+				p.userid as id,
+				u.username as unm,
+				u.firstname as fnm,
+				u.lastname as lnm,
+				u.email
+			FROM ".$db->prefix."btk_userrole p
+			INNER JOIN ".$db->prefix."user u ON p.userid=u.userid
+			WHERE p.taskid=".bkint($taskid)."
+		";
+		return $db->query_read($sql);
+	}
+	
+	
 	public static function UserRoleAppend(CMSDatabase $db, $taskid, $userid){
 		$sql = "
 			INSERT INTO ".$db->prefix."btk_userrole (taskid, userid) VALUES
