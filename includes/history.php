@@ -30,6 +30,9 @@ class BotaskHistory {
 	public $body = "";
 	public $bodyc = false;
 	
+	public $check = "";
+	public $checkc = false;
+	
 	public $deadline = 0;
 	public $deadlinec = false;
 	
@@ -98,6 +101,13 @@ class BotaskHistory {
 			$this->priorityc = true;
 			$this->change = true;
 		}
+	}
+	
+	public function SaveCheckList($taskid, $checklist){
+		$this->taskid = $taskid;
+		$this->change = true;
+		$this->checkc = true;
+		$this->check = $checklist;
 	}
 	
 	public function UserAdd($uid){

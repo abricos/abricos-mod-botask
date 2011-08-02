@@ -86,6 +86,7 @@ Component.entryPoint = function(){
 			this.parent = null; 			// родительская задача
 			
 			this.history = null;
+			this.checks = null;				// чек-лист
 			
 			// была ли загрузка оставшихся данных (описание задачи, история изменений)?
 			this.isLoad = false;
@@ -124,6 +125,7 @@ Component.entryPoint = function(){
 			this.isLoad = true;
 			this.descript = d['bd'];
 			this.ctid = d['ctid'];
+			this.checks = d['chlst'];
 			this.update(d);
 		},
 		_updateFlagNew: function(d){
@@ -589,6 +591,19 @@ Component.entryPoint = function(){
 				return true;
 			}
 			this._taskAJAX(taskid, 'task', callback);
+		},
+		
+		checkListSave: function(taskid, checkList, callback){
+			callback = callback || function(){};
+			var __self = this;
+			this.ajax({
+				'do': 'checklistsave',
+				'taskid': taskid,
+				'checklist': checkList
+			}, function(r){
+				__self._setLoadedTaskData(r);
+				callback();
+			});
 		},
 		
 		// сохранить задачу (task - задача, newdata - новые данных по задаче)

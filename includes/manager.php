@@ -70,6 +70,7 @@ class BotaskManager extends ModuleManager {
 			case 'usercfgupdate': return $this->UserConfigUpdate($d->cfg);
 			case 'lastcomments': return $this->CommentList();
 			case 'towork': return $this->ToWork();
+			case 'checklistsave': return $this->CheckListSave($d->taskid, $d->checklist);
 		}
 		return null;
 	}
@@ -550,6 +551,9 @@ class BotaskManager extends ModuleManager {
 			array_push($hst, $row);
 		}
 		$task['hst'] = $hst;
+		
+		// чек-лист
+		$task['chlst'] = $this->CheckList($taskid, true, true);
 
 		return $task;
 	}
@@ -757,7 +761,78 @@ class BotaskManager extends ModuleManager {
 			));
 			CMSRegistry::$instance->GetNotification()->SendMail($email, $subject, $body);
 		}
-	}	
+	}
+
+	public function CheckList($taskid, $retarray = false, $notCheckTaskAccess = false){
+		if (!$this->IsViewRole()){ return null; }
+		if (!$notCheckTaskAccess){
+			if (!$this->TaskAccess($taskid)){ return null; }
+		}
+		$rows = BotaskQuery::CheckList($this->db, $taskid);
+		return $retarray ? $this->ToArray($rows) : $rows;
+	}
+
+	public function CheckListSave($taskid, $checkList){
+		if (!$this->IsWriteRole()){ return null; }
+		if (!$this->TaskAccess($taskid)){ return null; }
+		
+		$chListDb = $this->CheckList($taskid, true, true);
+		
+		$utmanager = CMSRegistry::$instance->GetUserTextManager();
+		$isAdmin = $this->IsAdminRole();
+		$userid = $this->userid;
+		
+		$hstChange = false;
+		// новые
+		foreach($checkList as $ch){
+			
+			$title = $isAdmin ? $ch->tl : $utmanager->Parser($ch->tl);
+			$isNew = false;
+			if ($ch->id == 0){ // новый
+				$ch->id = BotaskQuery::CheckListAppend($this->db, $taskid, $userid, $title);
+				$hstChange = true;
+				$isNew = true;
+			}else{
+				$fch = null;
+				foreach ($chListDb as $id => $row){
+					if ($ch->id == $id){
+						$fch = $row;
+						break;
+					}
+				}
+				
+				if (is_null($fch) || ($ch->duid > 0 && $fch['duid'] == 0)){ // удален
+					BotaskQuery::CheckListRemove($this->db, $userid, $ch->id);
+					$hstChange = true;
+					if (is_null($fch)){
+						continue;
+					}
+				}
+				
+				if ($ch->duid == 0 && $fch['duid'] > 0){ // восстановлен
+					BotaskQuery::CheckListRestore($this->db, $userid, $ch->id);
+					$hstChange = true;
+				}
+				
+				if ($fch['tl'] != $title){
+					BotaskQuery::CheckListUpdate($this->db, $userid, $ch->id, $title);
+					$hstChange = true;
+				}
+			}
+			
+			if (($isNew && !empty($ch->ch)) || $ch->ch != $fch['ch']){
+				BotaskQuery::CheckListCheck($this->db, $userid, $ch->id, $ch->ch);
+				$hstChange = true;
+			}
+		}
+		if ($hstChange){
+			$history = new BotaskHistory($this->userid);
+			$history->SaveCheckList($taskid, json_encode($chListDb));
+			$history->Save();
+		}
+		
+		return $this->Task($taskid);
+	}
 	
 }
 

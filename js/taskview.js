@@ -10,7 +10,7 @@ Component.requires = {
 	mod:[
 		{name: 'sys', files: ['container.js']},
         {name: 'uprofile', files: ['users.js']},
-        {name: 'botask', files: ['tasklist.js']}
+        {name: 'botask', files: ['tasklist.js', 'checklist.js']}
 	]
 };
 Component.entryPoint = function(){
@@ -23,8 +23,6 @@ Component.entryPoint = function(){
 		TMG = this.template,
 		API = NS.API,
 		R = NS.roles;
-	
-	var UP = Brick.mod.uprofile;
 	
 	var LNG = Brick.util.Language.getc('mod.botask');
 
@@ -145,7 +143,10 @@ Component.entryPoint = function(){
 						'instanceCallback': function(b){ }
 					});
 				});
+				
+				this.checklist = new NS.ChecklistWidget(TM.getEl('panel.checklist'), task);
 			}
+			this.checklist.update();
 
 			var elColInfo = gel('colinfo');
 			for (var i=1;i<=5;i++){
@@ -218,6 +219,8 @@ Component.entryPoint = function(){
 			Dom.setStyle(TM.getEl('panel.ptlist'), 'display', view ? '' : 'none');
 			Dom.setStyle(TM.getEl('panel.ptlisthide'), 'display', view ? '' : 'none');
 			Dom.setStyle(TM.getEl('panel.ptlistshow'), 'display', view ? 'none' : '');
+			
+			
 			
 			this.renderComments();
 		},

@@ -148,6 +148,7 @@ class BotaskQuery {
 				parenttaskid, parenttaskidc,
 				title, titlec,
 				body, bodyc, 
+				checklist, checkc,
 				deadline, deadlinec, 
 				deadlinebytime, deadlinebytimec,
 				status,prevstatus,statuserid,
@@ -163,6 +164,8 @@ class BotaskQuery {
 				".bkint($h->titlec).",
 				'".bkstr($h->body)."',
 				".bkint($h->bodyc).",
+				'".bkstr($h->check)."',
+				".bkint($h->checkc).",
 				".bkint($h->deadline).",
 				".bkint($h->deadlinec).",
 				".bkint($h->deadlinebytime).",
@@ -194,6 +197,7 @@ class BotaskQuery {
 		h.parenttaskidc 	as ptidc,
 		h.titlec 			as tlc,
 		h.bodyc 			as bdc,
+		h.checkc 			as chc,
 		h.deadlinec 		as ddlc, 
 		h.deadlinebytimec 	as ddltc,
 		h.useradded 		as usad,
@@ -517,6 +521,83 @@ class BotaskQuery {
 		";
 		return $db->query_read($sql);
 	}
+	
+	public static function CheckList(CMSDatabase $db, $taskid){
+		$sql = "
+			SELECT
+				c.checklistid as id,
+				c.userid as uid,
+				c.dateline as dl,
+				c.upddate as udl,
+				c.upduserid as uuid,
+				c.checked as ch,
+				c.checkuserid as cuid,
+				c.checkdate as cdl,
+				c.title as tl,
+				c.ord as o,
+				c.deldate as ddl,
+				c.deluserid as duid
+			FROM ".$db->prefix."btk_checklist c 
+			WHERE c.taskid=".bkint($taskid)."
+			ORDER BY c.ord DESC
+		";
+		return $db->query_read($sql);
+	}
+	
+	public static function CheckListAppend(CMSDatabase $db, $taskid, $userid, $title){
+		$sql = "
+			INSERT INTO ".$db->prefix."btk_checklist (taskid, userid, title, dateline) VALUES (
+				".bkint($taskid).",
+				".bkint($userid).",
+				'".bkstr($title)."',
+				".TIMENOW."
+			)
+		";
+		$db->query_write($sql);
+		return $db->insert_id();
+	}
+	
+	public static function CheckListRemove(CMSDatabase $db, $userid, $chid){
+		$sql = "
+			UPDATE ".$db->prefix."btk_checklist
+			SET deldate=".TIMENOW.",
+				deluserid=".bkint($userid)."
+			WHERE checklistid=".bkint($chid)."
+		";
+		$db->query_write($sql);
+	}
+
+	public static function CheckListRestore(CMSDatabase $db, $userid, $chid){
+		$sql = "
+			UPDATE ".$db->prefix."btk_checklist
+			SET deldate=0, deluserid=0
+			WHERE checklistid=".bkint($chid)."
+		";
+		$db->query_write($sql);
+	}
+	
+	public static function CheckListUpdate(CMSDatabase $db, $userid, $chid, $title){
+		$sql = "
+			UPDATE ".$db->prefix."btk_checklist
+			SET title='".bkstr($title)."',
+				upddate=".TIMENOW.",
+				upduserid=".bkint($userid)."
+			WHERE checklistid=".bkint($chid)."
+		";
+		$db->query_write($sql);
+	}
+	
+	public static function CheckListCheck(CMSDatabase $db, $userid, $chid, $check){
+		$sql = "
+			UPDATE ".$db->prefix."btk_checklist
+			SET checked=".(!empty($check) ? 1 : 0).",
+				checkdate=".TIMENOW.",
+				checkuserid=".bkint($userid)."
+			WHERE checklistid=".bkint($chid)."
+		";
+		$db->query_write($sql);
+	}
+	
 }
 
 ?>

@@ -112,6 +112,36 @@ if ($updateManager->isInstall()){
 		  PRIMARY KEY  (`historyid`)
 		)".$charset
 	);
+}
+
+if ($updateManager->isUpdate('0.1.1')){
+
+	$db->query_write("
+		ALTER TABLE ".$pfx."btk_history
+			ADD `checklist` TEXT NOT NULL  COMMENT 'Сохраненная версия чеклиста',
+			ADD `checkc` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
+	");
+	
+	
+	// добавление чеклиста к задаче. чеклист - нечто подобное микрозадачи. 
+	$db->query_write("
+		CREATE TABLE IF NOT EXISTS ".$pfx."btk_checklist (
+		  `checklistid` int(10) unsigned NOT NULL auto_increment COMMENT '',
+		  `taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор задачи',
+		  `userid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя ',
+		  `dateline` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время',
+		  `checked` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Выполнена',
+		  `checkuserid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя ',
+		  `checkdate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время выполнения',
+		  `title` TEXT NOT NULL COMMENT 'Название группы',
+		  `ord` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Сортировка',
+		  `upddate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время обновления',
+		  `upduserid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя ',
+		  `deldate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время удаления',
+		  `deluserid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя',
+		  PRIMARY KEY  (`checklistid`)
+		)".$charset
+	);
 	
 }
 
