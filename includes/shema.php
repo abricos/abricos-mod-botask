@@ -119,7 +119,7 @@ if ($updateManager->isUpdate('0.1.1')){
 	$db->query_write("
 		ALTER TABLE ".$pfx."btk_history
 			ADD `checklist` TEXT NOT NULL  COMMENT 'Сохраненная версия чеклиста',
-			ADD `checkc` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
+			ADD `checkc` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен'
 	");
 	
 	
