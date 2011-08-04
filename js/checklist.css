@@ -27,6 +27,11 @@
 	background-color: #f9f5df;
 	font-style: italic;
 }
+.aw-botask .cklist .row:hover .check,
+.aw-botask .cklist .row:hover .uncheck {
+	background-color: #f9f7eb;
+}
+
 .aw-botask .cklist .row .chk ,
 .aw-botask .cklist .row .chkok {
     cursor: pointer;
@@ -48,8 +53,6 @@
 .aw-botask .cklist .row .check .chkok {
 	display: block;
 }
-
-
 
 .aw-botask .cklist .row {
 	padding: 2px 0 2px 0;
@@ -99,6 +102,7 @@
 	cursor: pointer;
 	display: none;
 }
+
 .aw-botask .cklist .row:hover .bremove {
 	display: block;
 }

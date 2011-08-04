@@ -1,10 +1,10 @@
 .aw-botask .taskview a {
 	text-decoration: none;
 }
-
 .aw-botask .taskview .taskbody {
 	background-color: #F9F5DF;
-	padding: 0.5em 1em;
+	padding: 1em 1em;
+	margin-bottom: 3px;
 }
 .aw-botask .taskview .manbuttons {
 	height: 22px;
