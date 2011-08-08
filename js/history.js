@@ -76,7 +76,7 @@ Component.entryPoint = function(){
 				this.render();
 			}
 		},
-		buildRow: function(hst){
+		buildRow: function(hst, ph){
 			var TM = this._TM,
 				tman = NS.taskManager,
 				user = tman.users.get(hst.userid);
@@ -122,6 +122,15 @@ Component.entryPoint = function(){
 				shead = TM.replace('fhd', {'ht': sht});
 			}else{
 				
+				
+				if (!L.isNull(ph) && 
+						ph.userid == hst.userid && 
+						ph.status == hst.status && 
+						ph.taskid == hst.taskid){
+					
+					return "";
+				}
+				
 				var tname = 'act'+hst.status;
 				if (!hst.isStatus){
 					tname = 'act9';
@@ -146,10 +155,16 @@ Component.entryPoint = function(){
 		render: function(){
 			var __self = this,
 				lst = "";
-			
+
+			var prevHst = null;
 			var cfg = this.cfg, counter = 1, limit = cfg['pagerow']*cfg['page'];
 			this.history.foreach(function(hst){
-				lst += __self.buildRow(hst);
+				var s = __self.buildRow(hst, prevHst);
+				prevHst = hst;
+				if (s == ""){ return; }
+				
+				lst += s;
+				
 				if (counter >= limit){ return true; }
 				counter++;
 			});
