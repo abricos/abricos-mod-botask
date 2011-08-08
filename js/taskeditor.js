@@ -57,13 +57,14 @@ Component.entryPoint = function(){
 				Dom.setStyle(TM.getEl('panel.navtask'), 'display', '');
 			}
 			
+
+			TM.getEl('panel.tl').value = task.title;
+			TM.getEl('panel.editor').innerHTML = task.descript;
+
 			var Editor = Brick.widget.Editor;
 			this.editor = new Editor(this._TId['panel']['editor'], {
 				width: '750px', height: '250px', 'mode': Editor.MODE_VISUAL
 			});
-			
-			TM.getEl('panel.tl').value = task.title;
-			this.editor.setContent(task.descript);
 			
 			var users = task.id*1==0 && !L.isNull(task.parent) ? task.parent.users : task.users;
 			
