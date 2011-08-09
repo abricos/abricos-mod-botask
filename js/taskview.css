@@ -1,3 +1,10 @@
+.aw-botask .taskview .mod-comment {
+	width: 781px;
+}
+.aw-botask .taskview .mod-comment .content .text img {
+	max-width: 100%;
+	height: auto;
+}
 .aw-botask .taskview a {
 	text-decoration: none;
 }

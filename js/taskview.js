@@ -125,7 +125,7 @@ Component.entryPoint = function(){
 			gel('taskbody').innerHTML = task.descript;
 			if (L.isNull(this.history)){ // первичная рендер
 				this.history = new NS.HistoryWidget(gel('history'), task.history, {'taskid': task.id});
-				
+
 				// Инициализировать менеджер комментариев
 				Brick.ff('comment', 'comment', function(){
 					Brick.mod.comment.API.buildCommentTree({
