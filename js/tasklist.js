@@ -135,7 +135,7 @@ Component.entryPoint = function(){
 				'tchnew': tnew['cn'] ? 'tchnew' : '',
 				'level': level,
 				'classch': chcls,
-				'tl': tk.title,
+				'tl': tk.title == "" ? LNG['nottitle'] : tk.title,
 				'aunm': author.getUserName(),
 				'auid': author.id,
 				'ddl': ddl,
