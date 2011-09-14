@@ -493,6 +493,36 @@ class BotaskManager extends ModuleManager {
 				$history->UserAdd($uid);
 			}
 		}
+		// обновить информацию по файлам
+		$files = $this->TaskFiles($tk->id, true);
+		$arr = $tk->files;
+		
+		foreach ($files as $rFileId => $cfile){
+			$find = false;
+			foreach ($arr as $file){
+				if ($file->id == $rFileId){
+					$find = true;
+					break;
+				}
+			}
+			if (!$find){
+				BotaskQuery::TaskFileRemove($this->db, $tk->id, $rFileId);
+				// $history->FileRemove($rFileId);
+			}
+		}
+		foreach ($arr as $file){
+			$find = false;
+			foreach ($files as $rFileId => $cfile){
+				if ($file->id == $rFileId){
+					$find = true;
+					break;
+				}
+			}
+			if (!$find){
+				BotaskQuery::TaskFileAppend($this->db, $tk->id, $file->id, $this->userid);
+				// $history->FileAdd($uid);
+			}
+		}
 		
 		$history->Save();
 		$taskid = $tk->id;
@@ -525,8 +555,6 @@ class BotaskManager extends ModuleManager {
 				CMSRegistry::$instance->GetNotification()->SendMail($email, $subject, $body);
 			}
 		}
-		
-		
 		return $task;
 	}
 	
@@ -543,6 +571,13 @@ class BotaskManager extends ModuleManager {
 		foreach ($users as $user){
 			array_push($task['users'], $user['id']);
 		}
+		
+		$task['files'] = array();
+		$files = $this->TaskFiles($taskid, true);
+		foreach ($files as $file){
+			array_push($task['files'], $file);
+		}
+		
 
 		$hst = array();
 
@@ -833,6 +868,18 @@ class BotaskManager extends ModuleManager {
 		
 		return $this->Task($taskid);
 	}
+	
+	public function TaskFiles($taskid, $retarray = false){
+		if (!$this->IsViewRole()){
+			return null;
+		}
+		$rows = BotaskQuery::TaskFiles($this->db, $taskid);
+		if (!$retarray){
+			return $rows;
+		}
+		return $this->ToArray($rows);
+	}
+	
 	
 }
 

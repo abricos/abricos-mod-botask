@@ -369,7 +369,7 @@ class BotaskQuery {
 	 * Список участников проекта с расшириными полями для служебных целей (отправка уведомлений и т.п.)
 	 * 
 	 * @param CMSDatabase $db
-	 * @param integer $drawid
+	 * @param integer $taskid
 	 */
 	public static function TaskUserListForNotify(CMSDatabase $db, $taskid){
 		$sql = "
@@ -594,6 +594,39 @@ class BotaskQuery {
 				checkdate=".TIMENOW.",
 				checkuserid=".bkint($userid)."
 			WHERE checklistid=".bkint($chid)."
+		";
+		$db->query_write($sql);
+	}
+	
+	public static function TaskFiles(CMSDatabase $db, $taskid){
+		$sql = "
+			SELECT 
+				bf.filehash as id,
+				f.filename as nm,
+				f.filesize as sz
+			FROM ".$db->prefix."btk_file bf
+			INNER JOIN ".$db->prefix."fm_file f ON bf.filehash=f.filehash
+			WHERE bf.taskid=".bkint($taskid)."
+		";
+		return $db->query_read($sql);
+	}
+	
+	public static function TaskFileAppend(CMSDatabase $db, $taskid, $filehash, $userid){
+		$sql = "
+			INSERT INTO ".$db->prefix."btk_file (taskid, filehash, userid) VALUES
+			(
+				".bkint($taskid).",
+				'".bkstr($filehash)."',
+				".bkint($userid)."
+			)
+		";
+		$db->query_write($sql);
+	}
+	
+	public static function TaskFileRemove(CMSDatabase $db, $taskid, $filehash){
+		$sql = "
+			DELETE FROM ".$db->prefix."btk_file
+			WHERE taskid=".bkint($taskid)." AND filehash='".bkstr($filehash)."' 
 		";
 		$db->query_write($sql);
 	}

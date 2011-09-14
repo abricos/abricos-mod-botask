@@ -9,6 +9,7 @@ var Component = new Brick.Component();
 Component.requires = {
 	mod:[
 		{name: 'sys', files: ['container.js']},
+        {name: 'filemanager', files: ['attachment.js']},
         {name: 'uprofile', files: ['users.js']},
         {name: 'botask', files: ['tasklist.js', 'checklist.js']}
 	]
@@ -145,6 +146,7 @@ Component.entryPoint = function(){
 				});
 				
 				this.checklist = new NS.ChecklistWidget(TM.getEl('panel.checklist'), task);
+				this.attachListWidget = new Brick.mod.filemanager.AttachmentListWidget(TM.getEl('panel.ftable'));
 			}
 			this.checklist.update();
 
@@ -220,9 +222,16 @@ Component.entryPoint = function(){
 			Dom.setStyle(TM.getEl('panel.ptlisthide'), 'display', view ? '' : 'none');
 			Dom.setStyle(TM.getEl('panel.ptlistshow'), 'display', view ? 'none' : '');
 			
-			
-			
 			this.renderComments();
+
+			// показать прикрепленные файлы
+			this.attachListWidget.setFiles(task.files);
+			if (task.files.length > 0){
+				TM.elShow('panel.files');
+			}else{
+				TM.elHide('panel.files');
+			}
+			
 		},
 		renderComments: function(){
 			var TM = this._TM;

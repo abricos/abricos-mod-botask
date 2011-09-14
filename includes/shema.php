@@ -145,4 +145,20 @@ if ($updateManager->isUpdate('0.1.1')){
 	
 }
 
+if ($updateManager->isUpdate('0.1.2')){
+
+	// Файлы задачи
+	$db->query_write("
+		CREATE TABLE IF NOT EXISTS ".$pfx."btk_file (
+		  `fileid` int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор',
+		  `taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор задачи',
+		  `userid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя',
+		  `filehash` varchar(8) NOT NULL DEFAULT '' COMMENT 'Идентификатор файла таблицы fm_file',
+		  PRIMARY KEY  (`fileid`), 
+		  UNIQUE KEY `file` (`taskid`,`filehash`)
+		)".$charset
+	);
+	
+}
+
 ?>

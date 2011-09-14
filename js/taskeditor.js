@@ -10,7 +10,8 @@ Component.requires = {
 	mod:[
 		{name: 'sys', files: ['container.js', 'editor.js', 'calendar.js']},
         {name: 'uprofile', files: ['users.js']},
-        {name: 'botask', files: ['lib.js', 'roles.js', 'calendar.js']}
+        {name: 'botask', files: ['lib.js', 'roles.js', 'calendar.js']},
+        {name: 'filemanager', files: ['attachment.js']}
 	]
 };
 Component.entryPoint = function(){
@@ -66,6 +67,8 @@ Component.entryPoint = function(){
 				width: '750px', height: '250px', 'mode': Editor.MODE_VISUAL
 			});
 			
+			this.filesWidget = new Brick.mod.filemanager.AttachmentWidget(TM.getEl('panel.files'), task.files);
+			
 			var users = task.id*1==0 && !L.isNull(task.parent) ? task.parent.users : task.users;
 			
 			this.usersWidget = new UP.UserSelectWidget(TM.getEl('panel.users'), users);
@@ -101,6 +104,7 @@ Component.entryPoint = function(){
 			var newdata = {
 				'title': TM.getEl('panel.tl').value,
 				'descript': this.editor.getContent(),
+				'files': this.filesWidget.files,
 				'users': users,
 				'parentid': L.isNull(task.parent) ? 0 : task.parent.id,
 				'deadline': ddl['date'],
@@ -109,8 +113,14 @@ Component.entryPoint = function(){
 			};
 			
 			var __self = this;
-			NS.taskManager.taskSave(task, newdata, function(){
+			NS.taskManager.taskSave(task, newdata, function(d){
+				d = d || {};
+				var taskid = (d['id'] || 0)*1;
+
 				__self.close();
+				setTimeout(function(){
+					Brick.Page.reload("#app=botask/taskview/showTaskViewPanel/"+taskid+"/");
+				}, 500);
 			});
 		}
 	});

@@ -11,7 +11,7 @@
 class BotaskModule extends CMSModule {
 	
 	public function __construct(){
-		$this->version = "0.1.1";
+		$this->version = "0.1.2";
 		$this->name = "botask";
 		$this->permission = new BotaskPermission($this);
 	}

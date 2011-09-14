@@ -126,3 +126,13 @@
 .aw-botask .taskview .alarm  {
 	background-color: #FFF2F2;
 }
+
+.aw-botask .taskview ul.dfiles {
+	margin-top: 10px;
+}
+.aw-botask .taskview ul.dfiles li.tl {
+	margin-right: 10px;
+}
+.aw-botask .taskview ul.dfiles li {
+	float: left;
+}

@@ -87,6 +87,7 @@ Component.entryPoint = function(){
 			
 			this.history = null;
 			this.checks = null;				// чек-лист
+			this.files = [];
 			
 			// была ли загрузка оставшихся данных (описание задачи, история изменений)?
 			this.isLoad = false;
@@ -126,6 +127,7 @@ Component.entryPoint = function(){
 			this.descript = d['bd'];
 			this.ctid = d['ctid'];
 			this.checks = d['chlst'];
+			this.files = d['files'];
 			this.update(d);
 		},
 		_updateFlagNew: function(d){
@@ -614,6 +616,7 @@ Component.entryPoint = function(){
 			d = L.merge({
 				'id': 0, 'title': '',
 				'descript': '',
+				'files': [],
 				'users': [Brick.env.user.id],
 				'deadline': null,
 				'ddlTime': false,
@@ -626,6 +629,7 @@ Component.entryPoint = function(){
 					'id': task.id,
 					'tl': d['title'],
 					'bd': d['descript'],
+					'files': d['files'],
 					'users': d['users'],
 					'pid':  d['parentid'],
 					'ddl': NS.dateToServer(d['deadline']),
@@ -634,7 +638,7 @@ Component.entryPoint = function(){
 				}
 			}, function(r){
 				__self._setLoadedTaskData(r);
-				callback();
+				callback(r);
 			});
 		}
 	});
