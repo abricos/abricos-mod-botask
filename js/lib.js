@@ -616,6 +616,7 @@ Component.entryPoint = function(){
 			d = L.merge({
 				'id': 0, 'title': '',
 				'descript': '',
+				'checks': [],
 				'files': [],
 				'users': [Brick.env.user.id],
 				'deadline': null,
@@ -629,6 +630,7 @@ Component.entryPoint = function(){
 					'id': task.id,
 					'tl': d['title'],
 					'bd': d['descript'],
+					'checks': d['checks'],
 					'files': d['files'],
 					'users': d['users'],
 					'pid':  d['parentid'],

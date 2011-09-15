@@ -493,6 +493,10 @@ class BotaskManager extends ModuleManager {
 				$history->UserAdd($uid);
 			}
 		}
+		
+		// сохранить чеклист
+		$this->CheckListSave($tk->id, $tk->checks, $history);
+		
 		// обновить информацию по файлам
 		$files = $this->TaskFiles($tk->id, true);
 		$arr = $tk->files;
@@ -807,7 +811,8 @@ class BotaskManager extends ModuleManager {
 		return $retarray ? $this->ToArray($rows) : $rows;
 	}
 
-	public function CheckListSave($taskid, $checkList){
+	public function CheckListSave($taskid, $checkList, $history = null){
+		
 		if (!$this->IsWriteRole()){ return null; }
 		if (!$this->TaskAccess($taskid)){ return null; }
 		
@@ -861,9 +866,13 @@ class BotaskManager extends ModuleManager {
 			}
 		}
 		if ($hstChange){
-			$history = new BotaskHistory($this->userid);
-			$history->SaveCheckList($taskid, json_encode($chListDb));
-			$history->Save();
+			if (is_null($history)){
+				$history = new BotaskHistory($this->userid);
+				$history->SaveCheckList($taskid, json_encode($chListDb));
+				$history->Save();
+			}else{
+				$history->SaveCheckList($taskid, json_encode($chListDb));
+			}
 		}
 		
 		return $this->Task($taskid);

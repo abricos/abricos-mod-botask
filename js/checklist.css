@@ -1,3 +1,6 @@
+.aw-botask .cklist a {
+	text-decoration: none;
+}
 .aw-botask .cklist a.badd {
 	font-size: 1.2em;
 	color: #73A110;
@@ -18,6 +21,17 @@
 }
 .aw-botask .cklist .btnlst a.bcancel {
 	font-size: .9em;
+}
+
+.aw-botask .cklist .recycle .rectable {
+	margin-top: 11px;
+}
+
+.aw-botask .cklist .recycle .mgrbot {
+	margin-bottom: 11px;
+}
+.aw-botask .cklist .recycle .btntab a {
+	border-bottom: 1px dotted;
 }
 
 .aw-botask .cklist .row .uncheck {
@@ -91,7 +105,7 @@
 	margin-right: .5em;
 }
 .aw-botask .cklist .row .action {
-	padding-right: 130px;
+	padding-right: 80px;
 	background-color: #fff;
 }
 

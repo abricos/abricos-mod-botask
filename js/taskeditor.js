@@ -10,7 +10,7 @@ Component.requires = {
 	mod:[
 		{name: 'sys', files: ['container.js', 'editor.js', 'calendar.js']},
         {name: 'uprofile', files: ['users.js']},
-        {name: 'botask', files: ['lib.js', 'roles.js', 'calendar.js']},
+        {name: 'botask', files: ['lib.js', 'roles.js', 'calendar.js', 'checklist.js']},
         {name: 'filemanager', files: ['attachment.js']}
 	]
 };
@@ -67,6 +67,12 @@ Component.entryPoint = function(){
 				width: '750px', height: '250px', 'mode': Editor.MODE_VISUAL
 			});
 			
+			this.checklist = new NS.ChecklistWidget(TM.getEl('panel.checklist'), task, {
+				'hidebtn': true,
+				'hideinfo': true
+			});
+			this.checklist.update();
+
 			this.filesWidget = new Brick.mod.filemanager.AttachmentWidget(TM.getEl('panel.files'), task.files);
 			
 			var users = task.id*1==0 && !L.isNull(task.parent) ? task.parent.users : task.users;
@@ -104,6 +110,7 @@ Component.entryPoint = function(){
 			var newdata = {
 				'title': TM.getEl('panel.tl').value,
 				'descript': this.editor.getContent(),
+				'checks': this.checklist.getSaveData(),
 				'files': this.filesWidget.files,
 				'users': users,
 				'parentid': L.isNull(task.parent) ? 0 : task.parent.id,
@@ -111,7 +118,6 @@ Component.entryPoint = function(){
 				'ddlTime': ddl['showTime'],
 				'priority': TM.getEl('panel.prt').value
 			};
-			
 			var __self = this;
 			NS.taskManager.taskSave(task, newdata, function(d){
 				d = d || {};

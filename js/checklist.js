@@ -15,7 +15,6 @@ Component.entryPoint = function(){
 	
 	var NS = this.namespace, 
 		TMG = this.template,
-		API = NS.API,
 		R = NS.roles;
 	
 	var initCSS = false, buildTemplate = function(w, ts){
@@ -27,12 +26,18 @@ Component.entryPoint = function(){
 		w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;
 	};
 	
-	var ChecklistWidget = function(container, task){
-		this.init(container, task);
+	var ChecklistWidget = function(container, task, config){
+		config = L.merge({
+			'hidebtn': false,
+			'hideinfo': false
+		}, config || {});
+		this.init(container, task, config);
 	};
 	ChecklistWidget.prototype = {
-		init: function(container, task){
+		init: function(container, task, config){
+			this.config = config;
 			this.task = task;
+			this.hideRecycle = true;
 
 			this.list = [];
 			
@@ -44,6 +49,7 @@ Component.entryPoint = function(){
 			
 			container.innerHTML = TM.replace('widget');
 			this.elTable = TM.getEl('widget.table');
+			this.elRecTable = TM.getEl('widget.rectable');
 			this.elBAdd = TM.getEl('widget.badd');
 			
 			var __self = this;
@@ -54,7 +60,6 @@ Component.entryPoint = function(){
 			E.on(container, 'keypress', function(e){
 				if (__self.onKeyPress(e, E.getTarget(e))){ E.stopEvent(e); }
 			});
-
 		},
 		onKeyPress: function(e, el){
 			var ret = false;
@@ -71,6 +76,9 @@ Component.entryPoint = function(){
 			case tp['badd']: this.addCheck(); return true;
 			case tp['bsave']: this.save(); return true;
 			case tp['bcancel']: this.cancel(); return true;
+			case tp['brecshow']: this.recShow(); return true;
+			case tp['brechide']: this.recHide(); return true;
+			
 			}
 			var ret = false;
 			this.foreach(function(ch){
@@ -81,11 +89,29 @@ Component.entryPoint = function(){
 			
 			return ret;
 		},
+		recHide: function(){
+			this.hideRecycle = true;
+			this.updateRecShowHide();
+		},
+		recShow: function(){
+			this.hideRecycle = false;
+			this.updateRecShowHide();
+		},
+		updateRecShowHide: function(){
+			var TM = this._TM, hd = this.hideRecycle;
+			Dom.setStyle(TM.getEl('widget.rectable'), 'display', hd ? 'none' : '');
+			Dom.setStyle(TM.getEl('widget.brechide'), 'display', hd ? 'none' : '');
+			Dom.setStyle(TM.getEl('widget.brecshow'), 'display', hd ? '' : 'none');
+		},
 		addCheck: function(check){
-			var lst = this.list;
-			lst[lst.length] = new CheckrowWidget(this, check);
+			var ch = new CheckrowWidget(this, check);
+			this.list[this.list.length] = ch;
+			return ch;
 		},
 		_shButtons: function(show){
+			if (this.config['hidebtn']){
+				show = false;
+			}
 			this._TM.getEl('widget.btnlst').style.display = show ? '' : 'none';
 		},
 		onChanged: function(){
@@ -99,13 +125,18 @@ Component.entryPoint = function(){
 				if (f(lst[i])){ return; }
 			}
 		},
+		getSaveData: function(){
+			var sd = [];
+			this.foreach(function(ch){
+				if (ch.isDestroyed()){ return; }
+				sd[sd.length] = ch.data;
+			});
+			return sd;
+		},
 		save: function(){
 			this._shButtons();
 			
-			var sd = [];
-			this.foreach(function(ch){
-				sd[sd.length] = ch.data;
-			});
+			var sd = this.getSaveData();
 			
 			NS.taskManager.checkListSave(this.task.id, sd, function(){
 				// __self._shLoading(false);
@@ -117,16 +148,22 @@ Component.entryPoint = function(){
 		},
 		update: function(){
 			// обновить список
-			var __self = this;
 			this.foreach(function(ch){
 				ch.destroy();
 			});
 			this.list = [];
 			
-			var task = this.task;
-			for (var n in task.checks){
-				this.addCheck(task.checks[n]);
+			var checks = this.task.checks;
+			var reccnt = 0;
+			for (var n in checks){
+				var ch = this.addCheck(checks[n]);
+				if (ch.isRemoved()){
+					reccnt++;
+				}
 			}
+			var TM = this._TM;
+			Dom.setStyle(TM.getEl('widget.recycle'), 'display', reccnt > 0 ? '' : 'none');
+			TM.getEl('widget.reccnt').innerHTML = reccnt;
 		}
 	};
 	NS.ChecklistWidget = ChecklistWidget;
@@ -151,12 +188,13 @@ Component.entryPoint = function(){
 	};
 	CheckrowWidget.prototype = {
 		init: function(owner, d){
+			this._destroyed = false;
 			this.owner = owner;
-			var container = owner.elTable;
-			this.container = container;
+
+			var cfg = this.owner.config;
 			
 			this.data = this.cloneObj(d);
-			buildTemplate(this, 'row');
+			buildTemplate(this, 'row,info');
 			
 			var de = Brick.dateExt,
 				us = NS.taskManager.users,
@@ -166,16 +204,21 @@ Component.entryPoint = function(){
 				dUser = us.get(d['duid']); // удалил
 
 			var TM = this._TM;
+			
+			var container = d['ddl']*1 > 0 ? owner.elRecTable : owner.elTable;
+			
 			container.innerHTML += TM.replace('row', {
-				'inew': de.convert(d['dl']) + ', ' + nUser.getUserName(),
-				'diupdate': L.isNull(uUser) ? 'none' : 'block',
-				'iupdate': L.isNull(uUser) ? '' : (de.convert(d['udl']) + ', ' + uUser.getUserName()),
+				'info': cfg['hideinfo'] ? '' : TM.replace('info', {
+					'inew': de.convert(d['dl']) + ', ' + nUser.getUserName(),
+					'diupdate': L.isNull(uUser) ? 'none' : 'block',
+					'iupdate': L.isNull(uUser) ? '' : (de.convert(d['udl']) + ', ' + uUser.getUserName()),
 
-				'dicheck': L.isNull(cUser) ? 'none' : 'block',
-				'icheck': L.isNull(cUser) ? '' : (de.convert(d['cdl']) + ', ' + cUser.getUserName()),
+					'dicheck': L.isNull(cUser) ? 'none' : 'block',
+					'icheck': L.isNull(cUser) ? '' : (de.convert(d['cdl']) + ', ' + cUser.getUserName()),
 
-				'diremove': L.isNull(dUser) ? 'none' : 'block',
-				'iremove': L.isNull(dUser) ? '' : (de.convert(d['ddl']) + ', ' + dUser.getUserName()),
+					'diremove': L.isNull(dUser) ? 'none' : 'block',
+					'iremove': L.isNull(dUser) ? '' : (de.convert(d['ddl']) + ', ' + dUser.getUserName())
+				}),
 
 				'checked': this.data['ch']>0 ? 'checked="checked"' : ''
 			});
@@ -195,8 +238,12 @@ Component.entryPoint = function(){
 			return no;
 		},
 		destroy: function(){
+			if (this._destroyed){ return; }
 			var el = this._TM.getEl('row.id');
-			el.parentNode.removeChild(el);
+			if (!L.isNull(el)){
+				el.parentNode.removeChild(el);
+			}
+			this._destroyed = true;
 		},
 		onClick: function(el){
 			var tp = this._TId['row'];
@@ -222,10 +269,14 @@ Component.entryPoint = function(){
 			this.owner.onChanged();
 		},
 		remove: function(){
-			this.data['duid'] = Brick.env.user.id;
-			this.data['ddl'] = (new Date()).getTime()/1000;
-			this.updateRemoveView();
-			this.owner.onChanged();
+			if (this.data['id']*1 == 0){
+				this.destroy();
+			}else{
+				this.data['duid'] = Brick.env.user.id;
+				this.data['ddl'] = Math.round((new Date()).getTime()/1000);
+				this.updateRemoveView();
+				this.owner.onChanged();
+			}
 		},
 		restore: function(){
 			this.data['duid'] = 0;
@@ -235,6 +286,9 @@ Component.entryPoint = function(){
 		},
 		isRemoved: function(){
 			return this.data['duid']>0 && this.data['ddl']>0;
+		},
+		isDestroyed: function(){
+			return this._destroyed;
 		},
 		updateRemoveView: function(){
 			var el = this._TM.getEl('row.bg');
@@ -334,6 +388,10 @@ Component.entryPoint = function(){
 			}
 			
 			this.data['tl'] = str;
+			
+			if (this.data['id']*1 == 0 && str.length == 0){
+				this.remove();
+			}
 		}		
 	};
 	NS.CheckrowWidget = CheckrowWidget;
