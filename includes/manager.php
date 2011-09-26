@@ -460,7 +460,7 @@ class BotaskManager extends ModuleManager {
 			
 			$info = BotaskQuery::Task($this->db, $tk->id, $this->userid, true);
 			if ($info['pid']*1 != $parentid){ // попытка сменить раздел каталога
-				if (!$this->TaskAccess($info['pid'])){ // разрешено ли его забрать из этой надзадачи?
+				if ($info['pid']*1 > 0 && !$this->TaskAccess($info['pid'])){ // разрешено ли его забрать из этой надзадачи?
 					$tk->pid = $info['pid']; // не будем менять родителя
 				}else if ($parentid > 0 && !$this->TaskAccess($parentid)){ // разрешено ли поместить его в эту подзадачу
 					$tk->pid = $info['pid']; // не будем менять родителя
