@@ -430,16 +430,23 @@ class BotaskManager extends ModuleManager {
 			$tk->bd = $utmanager->Parser($tk->bd);
 		}
 		
+		
 		// родительская задача, есть ли доступ сохранения в нее
-		if ($tk->pid*1 > 0){
-			if (!$this->TaskAccess($tk->pid)){ return null; }
-		}
+		$parentid = $tk->pid*1;
 
 		$history = new BotaskHistory($this->userid);
 		$sendNewNotify = false;
 		
 		$publish = false;
 		if ($tk->id == 0){
+			
+			if ($parentid > 0) {
+				if (!$this->TaskAccess($parentid)){
+					// ОПС! попытка добавить подзадачу туда, куда нету доступа
+					return null;
+				}
+			}
+			
 			$tk->uid = $this->userid;
 			$pubkey = md5(time().$this->userid);
 			$tk->id = BotaskQuery::TaskAppend($this->db, $tk, $pubkey);
@@ -452,6 +459,13 @@ class BotaskManager extends ModuleManager {
 			if (!$this->TaskAccess($tk->id)){ return null; }
 			
 			$info = BotaskQuery::Task($this->db, $tk->id, $this->userid, true);
+			if ($info['pid']*1 != $parentid){ // попытка сменить раздел каталога
+				if (!$this->TaskAccess($info['pid'])){ // разрешено ли его забрать из этой надзадачи?
+					$tk->pid = $info['pid']; // не будем менять родителя
+				}else if ($parentid > 0 && !$this->TaskAccess($parentid)){ // разрешено ли поместить его в эту подзадачу
+					$tk->pid = $info['pid']; // не будем менять родителя
+				}
+			}
 			
 			if ($info['st'] == BotaskStatus::TASK_CLOSE ||
 				$info['st'] == BotaskStatus::TASK_REMOVE ){ 

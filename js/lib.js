@@ -619,6 +619,7 @@ Component.entryPoint = function(){
 				'checks': [],
 				'files': [],
 				'users': [Brick.env.user.id],
+				'parentid': 0,
 				'deadline': null,
 				'ddlTime': false,
 				'priority': 3
@@ -628,6 +629,7 @@ Component.entryPoint = function(){
 				'do': 'tasksave',
 				'task': {
 					'id': task.id,
+					'pid': d['parentid'],
 					'tl': d['title'],
 					'bd': d['descript'],
 					'checks': d['checks'],

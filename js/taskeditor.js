@@ -27,10 +27,15 @@ Component.entryPoint = function(){
 	
 	var UP = Brick.mod.uprofile;
 	
-	Brick.util.CSS.update(Brick.util.CSS['botask']['taskeditor']);	
-
-	var buildTemplate = function(w, ts){w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;};
-
+	var initCSS = false, buildTemplate = function(w, ts){
+		if (!initCSS){
+			Brick.util.CSS.update(Brick.util.CSS['botask']['taskeditor']);
+			delete Brick.util.CSS['botask']['taskeditor'];
+			initCSS = true;
+		}
+		w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;
+	};
+	
 	var TaskEditorPanel = function(task){
 		this.task = task;
 
@@ -38,7 +43,7 @@ Component.entryPoint = function(){
 	};
 	YAHOO.extend(TaskEditorPanel, Brick.widget.Panel, {
 		initTemplate: function(){
-			buildTemplate(this, 'panel');
+			buildTemplate(this, 'panel,tree,node');
 			
 			var task = this.task;
 			return this._TM.replace('panel', {
@@ -57,6 +62,31 @@ Component.entryPoint = function(){
 			if (!L.isNull(task.parent)){
 				Dom.setStyle(TM.getEl('panel.navtask'), 'display', '');
 			}
+			
+			// путь
+			var getPT = function(tk){
+				var tl = tk.title;
+				if (!L.isNull(tk.parent)){ tl = getPT(tk.parent)+" / "+tl; }
+				return tl;
+			};
+			var isChild = function(tk){
+				if (tk.id == task.id){ return true; }
+				if (!L.isNull(tk.parent)){ return isChild(tk.parent); }
+				return false;
+			};
+			
+			var lst = "";
+			NS.taskManager.list.foreach(function(tk){
+				if (tk.id == task.id || isChild(tk)){ return; }
+				lst += TM.replace('node', {
+					'id': tk.id,
+					'tl': getPT(tk)
+				});
+				tk.childs.foreach();
+			}, false, NS.taskSort['name']);
+			
+			TM.getEl('panel.path').innerHTML = TM.replace('tree', {'rows': lst});
+			TM.getEl('tree.id').value = L.isNull(task.parent) ? 0 : task.parent.id;
 			
 
 			TM.getEl('panel.tl').value = task.title;
@@ -113,7 +143,7 @@ Component.entryPoint = function(){
 				'checks': this.checklist.getSaveData(),
 				'files': this.filesWidget.files,
 				'users': users,
-				'parentid': L.isNull(task.parent) ? 0 : task.parent.id,
+				'parentid': TM.getEl('tree.id').value,
 				'deadline': ddl['date'],
 				'ddlTime': ddl['showTime'],
 				'priority': TM.getEl('panel.prt').value

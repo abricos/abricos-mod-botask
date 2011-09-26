@@ -8,6 +8,15 @@
 		<h3 id="{i#tlnew}">Создание новой задачи</h3>
 		<h3 id="{i#tledit}">Редактирование задачи</h3>
 		
+		<dl>
+			<dt>
+				<label>Надзадача</label>
+			</dt>
+			<dd>
+				<div id="{i#path}">&nbsp;</div>
+			</dd>
+		</dl>
+		
 		<dl style=" background-color: #F8EEC0;">
 			<dt>
 				<label for="{i#tl}">Задача</label>
@@ -92,3 +101,12 @@
 	
 	<div class="clear: both;"></div>
 </div>
+
+<!--{tree}-->
+<select id="{i#id}">
+	<option value="0">/</option>
+	{v#rows}
+</select>
+
+<!--{node}-->
+<option value="{v#id}">/ {v#tl}</option>
