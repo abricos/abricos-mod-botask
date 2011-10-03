@@ -8,7 +8,8 @@
 var Component = new Brick.Component();
 Component.requires = {
 	mod:[
-		{name: 'sys', files: ['container.js', 'editor.js', 'calendar.js']},
+		{name: 'sys', files: ['container.js', 'editor.js']},
+		{name: 'widget', files: ['calendar.js']},
         {name: 'uprofile', files: ['users.js']},
         {name: 'botask', files: ['lib.js', 'roles.js', 'calendar.js', 'checklist.js']},
         {name: 'filemanager', files: ['attachment.js']}
@@ -108,7 +109,8 @@ Component.entryPoint = function(){
 			var users = task.id*1==0 && !L.isNull(task.parent) ? task.parent.users : task.users;
 			
 			this.usersWidget = new UP.UserSelectWidget(TM.getEl('panel.users'), users);
-			this.ddlDateTime = new Brick.mod.sys.DateInputWidget(TM.getEl('panel.ddl'), {
+			
+			this.ddlDateTime = new Brick.mod.widget.DateInputWidget(TM.getEl('panel.ddl'), {
 				'date': task.deadline,
 				'showTime': task.ddlTime
 			});
@@ -135,8 +137,6 @@ Component.entryPoint = function(){
 			
 			users[users.length] = Brick.env.user.id;
 			
-			var ddl =  this.ddlDateTime.getValue();
-
 			var newdata = {
 				'title': TM.getEl('panel.tl').value,
 				'descript': this.editor.getContent(),
@@ -144,8 +144,8 @@ Component.entryPoint = function(){
 				'files': this.filesWidget.files,
 				'users': users,
 				'parentid': TM.getEl('tree.id').value,
-				'deadline': ddl['date'],
-				'ddlTime': ddl['showTime'],
+				'deadline': this.ddlDateTime.getValue(),
+				'ddlTime': this.ddlDateTime.getTimeVisible(),
 				'priority': TM.getEl('panel.prt').value
 			};
 			var __self = this;
