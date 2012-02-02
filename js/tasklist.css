@@ -13,13 +13,14 @@
 
 .aw-botask .tlist th a {
 	color: #000;
+	text-decoration: none;
 }
 .aw-botask .tlist th a:hover {
 	text-decoration: underline;
 }
 
 .aw-botask .tlist th ul {
-	height: 2.1em;
+	height: 24px;
 }
 .aw-botask .tlist th li {
 	margin-top: 0.4em;
@@ -35,7 +36,7 @@
 	margin-top: 2px;
 	margin-left: 2px;
 	height: 13px;
-	background: url("/modules/botask/images/icons.gif") no-repeat 0 0 transparent;
+	background: url("/modules/botask/images/icons001.png") no-repeat 0 0 transparent;
 }
 .aw-botask .tlist th .sort-asc ,
 .aw-botask .tlist th .sort-desc {
@@ -134,17 +135,17 @@
 }
 .aw-botask .tlist .tchnew .tname .chnew,
 .aw-botask .tlist .tnew .tname .new {
-	display: inline;
+	/* display: inline; /**/
 }
 
 .aw-botask .tlist .level0 .tname .ch-ico{}
-.aw-botask .tlist .level0 .tname .ch-tl	{font-size:		1.3em;}
+.aw-botask .tlist .level0 .tname .ch-tl	{font-size:		1.2em;}
 
 .aw-botask .tlist .level1 .tname .ch-ico{margin-left:	15px;}
-.aw-botask .tlist .level1 .tname .ch-tl {font-size:		1.2em;}
+.aw-botask .tlist .level1 .tname W.ch-tl {font-size:		1.1em;}
 
 .aw-botask .tlist .level2 .tname .ch-ico{margin-left:	30px;}
-.aw-botask .tlist .level2 .tname .ch-tl {font-size:		1.1em;}
+.aw-botask .tlist .level2 .tname .ch-tl {font-size:		1.05em;}
 
 .aw-botask .tlist .level3 .tname .ch-ico{margin-left:	45px;}
 .aw-botask .tlist .level3 .tname .ch-tl {font-size:		1em;}
@@ -199,7 +200,8 @@
 
 .aw-botask .tlist table th.tautor, 
 .aw-botask .tlist table th.texec {
-	width: 25%;
+	width: 150px; 
+	padding-left: 10px;
 }
 .aw-botask .tlist table th.tfav {
 	width: 32px;
@@ -231,6 +233,13 @@
 }
 .aw-botask .tlist table td.twork {
 	vertical-align: middle;
+}
+
+.aw-botask .tlist table th.texec {
+	text-align: center;
+}
+.aw-botask .tlist table td.texec {
+	white-space: nowrap;
 }
 
 .aw-botask .tlist table td a {
@@ -308,17 +317,17 @@
 }
 
 .aw-botask tr.row:hover .voting .up {
-	background: url("/modules/botask/images/icons.gif") no-repeat scroll 0px 0 transparent;
+	background: url("/modules/botask/images/icons001.png") no-repeat scroll 0px 0 transparent;
 }
 .aw-botask tr.row:hover .voting .up:hover {
-	background: url("/modules/botask/images/icons.gif") no-repeat scroll -60px 0 transparent;
+	background: url("/modules/botask/images/icons001.png") no-repeat scroll -60px 0 transparent;
 }
 .aw-botask tr.row:hover .voting .down {
-	background: url("/modules/botask/images/icons.gif") no-repeat scroll -10px 0 transparent;
+	background: url("/modules/botask/images/icons001.png") no-repeat scroll -10px 0 transparent;
 	margin-left: 2px;
 }
 .aw-botask tr.row:hover .voting .down:hover {
-	background: url("/modules/botask/images/icons.gif") no-repeat scroll -50px 0 transparent;
+	background: url("/modules/botask/images/icons001.png") no-repeat scroll -50px 0 transparent;
 }
 .aw-botask .voting-process tr.row:hover .voting .up,
 .aw-botask .voting-process tr.row:hover .voting .down,

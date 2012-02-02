@@ -13,7 +13,7 @@ Component.requires = {
         {name: 'botask', files: ['tasklist.js', 'chart.js']}
 	]
 };
-Component.entryPoint = function(){
+Component.entryPoint = function(NS){
 	
 	var Dom = YAHOO.util.Dom,
 		E = YAHOO.util.Event,
@@ -21,11 +21,7 @@ Component.entryPoint = function(){
 	
 	var NS = this.namespace, 
 		TMG = this.template,
-		API = NS.API,
 		R = NS.roles;
-	
-	var UP = Brick.mod.uprofile,
-		LNG = Brick.util.Language.getc('mod.botask');
 	
 	var initCSS = false,
 		buildTemplate = function(w, ts){
@@ -166,6 +162,7 @@ Component.entryPoint = function(){
 	
 	var WorkTaskListWidget = function(container, userid, workManager){
 		WorkTaskListWidget.superclass.constructor.call(this, container, NS.taskManager.list, {
+			'columns': 'name,deadline,priority,favorite,work', // executant
 			'workmanager': workManager,
 			'workuserid': userid,
 			'childs': false
@@ -300,11 +297,10 @@ Component.entryPoint = function(){
 			this.gmenu = new NS.GlobalMenuWidget(this._TM.getEl('panel.gmenu'), 'towork');
 			this.widgets = [];
 			
-			this.worker = new WorkManager();
-			
 			var __self = this;
-			NS.taskManager.ajax({'do': 'towork'}, function(r){ 
-				__self.renderWidgets(r);
+			
+			NS.buildTaskManager(function(tm){
+				__self.onBuildTaskManager();
 			});
 		},
 		destroy: function(){
@@ -312,7 +308,15 @@ Component.entryPoint = function(){
 				w.destroy();
 			});
 			ToWorkPanel.superclass.destroy.call(this);
-		},		
+		},
+		onBuildTaskManager: function(){
+			this.worker = new WorkManager();
+			
+			var __self = this;
+			NS.taskManager.ajax({'do': 'towork'}, function(r){ 
+				__self.renderWidgets(r);
+			});
+		},
 		find: function(userid){
 			return this.foreach(function(w){
 				if (w.user.id == userid){ return true; }
@@ -351,7 +355,7 @@ Component.entryPoint = function(){
 			this.worker.update(r);
 			
 			var ws = this.widgets, __self = this;
-			var users = NS.taskManager.users.foreach(function(user){
+			NS.taskManager.users.foreach(function(user){
 				__self.buildWidget(user.id);
 			});
 			this.foreach(function(w){
@@ -388,11 +392,13 @@ Component.entryPoint = function(){
 		
 	});
 	NS.ToWorkPanel = ToWorkPanel;
-
-	API.showToWorkPanel = function(){
-		NS.buildTaskManager(function(tm){
-			new ToWorkPanel();
-		});
+	
+	var _activeToWorkPanel = null; 
+	NS.API.showToWorkPanel = function(){
+		if (L.isNull(_activeToWorkPanel) || _activeToWorkPanel.isDestroy()){
+			_activeToWorkPanel = new ToWorkPanel();
+		}
+		return _activeToWorkPanel;
 	};
 
 };

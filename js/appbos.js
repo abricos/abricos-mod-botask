@@ -13,8 +13,8 @@ Component.entryPoint = function(){
 	
 	var app = new os.Application(this.moduleName);
 	app.icon = '/modules/botask/images/app_icon.gif';
-	app.entryComponent = 'board';
-	app.entryPoint = 'showBoardPanel';
+	app.entryComponent = 'ws';
+	app.entryPoint = 'showWorkspacePanel';
 	
 	os.ApplicationManager.register(app);
 	

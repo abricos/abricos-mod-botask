@@ -9,56 +9,62 @@
 	<div id="{i#table}" class="ttable"></div>
 </div>
 
-<!--{tablepold}-->
-<th class="tautor"><span>Автор</span></th>
-<th class="texec"><span>Ответственный</span></th>
-
 <!--{table}-->
 <table id="{i#id}">
 	<thead><tr>
-		<th class="tname">
-			<ul class="{v#sortname}">
-				<li class="tl"><a id="{i#sortname}" href="#">Задачи</a></li>
-				<li><div class="sort sortstr-asc"></div></li>
-				<li><div class="sort sortstr-desc"></div></li>
-			</ul>
-		</th>
-		<th class="tddl">
-			<ul class="{v#sortdeadline}">
-				<li class="tl"><a id="{i#sortdeadline}" href="#">Срок</a></li>
-				<li><div class="sort sortdate-asc"></div></li>
-				<li><div class="sort sortdate-desc"></div></li>
-			</ul>
-		</th>
-		<th class="tprt">
-			<ul class="{v#sortpriority}">
-				<li class="tl"><a id="{i#sortpriority}" href="#">Приоритет</a></li>
-				<li><div class="sort sort-asc"></div></li>
-				<li><div class="sort sort-desc"></div></li>
-			</ul>
-		</th>
-		<th class="tfav">
-			<ul class="{v#sortfavorite}">
-				<li class="tl">
-					<span class="fav-icon-normal">
-						<img id="{i#sortfavorite}" class="fav-checked" src="/images/empty.gif">
-					</span>
-				</li>
-				<li><div class="sort sort-asc"></div></li>
-				<li><div class="sort sort-desc"></div></li>
-			</ul>
-		</th>
-		<th class="tvot">
-			<ul class="{v#sortvoting}">
-				<li class="tl"><a id="{i#sortvoting}" href="#" title="Моя сортировка">М</a></li>
-				<li><div class="sort sort-asc"></div></li>
-				<li><div class="sort sort-desc"></div></li>
-			</ul>
-		</th>
 		{v#cols}
 	</tr></thead>
 	<tbody>{v#rows}</tbody>
 </table>
+
+<!--{hcolname}-->
+<th class="tname">
+	<ul class="{v#sortname}">
+		<li class="tl"><a id="{i#sortname}" href="#">Задачи</a></li>
+		<li><div class="sort sortstr-asc"></div></li>
+		<li><div class="sort sortstr-desc"></div></li>
+	</ul>
+</th>
+
+<!--{hcolddl}-->
+<th class="tddl">
+	<ul class="{v#sortdeadline}">
+		<li class="tl"><a id="{i#sortdeadline}" href="#">Срок</a></li>
+		<li><div class="sort sortdate-asc"></div></li>
+		<li><div class="sort sortdate-desc"></div></li>
+	</ul>
+</th>
+
+<!--{hcolprt}-->
+<th class="tprt">
+	<ul class="{v#sortpriority}">
+		<li class="tl"><a id="{i#sortpriority}" href="#">Приоритет</a></li>
+		<li><div class="sort sort-asc"></div></li>
+		<li><div class="sort sort-desc"></div></li>
+	</ul>
+</th>
+
+<!--{hcolfav}-->
+<th class="tfav">
+	<ul class="{v#sortfavorite}">
+		<li class="tl">
+			<span class="fav-icon-normal">
+				<img id="{i#sortfavorite}" class="fav-checked" src="/images/empty.gif">
+			</span>
+		</li>
+		<li><div class="sort sort-asc"></div></li>
+		<li><div class="sort sort-desc"></div></li>
+	</ul>
+</th>
+
+<!--{hcolvot}-->
+<th class="tvot">
+	<ul class="{v#sortvoting}">
+		<li class="tl"><a id="{i#sortvoting}" href="#" title="Моя сортировка">М</a></li>
+		<li><div class="sort sort-asc"></div></li>
+		<li><div class="sort sort-desc"></div></li>
+	</ul>
+</th>
 
 <!--{hcolwork}-->
 <th class="twork">
@@ -69,39 +75,61 @@
 	</ul>
 </th>
 
+<!--{hcolexec}-->
+<th class="texec">
+	<ul class="{v#sortexec}">
+		<li class="tl"><a id="{i#sortexec}" href="#" title="Исполнитель">Исполнитель</a></li>
+		<li><div class="sort sort-asc"></div></li>
+		<li><div class="sort sort-desc"></div></li>
+	</ul>
+</th>
+
 <!--{row}-->
 <tr id="{i#id}-{v#id}" class="row {v#classch} level{v#level} {v#tnew} {v#tchnew} priority{v#prt} {v#expired} {v#closed} {v#removed}">
-	<td class="tname">
-		<div class="ch-ico">
-			<div class="ch-btn" id="{i#exp}-{v#id}">&nbsp;</div>
-		</div>
-		<div class="ch-tl">
-			<a href="#app=botask/taskview/showTaskViewPanel/{v#id}/" title="{v#tl}">{v#tl}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
-			<span id="{i#new}-{v#id}" class="new" title="Эта задача новая">New</span>
-			<span id="{i#chnew}-{v#id}" class="chnew" title="Есть новые подзадачи">+New</span>
-			<div class="shadow"></div>
-		</div>
-	</td>
-	<td class="tddl">
-		{v#ddl}
-	</td>
-	<td class="tprt">
-		<div class="prtclr">{v#prts}</div>
-	</td>
-	<td>
-		<span id="{i#fav}-{v#id}" class="fav-icon-normal" title="Добавить в избранное">
-			<img id="{i#favi}-{v#id}" class="{v#fav}" src="/images/empty.gif">
-		</span>
-	</td>
-	<td>
-		<ul id="{i#voting}-{v#id}" class="voting">
-			<li id="{i#up}-{v#id}" class="up" title="Вверх"></li>
-			<li id="{i#vot}-{v#id}" class="res">{v#ord}</li>
-			<li id="{i#down}-{v#id}" class="down" title="Вниз"></li>
-		</ul>
-	</td>
 	{v#cols}
 </tr>
 
+<!--{rcolname}-->
+<td class="tname">
+	<div class="ch-ico">
+		<div class="ch-btn" id="{i#exp}-{v#id}">&nbsp;</div>
+	</div>
+	<div class="ch-tl">
+		<a href="#app=botask/ws/showWorkspacePanel/taskview/{v#id}/" title="{v#tl}">{v#tl}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
+		<span id="{i#new}-{v#id}" class="new" title="Эта задача новая">New</span>
+		<span id="{i#chnew}-{v#id}" class="chnew" title="Есть новые подзадачи">+New</span>
+		<div class="shadow"></div>
+	</div>
+</td>
+
+<!--{rcolddl}-->
+<td class="tddl">
+	{v#ddl}
+</td>
+
+<!--{rcolprt}-->
+<td class="tprt">
+	<div class="prtclr">{v#prts}</div>
+</td>
+
+<!--{rcolfav}-->
+<td class="tfav">
+	<span id="{i#fav}-{v#id}" class="fav-icon-normal" title="Добавить в избранное">
+		<img id="{i#favi}-{v#id}" class="{v#fav}" src="/images/empty.gif">
+	</span>
+</td>
+
+<!--{rcolvot}-->
+<td class="tvot">
+	<ul id="{i#voting}-{v#id}" class="voting">
+		<li id="{i#up}-{v#id}" class="up" title="Вверх"></li>
+		<li id="{i#vot}-{v#id}" class="res">{v#ord}</li>
+		<li id="{i#down}-{v#id}" class="down" title="Вниз"></li>
+	</ul>
+</td>
+
 <!--{rcolwork}-->
 <td class="twork">{v#work}</td>
+
+<!--{rcolexec}-->
+<td class="texec">{v#exec}</td>

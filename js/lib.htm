@@ -1,3 +1,58 @@
+<!--{gbmenu}-->
+<div class="aw-botask">
+	<div class="gheadermenu ghm">
+		<h2 id="{i#bhome}">Менеджер задач</h2>
+		
+		<img class="logo" src="/modules/botask/images/logo-96x96.gif" />
+		
+		<ul class="topmenu">
+			<li id="{i#gmproject}"><a href="#app={C#MODNAMEURI}/ws/showWorkspacePanel">Задачи</a></li>
+			<li id="{i#gmfavorite}" class="mifav">
+				<a href="#">Избранное</a>
+				<div id="{i#favcont}" class="vcont">
+					<div class="ldg">
+						<img src="/images/loading.gif" /> загрузка...
+					</div>
+				</div>
+			</li>
+			<li id="{i#gmaddtask}"><a href="#app=botask/ws/showWorkspacePanel/taskadd/0/">Добавить задачу</a></li>
+			<li id="{i#gmtowork}"><a href="#app={C#MODNAMEURI}/towork/showToWorkPanel">Сводка</a></li>
+			<li id="{i#gmcomments}"><a href="#app={C#MODNAMEURI}/comments/showLastCommentsPanel">Комментарии</a></li>
+			<li id="{i#gmabout}"><a href="#app={C#MODNAMEURI}/about/showAboutPanel">О приложении</a></li>
+		</ul>
+		<div class="clear"></div>
+	</div>
+	
+	<div class="gbmenu">
+		
+		<!-- 
+		<div id="{i#mproject}" class="gbitems" style="display: none;">
+			<a id="{i#miproject}" class="gbitem" href="#app={C#MODNAMEURI}/ws/showWorkspacePanel" style="display: none">Задачи</a>
+		</div>
+
+		<div id="{i#mtowork}" class="gbitems" style="display: none;">
+			<a id="{i#mitowork}" class="gbitem" href="#app={C#MODNAMEURI}/towork/showToWorkPanel" style="display: none">Сводка</a>
+		</div>
+
+		<div id="{i#mcomments}" class="gbitems" style="display: none;">
+			<a id="{i#micomments}" class="gbitem" href="#app={C#MODNAMEURI}/comments/showLastCommentsPanel" style="display: none">Комментарии</a>
+		</div>
+		
+		<div id="{i#mabout}" class="gbitems" style="display: none;">
+			<a id="{i#miabout}" class="gbitem" href="#app={C#MODNAMEURI}/about/showAboutPanel" style="display: none">О приложении</a>
+		</div>
+		 -->
+		
+		<br class="clear" />
+		<div class="line"></div>
+	</div>
+</div>
+
+<!--{gbmenuldg}-->
+
+
+
+
 <!--{nav}-->
 <div class="navigate">
 	<span class="item {v#first}">
@@ -8,19 +63,16 @@
 
 <!--{navrow}-->
 <span class="item {v#current}">
-	<span class="arrow"> → </span><a href="#app=botask/taskview/showTaskViewPanel/{v#id}/">{v#tl}</a>
+	<span class="arrow"> → </span><a href="#app=botask/ws/showWorkspacePanel/taskview/{v#id}/">{v#tl}</a>
 </span>
 
-<!--{gbmenu}-->
+<!--{gbmenu_old}-->
 <div class="gbmenu">
 	
 	<div class="gbitems">
 		<a class="gbitem {v#task}" href="#app=botask/board/showBoardPanel">Задачи</a>
 		<a class="gbitem {v#towork}" href="#app=botask/towork/showToWorkPanel">Сводка</a>
-		<a class="gbitem {v#comments}" href="#app=botask/comments/showLastCommentsPanel">
-			Комментарии
-			<span class="cmtnew" style="display: none;">+10</span>
-		</a>
+		<a class="gbitem {v#comments}" href="#app=botask/comments/showLastCommentsPanel">Комментарии</a>
 	</div>
 	<br class="clear" />
 	<div class="line"></div>

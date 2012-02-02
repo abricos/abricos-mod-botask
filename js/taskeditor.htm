@@ -1,106 +1,107 @@
-<!--{panel}-->
-<div class='hd'>Редактор задачи</div>
-<div class='bd aw-botask'>
-
-	<div class="taskedit ui-form">
-		<div id="{i#nav}"></div>
-	
-		<h3 id="{i#tlnew}">Создание новой задачи</h3>
-		<h3 id="{i#tledit}">Редактирование задачи</h3>
+<!--{widget}-->
+<div id="{i#id}" class="taskedit ui-form">
+	<div class="head">
+		<span id="{i#tlnew}">Создание новой задачи</span>
+		<span id="{i#tledit}">Редактирование задачи</span>
 		
-		<dl>
-			<dt>
-				<label>Надзадача</label>
-			</dt>
-			<dd>
-				<div id="{i#path}">&nbsp;</div>
-			</dd>
-		</dl>
-		
-		<dl style=" background-color: #F8EEC0;">
-			<dt>
-				<label for="{i#tl}">Задача</label>
-			</dt>
-			<dd>
-				<input id="{i#tl}" type="text" class="input-text font-large" style="width: 90%;" />
-			</dd>
-		</dl>
-		
-		<dl>
-			<dt>
-				<label>Описание задачи</label>
-			</dt>
-			<dd>
-				<textarea id="{i#editor}" style="width: 740px; height: 200px"></textarea>
-			</dd>
-		</dl>
-		<dl>
-			<dt>
-				<label>Чеклист</label>
-			</dt>
-			<dd>
-				<div id="{i#checklist}" class="taskbody"></div>
-			</dd>
-		</dl>
-		
-
-		<dl id="{i#rfiles}">
-			<dt>
-				<label>Файлы</label>
-			</dt>
-			<dd>
-				<div id="{i#files}"></div>
-			</dd>
-		</dl>
-
-		<dl>
-			<dt>
-				<label>Срок</label>
-			</dt>
-			<dd>
-				<div id="{i#ddl}"></div>
-			</dd>
-		</dl>
-	
-		<dl>
-			<dt>
-				<label>Приоритет</label>
-			</dt>
-			<dd>
-				<select id="{i#prt}">
-					<option value="1">Срочный</option>
-					<option value="2">Важный</option>
-					<option value="3" selected="selected">Нормальный</option>
-					<option value="4">Не срочный</option>
-					<option value="5">Не важный</option>
-				</select>
-			</dd>
-		</dl>
-		
-		<dl>
-			<dt><label>Участники</label></dt>
-			<dd>
-				<div id="{i#users}"></div>
-			</dd>
-		</dl>
-		
-		<dl>
-			<dt></dt>
-			<dd>
-				<div class="field">
-					<div class="buttons">
-						<input type="button" value="Сохранить" id="{i#bsave}" class="btn" />
-						<input type="button" value="Отмена" id="{i#bcancel}" class="btn" />
-						<img src="/images/loading.gif" id="{i#loading}" style="display: none;" />
-					</div>
-				</div>
-			</dd>
-		</dl>
-		
+		<div class="buttons right">
+			<input type="button" value="Сохранить" id="{i#bsavei}" class="btn" />
+			<input type="button" value="Отмена" id="{i#bcanceli}" class="btn" />
+			<img src="/images/loading.gif" id="{i#loadingi}" style="display: none;" />
+		</div>
 	</div>
+	<dl class="tepath">
+		<dt>
+			<label>Надзадача</label>
+		</dt>
+		<dd>
+			<div id="{i#path}" class="path" >&nbsp;</div>
+		</dd>
+	</dl>
 	
-	<div class="clear: both;"></div>
+	<dl class="tetitle" >
+		<dt>
+			<label for="{i#tl}">Заголовок</label>
+		</dt>
+		<dd>
+			<input id="{i#tl}" type="text" class="input-text font-large" style="width: 90%;" />
+		</dd>
+	</dl>
+	
+	<dl class="teeditor">
+		<dt>
+			<label>Описание задачи</label>
+		</dt>
+		<dd>
+			<textarea id="{i#editor}" style="width: 700px; height: 350px"></textarea>
+		</dd>
+	</dl>
+	<dl class="techecklist">
+		<dt>
+			<label>Чеклист</label>
+		</dt>
+		<dd>
+			<div id="{i#checklist}" class="taskbody"></div>
+		</dd>
+	</dl>
+	
+
+	<dl class="tefiles" id="{i#rfiles}">
+		<dt>
+			<label>Файлы</label>
+		</dt>
+		<dd>
+			<div id="{i#files}"></div>
+		</dd>
+	</dl>
+
+	<dl class="teddl">
+		<dt>
+			<label>Срок</label>
+		</dt>
+		<dd>
+			<div id="{i#ddl}"></div>
+		</dd>
+	</dl>
+
+	<dl class="teprt">
+		<dt>
+			<label>Приоритет</label>
+		</dt>
+		<dd>
+			<select id="{i#prt}">
+				<option value="1">Срочный</option>
+				<option value="2">Важный</option>
+				<option value="3" selected="selected">Нормальный</option>
+				<option value="4">Не срочный</option>
+				<option value="5">Не важный</option>
+			</select>
+		</dd>
+	</dl>
+	
+	<dl class="teusers">
+		<dt><label>Участники</label></dt>
+		<dd>
+			<div id="{i#users}"></div>
+		</dd>
+	</dl>
+	
+	<dl class="tebuttons">
+		<dt></dt>
+		<dd>
+			<div class="field">
+				<div class="buttons right">
+					<input type="button" value="Сохранить" id="{i#bsave}" class="btn" />
+					<input type="button" value="Отмена" id="{i#bcancel}" class="btn" />
+					<img src="/images/loading.gif" id="{i#loading}" style="display: none;" />
+				</div>
+			</div>
+		</dd>
+	</dl>
+	
 </div>
+
+<div class="clear: both;"></div>
 
 <!--{tree}-->
 <select id="{i#id}">

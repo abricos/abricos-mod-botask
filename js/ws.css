@@ -1,0 +1,92 @@
+.aw-botask .ws-loading {
+	margin-top: 120px;
+	text-align: center;
+}
+
+.aw-botask .board {
+}
+
+.aw-botask .board table.wstable {
+	width: 1024px;
+}
+
+.aw-botask .board table.wstable td.leftcol {
+	width: 250px;
+}
+
+.aw-botask .board table.wstable td.midcol {
+	width: 10px;
+}
+.aw-botask .board table.wstable td.rightcol {
+	width: 764px;
+}
+
+/* * * * * Favorite Box * * * * * */
+/*
+.aw-botask .board .expfav {
+	position: relative;
+}
+.aw-botask .board .boxfav {
+	position: absolute;
+	width: 100%;
+	top: 27px; left: 0;
+} 
+/**/
+
+/* * EasyList in left col * */
+.aw-botask .board .tlist td.tname .ch-ico,
+.aw-botask .board .leftcol .tlist thead,
+.aw-botask .board .leftcol .tlist td.tddl,
+.aw-botask .board .leftcol .tlist td.tprt,
+.aw-botask .board .leftcol .tlist td.tvot,
+.aw-botask .board .leftcol .tlist td.tfav {
+	display: none;
+}
+.aw-botask .board .tlist td.tname .ch-tl {
+	margin-left: 3px;
+}
+
+.aw-botask .board .tlist td.tname .ch-tl {
+	font-size: 1.2em;
+}
+.aw-botask .board .leftcol .tlist td.tname .ch-tl {
+	font-size: 1em;
+}
+
+.aw-botask .rightcol .boxitem {
+	margin-bottom: 13px;
+}
+
+.aw-botask .leftcol .boxitem,
+.aw-botask .leftcol .explore {
+	margin-bottom: 5px;
+}
+
+
+
+
+/* * * * * * Page Main * * * * */
+.aw-botask .board .wspagemain .btns {
+	margin-bottom: 14px;
+}
+
+/* * * * Page Task Editor * * */
+
+.aw-botask .board .taskedit dl dt {
+	text-decoration: underline;
+	/* font-style: italic; /**/
+}
+
+.aw-botask .board .taskedit dl.teeditor dt,
+.aw-botask .board .taskedit dl.teusers dt {
+	float: none;
+}
+.aw-botask .board .taskedit dl.teeditor dd,
+.aw-botask .board .taskedit dl.teusers dd {
+	margin-left: 0;
+	padding: 0.5em;
+}
+
+.aw-botask .board .taskedit dl.tebuttons .buttons {
+	/*text-align: right; /**/
+}

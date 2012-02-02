@@ -11,7 +11,7 @@
 require_once 'dbquery.php';
 require_once 'history.php';
 
-class BotaskManager extends ModuleManager {
+class BotaskManager extends Ab_ModuleManager {
 	
 	/**
 	 * @var BotaskModule
@@ -19,35 +19,26 @@ class BotaskManager extends ModuleManager {
 	public $module = null;
 	
 	/**
-	 * User
-	 * @var User
-	 */
-	public $user = null;
-	public $userid = 0;
-	
-	/**
 	 * @var BotaskManager
 	 */
 	public static $instance = null; 
 	
-	public function BotaskManager(BotaskModule $module){
-		parent::ModuleManager($module);
+	public function __construct(BotaskModule $module){
+		parent::__construct($module);
 		
-		$this->user = CMSRegistry::$instance->modules->GetModule('user');
-		$this->userid = $this->user->info['userid'];
 		BotaskManager::$instance = $this;
 	}
 	
 	public function IsAdminRole(){
-		return $this->module->permission->CheckAction(BotaskAction::ADMIN) > 0;
+		return $this->IsRoleEnable(BotaskAction::ADMIN);
 	}
 	
 	public function IsWriteRole(){
-		return $this->module->permission->CheckAction(BotaskAction::WRITE) > 0;
+		return $this->IsRoleEnable(BotaskAction::WRITE);
 	}
 	
 	public function IsViewRole(){
-		return $this->module->permission->CheckAction(BotaskAction::VIEW) > 0;
+		return $this->IsRoleEnable(BotaskAction::VIEW);
 	}
 	
 	private function _AJAX($d){
@@ -425,7 +416,7 @@ class BotaskManager extends ModuleManager {
 		$tk->id = intval($tk->id);
 		if (!$this->IsAdminRole()){
 			// порезать теги и прочие гадости
-			$utmanager = CMSRegistry::$instance->GetUserTextManager();
+			$utmanager = Abricos::TextParser();
 			$tk->tl = $utmanager->Parser($tk->tl);
 			$tk->bd = $utmanager->Parser($tk->bd);
 		}
@@ -511,36 +502,40 @@ class BotaskManager extends ModuleManager {
 		// сохранить чеклист
 		$this->CheckListSave($tk->id, $tk->checks, $history);
 		
-		// обновить информацию по файлам
-		$files = $this->TaskFiles($tk->id, true);
-		$arr = $tk->files;
-		
-		foreach ($files as $rFileId => $cfile){
-			$find = false;
-			foreach ($arr as $file){
-				if ($file->id == $rFileId){
-					$find = true;
-					break;
-				}
-			}
-			if (!$find){
-				BotaskQuery::TaskFileRemove($this->db, $tk->id, $rFileId);
-				// $history->FileRemove($rFileId);
-			}
-		}
-		foreach ($arr as $file){
-			$find = false;
+		// обновить информацию по файлам, если есть на это роль
+		Abricos::GetModule('filemanager');
+		if (FileManagerModule::$instance->GetManager()->IsFileUploadRole()){
+			$files = $this->TaskFiles($tk->id, true);
+			$arr = $tk->files;
+			
 			foreach ($files as $rFileId => $cfile){
-				if ($file->id == $rFileId){
-					$find = true;
-					break;
+				$find = false;
+				foreach ($arr as $file){
+					if ($file->id == $rFileId){
+						$find = true;
+						break;
+					}
+				}
+				if (!$find){
+					BotaskQuery::TaskFileRemove($this->db, $tk->id, $rFileId);
+					// $history->FileRemove($rFileId);
 				}
 			}
-			if (!$find){
-				BotaskQuery::TaskFileAppend($this->db, $tk->id, $file->id, $this->userid);
-				// $history->FileAdd($uid);
+			foreach ($arr as $file){
+				$find = false;
+				foreach ($files as $rFileId => $cfile){
+					if ($file->id == $rFileId){
+						$find = true;
+						break;
+					}
+				}
+				if (!$find){
+					BotaskQuery::TaskFileAppend($this->db, $tk->id, $file->id, $this->userid);
+					// $history->FileAdd($uid);
+				}
 			}
 		}
+		
 		
 		$history->Save();
 		$taskid = $tk->id;
@@ -570,7 +565,7 @@ class BotaskManager extends ModuleManager {
 					"prj" => $task['bd'],
 					"sitename" => Brick::$builder->phrase->Get('sys', 'site_name')
 				));
-				CMSRegistry::$instance->GetNotification()->SendMail($email, $subject, $body);
+				Abricos::Notify()->SendMail($email, $subject, $body);
 			}
 		}
 		return $task;
@@ -643,7 +638,7 @@ class BotaskManager extends ModuleManager {
 		if (!$this->IsViewRole()){ return false; }
 		
 		$ret = new stdClass();
-		$rows = CMSRegistry::$instance->user->GetManager()->UserConfigList($this->userid, 'botask');
+		$rows = Abricos::$user->GetManager()->UserConfigList($this->userid, 'botask');
 		while (($row = $this->db->fetch_array($rows))){
 			if ($this->UserConfigCheckVarName($row['nm'])){
 				$ret->$row['nm'] = $row['vl'];
@@ -656,7 +651,7 @@ class BotaskManager extends ModuleManager {
 	public function UserConfigUpdate($newcfg){
 		if (!$this->IsViewRole()){ return null; }
 		
-		$uman = CMSRegistry::$instance->user->GetManager();
+		$uman = Abricos::$user->GetManager();
 		
 		$rows = $uman->UserConfigList($this->userid, 'botask');
 		$arr = $this->ToArray($rows);
@@ -769,7 +764,7 @@ class BotaskManager extends ModuleManager {
 						"cmt2" => $data->bd." ",
 						"sitename" => Brick::$builder->phrase->Get('sys', 'site_name')
 					));
-					CMSRegistry::$instance->GetNotification()->SendMail($email, $subject, $body);
+					Abricos::Notify()->SendMail($email, $subject, $body);
 				}
 			}
 		}
@@ -790,7 +785,7 @@ class BotaskManager extends ModuleManager {
 					"cmt" => $data->bd." ",
 					"sitename" => Brick::$builder->phrase->Get('sys', 'site_name')
 				));
-				CMSRegistry::$instance->GetNotification()->SendMail($email, $subject, $body);
+				Abricos::Notify()->SendMail($email, $subject, $body);
 			}
 		}
 		
@@ -812,7 +807,7 @@ class BotaskManager extends ModuleManager {
 				"cmt" => $data->bd." ",
 				"sitename" => Brick::$builder->phrase->Get('sys', 'site_name')
 			));
-			CMSRegistry::$instance->GetNotification()->SendMail($email, $subject, $body);
+			Abricos::Notify()->SendMail($email, $subject, $body);
 		}
 	}
 
@@ -832,7 +827,7 @@ class BotaskManager extends ModuleManager {
 		
 		$chListDb = $this->CheckList($taskid, true, true);
 		
-		$utmanager = CMSRegistry::$instance->GetUserTextManager();
+		$utmanager = Abricos::TextParser();
 		$isAdmin = $this->IsAdminRole();
 		$userid = $this->userid;
 		

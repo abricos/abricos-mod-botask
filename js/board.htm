@@ -4,24 +4,25 @@
 
 	<div id="{i#gmenu}"></div>
 	
-	<div class="board" id="{i#id}">
+	<div class="board">
 	
 		<table class="maintable"><tbody><tr>
-			<td class="leftcol">
+			<td>
+				<div id="{i#explore}"></div>
+				
+				<div style="display: none">
+					<span style="font-weight: bold; line-height: 1.5em">История</span>
+					<div id="{i#history}"></div>
+				</div>
+			</td>
+			<td>
 				<div class="colbody">
 					
-					<a class="baddtask" href="#app=botask/taskeditor/showCreateTaskPanel/0/">Добавить задачу</a>
+					<a class="baddtask" href="#app=botask/ws/showWorkspacePanel/taskadd/0/">Добавить задачу</a>
 					
 					<div id="{i#list}" class="list">
 						Идет загрузка задач. Пожалуйста, подождите...
 					</div>
-				</div>
-			</td>
-			<td class="rightcol">
-				<div class=colbody>
-					<span style="font-weight: bold; line-height: 1.5em">История</span>
-					<div id="{i#history}"></div>
-					
 				</div>
 			</td>
 		</tr></tbody></table>

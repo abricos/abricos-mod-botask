@@ -1,3 +1,4 @@
+/* * * * * * Navigate * * * * * */
 .aw-botask table.maintable {
 	width: 100%;
 }
@@ -31,6 +32,46 @@
 	color: #666666;
 }
 
+/* * * * * * Global Menu * * * * * */
+.aw-botask .gheadermenu {
+	position: relative;
+	padding: 15px 0 0 150px;
+	height: 100px;
+}
+.aw-botask .gheadermenu h2 {
+	padding: 5px 10px;
+	font-size: 1.5em;
+	background-color: #8c8d8e;
+	color: #fff;
+	cursor: pointer;
+}
+.aw-botask .gheadermenu img.logo {
+	position: absolute;
+	width: 96px;
+	height: 96px;
+	top: 0;
+	left: 30px;
+}
+.aw-botask .gheadermenu ul.topmenu {
+	margin: 10px;
+	margin-top: 6px;
+}
+.aw-botask .gheadermenu ul.topmenu > li{
+	float: left;
+    padding: 1px 0.5em;
+    margin-right: 10px;
+}
+.aw-botask .gheadermenu ul.topmenu a {
+	font-size: 
+}
+.aw-botask .gheadermenu ul.topmenu li.sel {
+	background: none repeat scroll 0 0 #E3E3D7;
+    border: 1px solid #DDD9E2;
+}
+.aw-botask .gheadermenu ul.topmenu li.sel a {
+	color: #000;
+	text-decoration: none;
+}
 
 .aw-botask .gbmenu a {
 	text-decoration: none;
@@ -43,7 +84,7 @@
 .aw-botask .gbmenu .gbitem {
 	background-color: #F4F4EE;
 	text-align: center;
-	width: 100px;
+	min-width: 100px;
 	cursor: pointer;
 	float: left;
 	margin: 0 1px;
@@ -63,6 +104,27 @@
 	height: 16px;
 }
 
+/* * * * Favorite in GMenu * * * */
+.aw-botask .ghm .mifav {
+	position: relative;
+}
+.aw-botask .ghm .mifav .vcont {
+	position: absolute; top: 15px; left: 0;
+	display: none;
+	padding-top: 5px;
+	width: 700px;
+	background-color: #FFF;
+	z-index: 1;
+}
+.aw-botask .ghm .mifav:hover .vcont {
+	display: block;
+}
+.aw-botask .ghm .mifav .ldg {
+    border: 1px solid #8C8D8E;
+    padding: 20px;	
+}
+
+/* * * * * * User Form * * * * * */
 .aw-botask .ui-form dl {
     margin: 0 0 0.3em;
     padding: 0;
@@ -124,3 +186,65 @@
 .aw-botask .priority3 .prtclr {	color: #006699; }
 .aw-botask .priority4 .prtclr {	color: #DDDDDD; }
 .aw-botask .priority5 .prtclr {	color: #839097; }
+
+
+/* * * * * * Box * * * * * */
+.aw-botask .boxitem {
+	border: 1px solid #8C8D8E;
+	position: relative;
+}
+.aw-botask .boxitem .head {
+	cursor: pointer;
+	height: 25px;
+	position: relative;
+	background-color: #E3E3D7;
+	border-bottom: 1px solid #8C8D8E;
+}
+.aw-botask .boxsthide .head {
+	border-bottom: none;
+	/* background-color: #d2d2c7; /**/
+}
+.aw-botask .boxitem .head .info {
+	padding-top: 5px;
+	padding-left: 12px;
+}
+.aw-botask .boxitem .head span.title {
+	margin-right: 7px;
+	font-size: 1em;
+}
+.aw-botask .boxitem .shbox {
+	position: absolute;
+	width: 25px;
+	height: 15px;
+	top: 5px;
+	right: 7px;
+}
+.aw-botask .boxsthide .shbox {
+	background: url("/modules/sys/images/container.png") no-repeat scroll 0 0 transparent;
+}
+.aw-botask .boxstshow .shbox {
+	background: url("/modules/sys/images/container.png") no-repeat scroll 0 -18px transparent;
+}
+.aw-botask .boxitem .boxbody {
+	background-color: #fff;
+	width: 100%;
+}
+.aw-botask .boxsthide .boxbody {
+	display: none;
+}
+
+.aw-botask .boxsthide:hover .boxbody {
+	display: block;
+	position: absolute;
+	left: -1px;
+	top: 26px;
+	z-index: 1;
+
+	border: 1px solid #dadada;
+	border-top: none;
+}
+.aw-botask .boxitem  .emptyrows {
+	padding-top: 10px;
+	height: 28px;
+	text-align: center;
+}

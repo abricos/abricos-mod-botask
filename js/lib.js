@@ -13,14 +13,12 @@ Component.requires = {
         {name: 'botask', files: ['roles.js']}
 	]		
 };
-Component.entryPoint = function(){
+Component.entryPoint = function(NS){
 
 	var Dom = YAHOO.util.Dom,
 		E = YAHOO.util.Event,
 		L = YAHOO.lang,
 		TMG = this.template,
-		NS = this.namespace,
-		API = NS.API,
 		R = NS.roles;
 	var SC = Brick.mod.social;
 
@@ -63,6 +61,24 @@ Component.entryPoint = function(){
 		'ARHIVE'	: 7		// в архиве
 	};
 	NS.TaskStatus = TaskStatus;
+	
+	/*
+	var Folder = function(data){
+		this.init(data);
+	};
+	Folder.prototype = {
+		init: function(d){
+			d = L.merge({
+				'id': 0,
+				'tl': '',
+				'dl': 0,
+				'uid': Brick.env.user.id,
+				'users': [Brick.env.user.id]
+			}, d || {});			
+		}
+	};
+	NS.Folder = Folder;
+	/**/
 
 	var Task = function(data){
 		this.init(data);
@@ -78,7 +94,9 @@ Component.entryPoint = function(){
 				'users': [Brick.env.user.id],
 				'ddl': 0,
 				'ddlt': 0,
-				'prt': 3
+				'prt': 3,
+				'cmt': 0, // последний комментарий
+				'cmtv': 0 // последний прочитанный комментарий
 			}, d || {});
 			
 			this.update(d);
@@ -112,6 +130,11 @@ Component.entryPoint = function(){
 			this.stUserId = d['stuid'];
 			this.stDate = NS.dateToClient(d['stdl']);
 			
+			d['cmt'] = L.isNull(d['cmt']) ? 0 : d['cmt'];
+			d['cmtv'] = L.isNull(d['cmtv']) ? 0 : d['cmtv'];
+			
+			this.isNewCmt = d['cmt']>d['cmtv'];
+			
 			this.priority = d['prt']*1;
 			this.order = d['o']*1;
 			this.favorite = d['f']*1>0;
@@ -120,6 +143,7 @@ Component.entryPoint = function(){
 			
 			this.work = null;
 			
+			this.vDate = NS.dateToClient(d['vdl']);
 			this._updateFlagNew(d);
 		},
 		setData: function(d){
@@ -147,6 +171,11 @@ Component.entryPoint = function(){
 			var ddl = this.deadline;
 			if (L.isNull(ddl)){ return false; }
 			return ddl.getTime() < (new Date()).getTime();
+		},
+		
+		isInWorked: function(){
+			return this.status*1 == NS.TaskStatus.ACCEPT 
+				|| this.status*1 == NS.TaskStatus.ASSIGN;
 		},
 
 		isClosed: function(){
@@ -205,7 +234,16 @@ Component.entryPoint = function(){
 		if (t1 > t2) { return 1; }
 		return 0;
 	};
-	
+
+	var sortVDate = function(tk1, tk2){
+		var t1 = L.isNull(tk1.vDate) ? 0 : tk1.vDate.getTime();
+		var t2 = L.isNull(tk2.vDate) ? 0 : tk2.vDate.getTime();
+
+		if (t1 < t2) { return -1;}
+		if (t1 > t2) { return 1; }
+		return 0;
+	};
+
 	var sortFavorite = function(tk1, tk2){
 		var v1 = tk1.favorite ? 1 : 0, v2 = tk2.favorite ? 1 : 0;
 		
@@ -284,6 +322,14 @@ Component.entryPoint = function(){
 			var v = sortClosed(tk1, tk2); if (v != 0){ return v; }
 			v = sortOrder(tk2, tk1); if (v != 0){ return v; }
 			return sortDCPD(tk2, tk1);
+		},
+		'vdate': function(tk1, tk2){
+			var v = sortVDate(tk1, tk2); if (v != 0){ return v; }
+			return sortDCPD(tk1, tk2);
+		},
+		'vdatedesc': function(tk1, tk2){
+			var v = sortVDate(tk2, tk1); if (v != 0){ return v; }
+			return sortDCPD(tk2, tk1);
 		}
 	};
 	
@@ -293,9 +339,10 @@ Component.entryPoint = function(){
 	YAHOO.extend(TaskList, SC.SocialItemList, {
 		
 		// пробег по всем элементам, включая дочерний - если nochild==false 
-		foreach: function(f, nochild, sortMethod, desc){
+		foreach: function(f, nochild, sortMethod, desc, globalsort, limit){
 			if (!L.isFunction(f)){ return; }
 			nochild = nochild || false;
+			limit = limit*1>0 ? limit*1 : 0;
 			if (L.isString(sortMethod)){
 				if (desc){ sortMethod += 'desc'; }
 				sortMethod = NS.taskSort[sortMethod];
@@ -305,17 +352,39 @@ Component.entryPoint = function(){
 			}
 			
 			var lst = this._list;
-			
-			if (L.isFunction(sortMethod)){
-				lst = lst.sort(sortMethod);				
-			}
-			
-			var task;
-			for (var i=0;i<lst.length;i++){
-				task = lst[i];
-				if (f(task)){ break; };
-				if (!nochild){
-					task.childs.foreach(f);
+
+			if (!nochild && globalsort && L.isFunction(sortMethod)){
+				
+				var glst = [];
+				
+				for (var i=0;i<lst.length;i++){
+					glst[glst.length] = lst[i];
+					lst[i].childs.foreach(function(ctk){
+						glst[glst.length] = ctk;
+					});
+				}
+				glst = glst.sort(sortMethod);
+
+				for (var i=0;i<glst.length;i++){
+					if (limit > 0 && i >= limit){
+						break;
+					}
+					if (f(glst[i])){ 
+						break; 
+					}
+				}
+			}else{
+				if (L.isFunction(sortMethod)){
+					lst = lst.sort(sortMethod);				
+				}
+				
+				var task;
+				for (var i=0;i<lst.length;i++){
+					task = lst[i];
+					if (f(task)){ break; };
+					if (!nochild){
+						task.childs.foreach(f);
+					}
 				}
 			}
 		},
@@ -350,7 +419,6 @@ Component.entryPoint = function(){
 			
 			this.socid = this.taskid;  
 
-			
 			this.taskTitle = d['ttl'];
 			
 			this.isTitle = d['tlc']*1 > 0;
@@ -413,7 +481,6 @@ Component.entryPoint = function(){
 	};
 	YAHOO.extend(TaskManager, SC.SocialManager, {
 		init: function(modname, initData){
-			TaskManager.superclass.init.call(this, modname, initData);
 			
 			// событие, когда прочитали новую задачу
 			this.newTaskReadEvent = new YAHOO.util.CustomEvent("newTaskReadEvent");
@@ -421,6 +488,9 @@ Component.entryPoint = function(){
 			// события внесения изменений пользователя в задачу (добавление в избранное, голосование и т.п.) 
 			this.taskUserChangedEvent = new YAHOO.util.CustomEvent("taskUserChangedEvent");
 			
+			this.taskListChangedEvent = new YAHOO.util.CustomEvent('taskListChangedEvent');
+			
+			TaskManager.superclass.init.call(this, modname, initData);
 		},
 		
 		initUserConfig: function(d){ return new UserConfig(d); },
@@ -428,7 +498,6 @@ Component.entryPoint = function(){
 
 		initSocialList: function(data){ return new TaskList(); },
 		socialUpdate: function(data){
-			
 			// обновить данные по задачам: новые - создать, существующие - обновить
 			var objs = {};
 			for (var id in data){
@@ -473,10 +542,11 @@ Component.entryPoint = function(){
 					this.list.add(objs[id]);
 				}
 			}
+			
+			this.taskListChangedEvent.fire();
 		},
 		
 
-		/************************* OLD **********************/
 		getTask: function(taskid){
 			return this.list.find(taskid);
 		},
@@ -712,23 +782,6 @@ Component.entryPoint = function(){
 	};
 	NS.TaskNavigateWidget = TaskNavigateWidget;
 	
-	
-	var GlobalMenuWidget = function(container, page){
-		this.init(container, page);
-	};
-	GlobalMenuWidget.prototype = {
-		init: function(container, page){
-			buildTemplate(this, 'gbmenu');
-			
-			container.innerHTML = this._TM.replace('gbmenu', {
-				'task': page == 'task' ? 'current' : '',
-				'comments': page == 'comments' ? 'current' : '',
-				'towork': page == 'towork' ? 'current' : ''
-			});
-		}
-	};
-	NS.GlobalMenuWidget = GlobalMenuWidget;
-	
 	NS.getDate = function(){ return new Date(); };
 	
 	var lz = function(num){
@@ -804,6 +857,84 @@ Component.entryPoint = function(){
 			ahr[ahr.length] = m+'м';
 		}
 		return ahr.join(' ');
+	};
+	
+	
+	var GlobalMenuWidget = function(container, bosapp, page){
+		bosapp = L.isString(bosapp) ? bosapp : "";
+		page = L.isString(page) ? page : "";
+		this.init(container, bosapp, page);
+	};
+	GlobalMenuWidget.prototype = {
+		init: function(container, bosapp, page){
+			
+			this.bosapp = bosapp;
+			this.page = page;
+			
+			buildTemplate(this, 'gbmenu');
+			container.innerHTML = this._TM.replace('gbmenu');
+			
+			var __self = this; 
+			E.on(container, 'click', function(e){
+                if (__self.onClick(E.getTarget(e))){ E.preventDefault(e); }
+			});
+
+			E.on(this._TM.getEl('gbmenu.gmfavorite'), 'mouseover', function(e){
+                __self.loadingFavorite(); 
+			});
+
+			this.render();
+		},
+		render: function(){
+			var TM = this._TM,
+				bosapp = this.bosapp,
+				page = this.page,
+				gel = function(name){ return TM.getEl("gbmenu."+name); },
+				show = function(name){ Dom.setStyle(gel(name), 'display', ''); };
+		
+			show('m'+bosapp);
+			show('mi'+bosapp+page);
+			
+			Dom.addClass(gel('gm'+bosapp), 'sel');
+			Dom.addClass(gel('mi'+bosapp+page), 'current');
+		},
+		onClick: function(el){
+			if (el.id == this._TId['gbmenu']['bhome']){
+				NS.navigator.taskHome();
+				return true;
+			}
+			return false;
+		},
+		loadingFavorite: function(){
+			if (this._loadingFavorite){ return false; }
+			this._loadingFavorite = true;
+			
+			var TM = this._TM;
+			Brick.ff('botask', 'easylist', function(){
+				NS.buildTaskManager(function(tm){
+					NS.API.taskFavoriteBoxWidget(TM.getEl('gbmenu.favcont'));
+				});
+			});
+		}
+	};
+	NS.GlobalMenuWidget = GlobalMenuWidget;
+	
+	NS.navigator = {
+		'taskHome': function(){
+			Brick.Page.reload("#app=botask/ws/showWorkspacePanel/");
+		},
+		'taskCreate': function(parenttaskid){
+			Brick.Page.reload("#app=botask/ws/showWorkspacePanel/taskadd/"+parenttaskid+"/");
+		},
+		'taskEdit': function(taskid){
+			Brick.Page.reload("#app=botask/ws/showWorkspacePanel/taskedit/"+taskid+"/");
+		},
+		'taskView': function(taskid){
+			Brick.Page.reload(NS.navigator.taskViewLink(taskid));
+		},
+		'taskViewLink': function(taskid){
+			return "#app=botask/ws/showWorkspacePanel/taskview/"+taskid+"/";
+		}
 	};
 	
 };

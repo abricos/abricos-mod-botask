@@ -1,0 +1,17 @@
+.aw-botask .taskedit .head {
+	border: 1px solid #8C8D8E;
+	background-color: #E3E3D7;
+	padding: 9px 11px;
+	font-size: 1em;
+	margin-bottom: 16px;
+	position: relative;
+}
+.aw-botask .taskedit .path select {
+	max-width: 536px;
+}
+
+.aw-botask .taskedit .head .buttons {
+	position: absolute;
+	right: 0;
+	top: 0;
+}

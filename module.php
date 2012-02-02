@@ -8,10 +8,10 @@
  * @author Alexander Kuzmin (roosit@abricos.org)
  */
 
-class BotaskModule extends CMSModule {
+class BotaskModule extends Ab_Module {
 	
 	public function __construct(){
-		$this->version = "0.1.2.1";
+		$this->version = "0.2";
 		$this->name = "botask";
 		$this->permission = new BotaskPermission($this);
 	}
@@ -34,6 +34,13 @@ class BotaskModule extends CMSModule {
 	}
 	
 }
+
+class BotaskType {
+	const TASK = 0;
+	const PROJECT = 1;
+	const FOLDER = 2;
+}
+	
 
 /**
  * Статус задачи
@@ -89,19 +96,19 @@ class BotaskAction {
 	const ADMIN	= 50;
 }
 
-class BotaskPermission extends AbricosPermission {
+class BotaskPermission extends Ab_UserPermission {
 	
 	public function BotaskPermission(BotaskModule $module){
 		
 		$defRoles = array(
-			new AbricosRole(BotaskAction::VIEW, UserGroup::REGISTERED),
-			new AbricosRole(BotaskAction::VIEW, UserGroup::ADMIN),
+			new Ab_UserRole(BotaskAction::VIEW, Ab_UserGroup::REGISTERED),
+			new Ab_UserRole(BotaskAction::VIEW, Ab_UserGroup::ADMIN),
 			
-			new AbricosRole(BotaskAction::WRITE, UserGroup::REGISTERED),
-			new AbricosRole(BotaskAction::WRITE, UserGroup::ADMIN),
+			new Ab_UserRole(BotaskAction::WRITE, Ab_UserGroup::REGISTERED),
+			new Ab_UserRole(BotaskAction::WRITE, Ab_UserGroup::ADMIN),
 			
-			new AbricosRole(BotaskAction::WRITE, UserGroup::ADMIN),
-			new AbricosRole(BotaskAction::ADMIN, UserGroup::ADMIN),
+			new Ab_UserRole(BotaskAction::WRITE, Ab_UserGroup::ADMIN),
+			new Ab_UserRole(BotaskAction::ADMIN, Ab_UserGroup::ADMIN),
 		);
 		parent::__construct($module, $defRoles);
 	}
@@ -115,7 +122,6 @@ class BotaskPermission extends AbricosPermission {
 	}
 }
 
-$mod = new BotaskModule();
-CMSRegistry::$instance->modules->Register($mod);;
+Abricos::ModuleRegister(new BotaskModule());
 
 ?>

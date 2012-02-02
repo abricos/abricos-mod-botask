@@ -9,36 +9,29 @@ var Component = new Brick.Component();
 Component.requires = {
 	mod:[
 		{name: 'sys', files: ['container.js']},
-        {name: 'uprofile', files: ['users.js']},
         {name: 'botask', files: ['history.js', 'lib.js']}
 	]
 };
-Component.entryPoint = function(){
+Component.entryPoint = function(NS){
 	
 	var Dom = YAHOO.util.Dom,
 		E = YAHOO.util.Event,
 		L = YAHOO.lang;
-	
-	var NS = this.namespace, 
-		TMG = this.template,
-		API = NS.API,
-		R = NS.roles;
-	
-	var UP = Brick.mod.uprofile;
-	
-	var LNG = Brick.util.Language.getc('mod.botask');
 
-	var initCSS = false, buildTemplate = function(w, ts){
+	var TST = NS.TaskStatus;
+
+	var LNG = Brick.util.Language.geta(['mod', '{C#MODNAME}']),
+		TMG = this.template,
+		initCSS = false,
+		buildTemplate = function(w, ts){
 		if (!initCSS){
-			Brick.util.CSS.update(Brick.util.CSS['botask']['tasklist']);
-			delete Brick.util.CSS['botask']['tasklist'];
+			Brick.util.CSS.update(Brick.util.CSS['{C#MODNAME}']['{C#COMNAME}']);
+			delete Brick.util.CSS['{C#MODNAME}']['{C#COMNAME}'];
 			initCSS = true;
 		}
 		w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;
 	};
-	
-	var TST = NS.TaskStatus;
-	
+
 	var TaskTableWidget = function(container, taskList, config){
 		this.init(container, taskList, config);
 	};
@@ -49,7 +42,7 @@ Component.entryPoint = function(){
 			this.setConfig(config);
 			this.t = {};
 			
-			buildTemplate(this.t, 'table,row,hcolwork,rcolwork');
+			buildTemplate(this.t, 'table,row,rcolname,rcolddl,rcolprt,rcolfav,rcolvot,rcolwork,rcolexec,hcolname,hcolddl,hcolprt,hcolfav,hcolvot,hcolwork,hcolexec');
 			
 			this.vtMan = null;
 			this._timeSelectedRow = 0;
@@ -71,12 +64,24 @@ Component.entryPoint = function(){
 		},
 		setConfig: function(config){
 			this.cfg = L.merge({
+				'columns': 'name,deadline,priority,favorite,voting', // executant
+				'showflagnew': true,
+				'globalsort': false,
+				'limit': 0,
+				'sortclick': true,
 				'tasksort': 'deadline',
 				'tasksortdesc': false,
-				'childs': true,
+				'childs': true, // показывать древовидную структуру
 				'showwork': false, // показать колонку затраченного времени
 				'workuserid': 0 // затрачено времени конкретного пользователя
 			}, config || {});
+			
+			var a = this.cfg['columns'].split(',');
+			this._columns = {};
+			for (var i=0;i<a.length;i++){
+				var n = L.trim(a[i]);
+				this._columns[n] = true;
+			}
 		},
 		buildNewInfo: function(){
 			var tnew = {};
@@ -122,62 +127,111 @@ Component.entryPoint = function(){
 			var tnew = this.tnew[tk.id] || {};
 			var n = tk.order;
 			
+			var enCols = this._columns,
+				sCols = "";
+			
+			if (enCols['name']){
+				sCols += TM.replace('rcolname', {
+					'id': tk.id,
+					'tl': tk.title == "" ? LNG['nottitle'] : tk.title
+				});
+			}
+			
+			if (enCols['deadline']){
+				sCols += TM.replace('rcolddl', {
+					'ddl': ddl
+				});
+			}
+
+			if (enCols['priority']){
+				sCols += TM.replace('rcolprt', {
+					'prts': LNG['priority'][tk.priority]
+				});
+			}
+
+			if (enCols['executant']){
+				
+				var sExec = "";
+				if (tk.isInWorked() && tk.stUserId*1 > 0){
+					var exec = NS.taskManager.users.get(tk.stUserId);
+					sExec = exec.getUserName();
+				}
+				// 'aunm': author.getUserName(),
+				// 'auid': author.id,
+				
+				sCols += TM.replace('rcolexec', {
+					'exec': sExec
+				});
+			}
+
+			if (enCols['favorite']){
+				sCols += TM.replace('rcolfav', {
+					'id': tk.id,
+					'fav': tk.favorite ? 'fav-checked' : ''
+				});
+			}
+
+			if (enCols['voting']){
+				sCols += TM.replace('rcolvot', {
+					'id': tk.id,
+					'fav': tk.favorite ? 'fav-checked' : '',
+					'ord': n != 0 ? ((n>0?'+':'')+n) : '&mdash;'
+				});
+			}
+
+			if (enCols['work']){
+				var hr = '';
+				
+				if (!L.isNull(tk.work)){
+					if (cfg['workuserid']*1 > 0){
+						var ti = tk.work.users[cfg['workuserid']];
+						if (ti){
+							hr = ti['sm'];
+						}
+					}else{
+						hr = tk.work.seconds;
+					}
+				}
+				var shr = '';
+				var ahr = [];
+				if (hr != ''){
+					var d = Math.floor(hr / (60*60*24));
+					if (d > 0){
+						hr = hr-d*60*60*24;
+						ahr[ahr.length] = d+'д';
+					}
+					var h = Math.floor(hr / (60*60));
+					if (h > 0){
+						hr = hr-h*60*60;
+						ahr[ahr.length] = h+'ч';
+					}
+					var m = Math.floor(hr / 60);
+					if (m > 0){
+						hr = hr-m*60;
+						ahr[ahr.length] = m+'м';
+					}
+					shr = ahr.join(' ');
+				}
+				
+				sCols += TM.replace('rcolwork', {
+					'work': shr
+				});
+			}
+
 			var sRow = this.renderRow(tk, {
 				'id': tk.id,
 				'prt': tk.priority,
-				'fav': tk.favorite ? 'fav-checked' : '',
-				'ord': n != 0 ? ((n>0?'+':'')+n) : '&mdash;',
 				'expired': tk.isExpired() ? 'expired' : '',
 				'closed': tk.isClosed() ? 'closed' : '',
 				'removed': tk.isRemoved() ? 'removed' : '',
-				'prts': LNG['priority'][tk.priority],
-				'tnew': tnew['n'] ? 'tnew' : '',
+				'tnew': cfg['showflagnew'] && tnew['n'] ? 'tnew' : '',
 				'tchnew': tnew['cn'] ? 'tchnew' : '',
 				'level': level,
 				'classch': chcls,
 				'tl': tk.title == "" ? LNG['nottitle'] : tk.title,
 				'aunm': author.getUserName(),
 				'auid': author.id,
-				'ddl': ddl,
-				'cols': function(){
-					if (!cfg['showwork']){ return ''; }
-					var hr = '';
-					
-					if (!L.isNull(tk.work)){
-						if (cfg['workuserid']*1 > 0){
-							var ti = tk.work.users[cfg['workuserid']];
-							if (ti){
-								hr = ti['sm'];
-							}
-						}else{
-							hr = tk.work.seconds;
-						}
-					}
-					var shr = '';
-					var ahr = [];
-					if (hr != ''){
-						var d = Math.floor(hr / (60*60*24));
-						if (d > 0){
-							hr = hr-d*60*60*24;
-							ahr[ahr.length] = d+'д';
-						}
-						var h = Math.floor(hr / (60*60));
-						if (h > 0){
-							hr = hr-h*60*60;
-							ahr[ahr.length] = h+'ч';
-						}
-						var m = Math.floor(hr / 60);
-						if (m > 0){
-							hr = hr-m*60;
-							ahr[ahr.length] = m+'м';
-						}
-						shr = ahr.join(' ');
-					}
-					
-					return TM.replace('rcolwork', {
-						'work': shr
-					});
-				}()
+				'cols': sCols
 			});
 			
 			if (this.isRenderChild(tk)){
@@ -195,35 +249,71 @@ Component.entryPoint = function(){
 
 			list.foreach(function(tk){
 				lst += __self.buildRow(tk, level);
-			}, cfg['childs'], cfg['tasksort'], cfg['tasksortdesc']);
+			}, 
+				cfg['childs'], 
+				cfg['tasksort'], 
+				cfg['tasksortdesc'],
+				cfg['globalsort'],
+				cfg['limit']
+			);
 			
 			return lst;
 		},
 		render: function(){
 			var TM = this.t._TM, 
-				lst = this.buildRows(this.list),
+				lst = this.buildRows(this.list, 0),
 				cfg = this.cfg;
 			
+			var enCols = this._columns,
+				sCols = "";
+
+			if (enCols['name']){
+				sCols += TM.replace('hcolname', {
+					'sortname': (cfg['tasksort'] != 'name') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
+				});
+			}
+			if (enCols['deadline']){
+				sCols += TM.replace('hcolddl', {
+					'sortdeadline': (cfg['tasksort'] != 'deadline') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
+				});
+			}
+			if (enCols['priority']){
+				sCols += TM.replace('hcolprt', {
+					'sortpriority': (cfg['tasksort'] != 'priority') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
+				});
+			}
+			if (enCols['executant']){
+				sCols += TM.replace('hcolexec', {
+					'sortexecutant': (cfg['tasksort'] != 'executant') ? '' : (cfg['executantdesc'] ? 'sb' : 'sa')
+				});
+			}
+			if (enCols['favorite']){
+				sCols += TM.replace('hcolfav', {
+					'sortfavorite': (cfg['tasksort'] != 'favorite') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
+				});
+			}
+			if (enCols['voting']){
+				sCols += TM.replace('hcolvot', {
+					'sortvoting': (cfg['tasksort'] != 'voting') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
+				});
+			}
+			if (enCols['work']){
+				sCols += TM.replace('hcolwork', {
+					'sortwork': (cfg['tasksort'] != 'work') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
+				});
+			}
+			
 			var d = {
-				'sortname': '',
-				'sortdeadline': '',
-				'sortpriority': '',
-				'sortfavorite': '',
-				'sortvoting': '',
-				'cols': '',
+				'cols': sCols,
 				'rows': lst
 			};
 			
-			if (cfg['showwork']){
-				d['cols'] = TM.replace('hcolwork', {});
-			}
 			
 			d['sort'+cfg['tasksort']] = cfg['tasksortdesc'] ? 'sb' : 'sa';
 			this.elTaskTable.innerHTML = TM.replace('table', d);
 
 			if (this._timeSelectedRow*1 > 0){
-				var __self = this,
-					taskid = this._timeSelectedRow;
+				var taskid = this._timeSelectedRow;
 				
 				this._timeSelectedRow = 0;
 				var elRow = Dom.get(TM.getElId('row.id')+'-'+taskid);
@@ -234,26 +324,26 @@ Component.entryPoint = function(){
 			}
 		},
 		_onClick: function(el){
-			var TId = this.t._TId, tp = TId['table'];
-			switch(el.id){
-			case tp['sortname']: this.sort('name'); return true;
-			case tp['sortdeadline']: this.sort('deadline'); return true;
-			case tp['sortpriority']: this.sort('priority'); return true;
-			case tp['sortfavorite']: this.sort('favorite'); return true;
-			case tp['sortvoting']: this.sort('voting'); return true;
+			var TId = this.t._TId;
+			if (this.cfg['sortclick']){
+				switch(el.id){
+				case TId['hcolname']['sortname']: this.sort('name'); return true;
+				case TId['hcolddl']['sortdeadline']: this.sort('deadline'); return true;
+				case TId['hcolprt']['sortpriority']: this.sort('priority'); return true;
+				case TId['hcolfav']['sortfavorite']: this.sort('favorite'); return true;
+				case TId['hcolvot']['sortvoting']: this.sort('voting'); return true;
+				}
 			}
 			
 			var prefix = el.id.replace(/([0-9]+$)/, ''),
 				taskid = el.id.replace(prefix, "");
 			
-			var tp = TId['row'];
-			
 			switch(prefix){
-			case (tp['exp']+'-'): this.shChilds(taskid); return true;
-			case (tp['up']+'-'): this.taskVoting(taskid, 1); return true;
-			case (tp['down']+'-'): this.taskVoting(taskid, -1); return true;
-			case (tp['fav']+'-'): 
-			case (tp['favi']+'-'): 
+			case (TId['row']['exp']+'-'): this.shChilds(taskid); return true;
+			case (TId['rcolvot']['up']+'-'): this.taskVoting(taskid, 1); return true;
+			case (TId['rcolvot']['down']+'-'): this.taskVoting(taskid, -1); return true;
+			case (TId['rcolfav']['fav']+'-'): 
+			case (TId['rcolfav']['favi']+'-'): 
 				this.taskFavorite(taskid); return true;
 			}
 
@@ -291,7 +381,7 @@ Component.entryPoint = function(){
 			
 			var TM = this.t._TM, TId = this.t._TId;
 			
-			var prefix = psid[0], tp = TId['row'];
+			var prefix = psid[0], tp = TId['rcolvot'];
 			if (!((tp['up']+'-') == prefix || (tp['down']+'-') == prefix)) { return; }
 			
 			var vtMan = this.vtMan, taskid = psid[1], __self = this;
@@ -317,11 +407,10 @@ Component.entryPoint = function(){
 			var vtMan = this.vtMan;
 			vtMan['n'] += inc;
 			
-			var elRow = Dom.get(this.t._TM.getElId('row.vot')+'-'+taskid);
+			var elRow = Dom.get(this.t._TM.getElId('rcolvot.vot')+'-'+taskid);
 			var n = vtMan['n'];
 			
 			elRow.innerHTML = n != 0 ? ((n>0?'+':'')+n) : '&mdash;';
-			
 		},
 		shChilds: function(taskid){
 			var task = NS.taskManager.getTask(taskid);
@@ -371,15 +460,6 @@ Component.entryPoint = function(){
 		
 		onHistoryChanged: function(type, args){
 			this.render();
-			/*
-			var ids = {};
-			args[0].foreach(function(item){
-				ids[item.taskid] = true;
-			});
-			if (this._isHistoryChanged(this.list, ids)){
-				this.render();
-			}
-			/**/
 		},
 		onNewTaskRead: function(type, args){
 			this.render();
@@ -389,9 +469,10 @@ Component.entryPoint = function(){
 		}		
 	};
 	NS.TaskTableWidget = TaskTableWidget;
-	
+
 	var TaskListWidget = function(container, ptaskid, config){
 		ptaskid = ptaskid || 0;
+		
 		var list = null,
 			tman = NS.taskManager;
 		if (ptaskid == 0){

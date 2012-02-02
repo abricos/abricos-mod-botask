@@ -1,142 +1,147 @@
 <!--{panel}-->
-<div class='hd'>{v#tl}</div>
-<div class='bd aw-botask'>
-	<div class="taskview">
-		
-		<div id="{i#gmenu}"></div>
-		
-		<table class="maintable"><tbody><tr>
-			<td class="leftcol">
-				<div class="colbody">
-
-					<div id="{i#nav}"></div>
+<div id="{i#id}" class="taskview">
+	
+	<div class="head">
+		<table><tbody><tr>
+			<td class="title">
+				{v#tl}
+			</td>
+			<td class="fav">
+				<table><tbody><tr>
+					<td>
+						<div id="{i#fav}" class="fav-icon-normal" title="Избранное (добавить/удалить)">
+							<img id="{i#favi}" class="{v#fav}" src="/images/empty.gif">
+						</div>
+					</td>
+					<td id="{i#vbieditor}">
+						<div class="bc" title="Редактировать">
+							<div id="{i#biedit}" class="bedit-icon b"></div>
+						</div>
+					</td>
+					<td id="{i#vbiadd}">
+						<div class="bc" title="Добавить подзадачу">
+							<div id="{i#biadd}" class="badd-icon b"></div>
+						</div>
+					</td>
+				</tr></tbody></table>
 				
-					<div id="{i#taskbody}" class="taskbody aw-page-content">
-						<img src="/images/loading.gif" />
-					</div>
-					
-					<div id="{i#checklist}" class="taskbody"></div>
-					
-					<ul id="{i#files}" class="dfiles" style="display: none">
-						<li class="tl">Прикрепленные файлы:</li>
-						<li id="{i#ftable}"></li>
-					</ul>
-					<div class="clear"></div>
-					
-					<div class="manbuttons" id="{i#manbuttons}">
-						<div id="{i#buttons}">
-							<a id="{i#bsetexec}" style="display: none;" class="bsetexec btkbt" href="#" title="Принять в работу эту задачу">Принять в работу</a>
-							<a id="{i#bunsetexec}" style="display: none;" class="bsetexec btkbt" href="#" title="Остановить выполнение данной задачи">Остановить выполнение</a>
-							<a id="{i#bclose}" style="display: none;" class="bsetexec btkbt" href="#" title="Завершить и закрыть задачу">Завершить</a>
-							<a id="{i#bclosens}" style="display: none;" class="bsetexec btkbt" href="#" title="Завершить и закрыть задачу">Завершить</a>
-							<a id="{i#bopen}" style="display: none;" class="bsetexec btkbt" href="#" title="Открыть задачу повторно">Открыть повторно</a>
-							<a id="{i#barhive}" style="display: none;" class="bsetexec btkbt" href="#" title="Переместить задачу в архив">В архив</a>
-							<a id="{i#brestore}" style="display: none;" class="bsetexec btkbt" href="#" title="Восстановить удаленную задачу">Восстановить</a>
-							
-							<a id="{i#beditor}" class="beditor btkbt" href="#app=botask/taskeditor/showTaskEditorPanel/{v#id}/">Редактировать</a>
-							<a id="{i#bremove}" class="bremove btkbt" href="#">Удалить</a>
-						</div>
-						<img id="{i#bloading}" src="/images/loading.gif" style="display: none;"/>
-					</div>
-					
-					<div id="{i#dialogclose}" class="dialog alarm" style="display: none;">
-						<h4>Завершение задачи</h4>
-						<p>
-							Внимание! Эта задача содержит открытые подзадачи.<br />
-							Завершение этой задачи автоматически завершит все подзадачи. <br />
-							Вы действительно хотите завершить эту задачу и все ее подзадачи?
-						</p>
-						<div class="dbtns">
-							<a id="{i#bcloseyes}" class="yes" href="#">Подтверждаю</a>
-							<a id="{i#bcloseno}" class="no" href="#">Отменить</a>
-						</div>
-					</div>
+			</td>
+			<td id="{i#status}" class="status"></td>
+		</tr></tbody></table>
+	</div>
 
-					<div id="{i#dialogremove}" class="dialog alarm" style="display: none;">
-						<h4>Удаление задачи</h4>
-						<p>
-							Внимание! Вы действительно хотите удалить задачу и все ее подзадачи?
-						</p>
-						<div class="dbtns">
-							<a id="{i#bremoveyes}" class="yes" href="#">Подтверждаю</a>
-							<a id="{i#bremoveno}" class="no" href="#">Отменить</a>
-						</div>
-					</div>
-					
-					<div class="sepline"></div>
-					
-					<div class="ptbuttons">
-						<a id="{i#ptlisthide}" class="ptlistsh btkbt" href="#">Скрыть подзадачи</a>
-						<a id="{i#ptlistshow}" class="ptlistsh btkbt" href="#" style="display: none;">Показать подзадачи</a>
-						<a id="{i#ptappend}" class="baddtask" href="#app=botask/taskeditor/showCreateTaskPanel/{v#id}/">Добавить подзадачу</a>
-					</div>
-					<div class="ptlist" id="{i#ptlist}" style="display: none;"></div>
-					
-					<div class="sepline"></div>
-					
-					<div class="ptbuttons">
-						<a id="{i#cmthide}" class="ptlistsh btkbt" href="#">Скрыть комментарии</a>
-						<a id="{i#cmtshow}" class="ptlistsh btkbt" href="#" style="display: none;">Показать комментарии</a> 
-					</div>
-					<div class="comments" id="{i#comments}"></div>
-					
-				</div>
+	<div class="infobox">
+		<table><tbody>
+		<tr>
+			<td>
+				<dl><dt>Автор</dt><dd id="{i#author}"></dd></dl>
 			</td>
-			<td class="rightcol">
-				<div id="{i#colinfo}" class="colbody colinfo">
-					<div id="{i#status}" class="cirow status">&nbsp;</div>
-					<div class="cirow author">
-						<div class="tl">Автор</div>
-						<div id="{i#author}" class="vl"></div>
-						<div class="clear"></div>
-					</div>
-					<div class="cirow dl">
-						<div class="tl">Старт</div>
-						<div class="vl">
-							<div class="dt vi" id="{i#dl}"></div>
-							<div class="tm vi" id="{i#dlt}"></div>
-						</div>
-						<div class="clear"></div>
-					</div>
-					<div class="cirow ddl">
-						<div class="tl">Срок</div>
-						<div class="vl">
-							<div class="dt vi" id="{i#ddl}"></div>
-							<div class="tm vi" id="{i#ddlt}"></div>
-						</div>
-						<div class="clear"></div>
-					</div>
-					<div class="cirow priority">
-						<div class="tl">Приоритет</div>
-						<div class="vl">
-							<div id="{i#priority}" class="vi prtclr"></div>
-						</div>
-						<div class="clear"></div>
-					</div>
-					<div class="cirow exec">
-						<div class="tl">Исполнитель</div>
-						<div id="{i#exec}" class="vl"></div>
-						<div class="clear"></div>
-					</div>
-					<div class="cirow users">
-						<div class="tl">Участники</div>
-						<div id="{i#users}" class="vl"></div>
-						<div class="clear"></div>
-					</div>
-					<div class="cirow history nobline">
-						<div id="{i#history}">
-							<img src="/images/loading.gif" />
-						</div>
-					</div>
+			<td>
+				<dl><dt>Приоритет</dt><dd id="{i#priority}" title="Приоритет"></dd></dl>
+			</td>
+			<td>
+				<dl><dt>Старт</dt><dd id="{i#dl}"></dd></dl>
+			</td>
+			<td>
+				<dl>
+					<dt>Срок</dt>
+					<dd>
+						<span id="{i#ddl}"></span>
+						&nbsp;
+						<span id="{i#ddlt}"></span>
+					</dd>
+				</dl>
+			</td>
+			<td>
+				<dl><dt>Исполнитель</dt><dd id="{i#exec}"></dd></dl>
+			</td>
 			
-				</div>
-			</td>
 		</tr></tbody></table>
 		
+	</div>
+	
+	<div class="manbuttons" id="{i#manbuttons}">
+		<span id="{i#buttons}">
+			<a style="display: none" id="{i#ptappend}" class="bsetexec btkbt" href="#app=botask/taskeditor/showCreateTaskPanel/{v#id}/">Добавить подзадачу</a>
+		
+			<a id="{i#bsetexec}" style="display: none;" class="bsetexec btkbt" href="#" title="Принять в работу эту задачу">Принять в работу</a>
+			<a id="{i#bunsetexec}" style="display: none;" class="bsetexec btkbt" href="#" title="Остановить выполнение данной задачи">Остановить выполнение</a>
+			<a id="{i#bclose}" style="display: none;" class="bsetexec btkbt" href="#" title="Завершить и закрыть задачу">Завершить</a>
+			<a id="{i#bclosens}" style="display: none;" class="bsetexec btkbt" href="#" title="Завершить и закрыть задачу">Завершить</a>
+			<a id="{i#bopen}" style="display: none;" class="bsetexec btkbt" href="#" title="Открыть задачу повторно">Открыть повторно</a>
+			<a id="{i#barhive}" style="display: none;" class="bsetexec btkbt" href="#" title="Переместить задачу в архив">В архив</a>
+			<a id="{i#brestore}" style="display: none;" class="bsetexec btkbt" href="#" title="Восстановить удаленную задачу">Восстановить</a>
+			
+			<a id="{i#beditor}" class="hide beditor btkbt" href="#app=botask/ws/showWorkspacePanel/taskedit/{v#id}/">Редактировать</a>
+			<a id="{i#bremove}" class="bremove btkbt" href="#">Удалить</a>
+		</span>
+		<img id="{i#bloading}" src="/images/loading.gif" style="display: none;"/>
+	</div>
+	
+	<div class="bodybox">
+		<div id="{i#taskbody}" class="taskbody aw-page-content">
+			<img src="/images/loading.gif" />
+		</div>
+	
+		<div id="{i#checklist}" class="taskbody"></div>
+	
+		<ul id="{i#files}" class="dfiles" style="display: none">
+			<li class="tl">Прикрепленные файлы:</li>
+			<li id="{i#ftable}"></li>
+		</ul>
+		<div class="clear"></div>
+	</div>
+	
+	<div class="tkcomments">
+		<div class="shbuttons" style="display: none;">
+			<a id="{i#cmthide}" class="ptlistsh btkbt" href="#">Скрыть комментарии</a>
+			<a id="{i#cmtshow}" class="ptlistsh btkbt" href="#" style="display: none;">Показать комментарии</a> 
+		</div>
+		<div class="comments" id="{i#comments}"></div>
 	</div>
 </div>
 
 <!--{user}-->
-<div class="user vi">
-	<a href="#" class="show-user-profile user-{v#uid}">{v#unm}</a>
+<a href="#" class="show-user-profile user-{v#uid}">{v#unm}</a>
+
+<!--{tkclosepanel}-->
+<div class='hd'>Завершение задачи</div>
+<div class='bd aw-botask'>
+	<div id="{i#dialogremove}" class="field">
+		<h4>Завершение задачи</h4>
+		<p>
+			Внимание! <br />
+			Вы действительно хотите завершить задачу и все ее подзадачи?
+		</p>
+		<div class="buttons right">
+			<span id="{i#btns}">
+				<input id="{i#bremove}" value="Подтверждаю" type="button" />
+				<input id="{i#bcancel}" value="Отмена" type="button" />
+			</span>
+			<span id="{i#bloading}" style="display: none">
+				<img src="/images/loading.gif" /> Удаление...
+			</span>
+		</div>
+	</div>
+</div>
+
+<!--{tkremovepanel}-->
+<div class='hd'>Удаление задачи</div>
+<div class='bd aw-botask'>
+	<div id="{i#dialogremove}" class="field">
+		<h4>Удаление задачи</h4>
+		<p>
+			Внимание! <br />
+			Вы действительно хотите удалить задачу и все ее подзадачи?
+		</p>
+		<div class="buttons right">
+			<span id="{i#btns}">
+				<input id="{i#bremove}" value="Подтверждаю" type="button" />
+				<input id="{i#bcancel}" value="Отмена" type="button" />
+			</span>
+			<span id="{i#bloading}" style="display: none">
+				<img src="/images/loading.gif" /> Удаление...
+			</span>
+		</div>
+	</div>
 </div>

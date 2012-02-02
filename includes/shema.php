@@ -11,11 +11,11 @@
  */
 
 $charset = "CHARACTER SET 'utf8' COLLATE 'utf8_general_ci'";
-$updateManager = CMSRegistry::$instance->modules->updateManager; 
-$db = CMSRegistry::$instance->db;
+$updateManager = Ab_UpdateManager::$current; 
+$db = Abricos::$db;
 $pfx = $db->prefix;
 
-$uprofileManager = CMSRegistry::$instance->modules->GetModule('uprofile')->GetManager(); 
+$uprofileManager = Abricos::GetModule('uprofile')->GetManager(); 
 
 if ($updateManager->isInstall()){
 
@@ -23,7 +23,7 @@ if ($updateManager->isInstall()){
 	$uprofileManager->FieldAppend('firstname', 'Имя', UserFieldType::STRING, 100);
 	$uprofileManager->FieldCacheClear();
 	
-	CMSRegistry::$instance->modules->GetModule('botask')->permission->Install();
+	Abricos::GetModule('botask')->permission->Install();
 
 	// Задачи
 	$db->query_write("
@@ -159,6 +159,16 @@ if ($updateManager->isUpdate('0.1.2')){
 		)".$charset
 	);
 	
+}
+
+if ($updateManager->isUpdate('0.2')){
+/*
+	$db->query_write("
+		ALTER TABLE ".$pfx."btk_history
+			ADD `checklist` TEXT NOT NULL  COMMENT 'Сохраненная версия чеклиста',
+			ADD `checkc` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен'
+	");
+/**/
 }
 
 ?>

@@ -1,4 +1,5 @@
 Brick.util.Language.add('ru',{'mod':{'botask': {
+	'emptyrows': 'Нет записей',
 	'status': {
 		'1': 'Открыта',
 		'2': 'Открыта повторно',

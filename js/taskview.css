@@ -1,130 +1,96 @@
-.aw-botask .taskview .mod-comment {
-	width: 781px;
+.aw-botask .taskview .head {
+	border: 1px solid #8C8D8E;
+	background-color: #E3E3D7;
 }
-.aw-botask .taskview .mod-comment .content .text img {
-	max-width: 100%;
-	height: auto;
+.aw-botask .taskview .head table {
+	width: 100%;
+}
+.aw-botask .taskview .head td.title,
+.aw-botask .taskview .head td.status {
+	padding: 7px 11px;
+}
+.aw-botask .taskview .head td.title {
+	width: 85%;
+	font-size: 1.3em;
+}
+.aw-botask .taskview .head td.fav {
+	padding: 7px 7px;
+}
+.aw-botask .taskview .head td.status {
+	text-align: center;
+	background-color: #fff;
+	width: 15%;
+	border-left: 1px solid #8C8D8E;
+	vertical-align: middle;
+}
+
+/* * * * * * Info Box * * * * * */
+.aw-botask .taskview .infobox {
+	border-bottom: 1px solid #8C8D8E;
+}
+.aw-botask .taskview .infobox table {
+	width: 100%;
+}
+.aw-botask .taskview .infobox dl {
+	margin: 8px 0;
+}
+.aw-botask .taskview .infobox dt {
+	font-size: .9em;
+}
+.aw-botask .taskview .infobox dt,
+.aw-botask .taskview .infobox dd {
+	text-align: center;
+}
+
+/* * * * * * Buttons * * * * * */
+.aw-botask .taskview .manbuttons {
+	padding: 11px 0;
+	text-align: center;
+	border-bottom: 1px solid #8C8D8E;
 }
 .aw-botask .taskview a {
 	text-decoration: none;
 }
-.aw-botask .taskview .taskbody {
-	background-color: #F9F5DF;
-	padding: 1em 1em;
-	margin-bottom: 3px;
-}
-.aw-botask .taskview .manbuttons {
-	height: 22px;
-}
-
-.aw-botask .taskview .manbuttons,
-.aw-botask .taskview .ptbuttons {
-	margin: 1em 0;
-}
 .aw-botask .taskview .btkbt {
-	border-bottom: 1px dotted;
+	border-bottom: 1px dotted; /**/
 	margin-right: 1em;
 }
-.aw-botask .taskview .beditor {
-	color: #006699;
-}
-.aw-botask .taskview .bsetexec {
-	color: #73A110;
-	font-size: 1.5em;
-}
+
 .aw-botask .taskview .bremove {
 	color: #D6583F;
 }
 
-.aw-botask .taskview .ptlistsh {
-	color: #006699;
-	font-size: 1.2em;
+/* * * * * Icon Buttons * * * * */
+.aw-botask .taskview .ibtns {
+	white-space: nowrap;
 }
-.aw-botask .taskview .ptappend {
-	color: #006699;
+.aw-botask .taskview .bc {
+	cursor: pointer;
+	margin-left: 6px;
+	margin-top: 1px;
 }
-.aw-botask .taskview .ptlist {
-	clear: both;
-	margin-top: 0.5em;
-	margin-bottom: 1.3em;
-	display: block;
+.aw-botask .taskview .b {
+   height: 14px;
+   width: 12px;	
 }
-.aw-botask .taskview .author {
-	width: 220px;
+.aw-botask .taskview .bedit-icon {
+   background: url("/modules/botask/images/icons001.png") no-repeat scroll -29px -24px transparent;
+}
+.aw-botask .taskview .badd-icon {
+   background: url("/modules/botask/images/icons001.png") no-repeat scroll -57px -24px transparent;	
 }
 
-.aw-botask .colinfo .cirow  {
-	margin: 5px 0;
-	clear: both;
+
+/* * * * * * Body * * * * * */
+.aw-botask .taskview .bodybox {
+	border-bottom: 1px solid #8C8D8E;
 	padding-bottom: 3px;
-	border-bottom: #73A110 1px dotted;
 }
-.aw-botask .colinfo .nobline {
-	margin-bottom: 0 !important;
-	padding-bottom: 0 !important;
-	border-bottom: none !important;
-}
-
-.aw-botask .colinfo .tl {
-	font-weight: bold; 
-	clear: both;
-}
-.aw-botask .colinfo .tl {
-	float: left;
-}
-.aw-botask .colinfo .vl {
-	width: 100%;
-}
-.aw-botask .colinfo .vi {
-	width: 100%;
-	text-align: right;
-}
-.aw-botask .colinfo .status {
-	text-align: center;
-	font-size: 1.4em;
-}
-
-.aw-botask .colinfo .priority .vi {
-	font-weight: bold;
-}
-.aw-botask .colinfo ._dl .dt,
-.aw-botask .colinfo .ddl .dt {
-	font-size: 1.37em;
-}
-.aw-botask .colinfo ._dl .tm, 
-.aw-botask .colinfo .ddl .tm {
-	font-size: 1.2em;
-}
-.aw-botask .colinfo .user {
-	font-weight: bold;
-	margin-bottom: 5px;
-}
-
-.aw-botask .taskview .dialog {
-	padding: 7px;
-	width: 500px;
-	margin: 10px auto;
-	line-height: 1.4em;
-}
-.aw-botask .taskview .dialog h4 {
-	font-size: 1.1em;
-	font-weight: bold;
+.aw-botask .taskview .taskbody {
+	background-color: #F9F5DF;
+	padding: 1em 1em;
+	margin-top: 5px;
 	margin-bottom: 3px;
-}
-
-.aw-botask .taskview .dialog div.dbtns{
-	text-align: right;
-}
-.aw-botask .taskview .dialog a.yes,
-.aw-botask .taskview .dialog a.no {
-	color: #000;
-	text-decoration: underline;
-}
-.aw-botask .taskview .dialog a.no {
-	margin-left: 10px;
-}
-.aw-botask .taskview .alarm  {
-	background-color: #FFF2F2;
 }
 
 .aw-botask .taskview ul.dfiles {
@@ -135,4 +101,24 @@
 }
 .aw-botask .taskview ul.dfiles li {
 	float: left;
+}
+
+/* * * * * * * Comments * * * * * */
+.aw-botask .taskview .tkcomments {
+	margin-top: 10px;
+	position: relative;
+	min-height: 30px;
+}
+.aw-botask .taskview .tkcomments .shbuttons {
+	position: absolute;
+	right: 0;
+	top: 0;
+}
+.aw-botask .taskview .mod-comment {
+	width: 735px;
+	margin-top: 0;
+}
+.aw-botask .taskview .mod-comment .content .text img {
+	max-width: 100%;
+	height: auto;
 }

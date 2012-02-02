@@ -3,7 +3,9 @@
 }
 .aw-botask .cklist a.badd {
 	font-size: 1.2em;
+	/*
 	color: #73A110;
+	/**/
 	border-bottom: 1px dotted;
 }
 .aw-botask .cklist .btnlst {
@@ -55,7 +57,7 @@
 	display: none;
 }
 .aw-botask .cklist .row .chkok {
-	background: url("/modules/botask/images/icons.png") no-repeat scroll 0px -38px transparent;
+	background: url("/modules/botask/images/icons001.png") no-repeat scroll 0px -38px transparent;
     width: 22px;
     height: 22px;
 	top: -5px;

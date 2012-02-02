@@ -124,7 +124,7 @@ class BotaskHistory {
 	
 	public function Save(){
 		if (!$this->change){ return; }
-		BotaskQuery::HistoryAppend(CMSRegistry::$instance->db, $this);
+		BotaskQuery::HistoryAppend(Abricos::$db, $this);
 	}
 }
 

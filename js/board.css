@@ -1,30 +1,12 @@
 .aw-botask .board {
 	width: 100%; 
 }
-.aw-botask .board .mainmenu {
-	padding-bottom: 10px;
-	border-bottom: 1px dotted #73A110;
-    clear: both;
-}
-.aw-botask .board .mainmenu li {
-	margin-top: 10px;
-	text-align: center;
-}
-.aw-botask .board .mainmenu li a {
-	color: #000;
-	text-decoration: none;
-}
-.aw-botask .board .mainmenu li a:hover {
-	text-decoration: underline;
-}
-.aw-botask .board .mainmenu li .cmtnew {
-	font-weight: bold;
-	margin-left: 2px;
-	color: red;
-	vertical-align: top;
-	font-size: 0.7em;
+
+.aw-botask .board table.maintable {
+	width: 100%;
 }
 
-.aw-botask .board .colbody .list {
-	margin-top: 1em;
+.aw-botask .board table.maintable .explore {
+	width: 250px;
+	margin-right: 7px;
 }

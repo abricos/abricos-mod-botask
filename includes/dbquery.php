@@ -23,6 +23,7 @@ class BotaskQuery {
 		p.statdate as stdl,
 		p.priority as prt,
 		
+		ur.viewdate as vdl,
 		IF (ur.viewdate > 0, 0, 1) as n,
 		ur.ord as o,
 		ur.favorite as f,
@@ -51,18 +52,27 @@ class BotaskQuery {
 	/**
 	 * Список доступных пользователю задач
 	 * 
-	 * @param CMSDatabase $db
+	 * @param Ab_Database $db
 	 * @param integer $userid
 	 * @param integer $lastupdate
 	 */
-	public static function Board(CMSDatabase $db, $userid, $lastupdate = 0, $parenttaskid = 0, $status = 0, $page = 0, $limit = 0){
+	public static function Board(Ab_Database $db, $userid, $lastupdate = 0, $parenttaskid = 0, $status = 0, $page = 0, $limit = 0){
 		$limit = "";
 		$where = BotaskQuery::BoardWhere($lastupdate, $parenttaskid, $status);
 		$sql = "
 			SELECT
-				".BotaskQuery::TASK_FIELDS."
+				".BotaskQuery::TASK_FIELDS.",
+				cmtl.commentid as cmtv,
+				(
+					SELECT commentid as cmtid
+					FROM ".$db->prefix."cmt_comment cmt
+					WHERE p.contentid=cmt.contentid
+					ORDER BY commentid DESC
+					LIMIT 1
+				) as cmt
 			FROM ".$db->prefix."btk_userrole ur
 			INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
+			LEFT JOIN ".$db->prefix."cmt_lastview cmtl ON p.contentid=cmtl.contentid AND cmtl.userid=".bkint($userid)." 
 			WHERE ur.userid=".bkint($userid)." AND p.deldate=0 ".$where."
 		";
 		return $db->query_read($sql);
@@ -72,10 +82,10 @@ class BotaskQuery {
 	 * Список задач доступные этому пользователю, включая свои,
 	 * со списком пользователей на каждую задачу
 	 * 
-	 * @param CMSDatabase $db
+	 * @param Ab_Database $db
 	 * @param unknown_type $userid
 	 */
-	public static function BoardTaskUsers(CMSDatabase $db, $userid, $lastupdate = 0, $parenttaskid = 0, $status = 0, $page = 0, $limit = 0){
+	public static function BoardTaskUsers(Ab_Database $db, $userid, $lastupdate = 0, $parenttaskid = 0, $status = 0, $page = 0, $limit = 0){
 		$where = BotaskQuery::BoardWhere($lastupdate, $parenttaskid, $status);
 		$sql = "
 			SELECT
@@ -97,10 +107,10 @@ class BotaskQuery {
 	/**
 	 * Список пользователей участвующих на доске проектов, включая закрытые и удаленные проекты
 	 * 
-	 * @param CMSDatabase $db
+	 * @param Ab_Database $db
 	 * @param unknown_type $userid
 	 */
-	public static function BoardUsers(CMSDatabase $db, $userid, $lastupdate = 0){
+	public static function BoardUsers(Ab_Database $db, $userid, $lastupdate = 0){
 		$where = "";
 		if ($lastupdate > 0){
 			$where = " AND p.updatedate >= ".bkint($lastupdate);
@@ -125,7 +135,7 @@ class BotaskQuery {
 		return $db->query_read($sql);
 	}
 	
-	public static function MyUserData(CMSDatabase $db, $userid, $retarray = false){
+	public static function MyUserData(Ab_Database $db, $userid, $retarray = false){
 		$sql = "
 			SELECT
 				DISTINCT
@@ -141,7 +151,7 @@ class BotaskQuery {
 		return $retarray ? $db->query_first($sql) : $db->query_read($sql);
 	}
 	
-	public static function HistoryAppend(CMSDatabase $db, BotaskHistory $h) {
+	public static function HistoryAppend(Ab_Database $db, BotaskHistory $h) {
 		$sql = "
 			INSERT INTO ".$db->prefix."btk_history (
 				taskid, userid, dateline, 
@@ -210,7 +220,7 @@ class BotaskQuery {
 		h.priorityc			as prtc
 	";
 	
-	public static function BoardHistory(CMSDatabase $db, $userid, $lastHId = 0, $firstHId = 0){
+	public static function BoardHistory(Ab_Database $db, $userid, $lastHId = 0, $firstHId = 0){
 		$lastHId = bkint($lastHId);
 		$firstHId = bkint($firstHId);
 		$where = "";
@@ -234,7 +244,7 @@ class BotaskQuery {
 		return $db->query_read($sql);
 	}
 	
-	public static function TaskHistory(CMSDatabase $db, $taskid, $firstHId = 0){
+	public static function TaskHistory(Ab_Database $db, $taskid, $firstHId = 0){
 		$firstHId = bkint($firstHId);
 		$where = "";
 		if ($firstHId > 0){
@@ -253,7 +263,7 @@ class BotaskQuery {
 		return $db->query_read($sql);
 	}
 	
-	public static function Task(CMSDatabase $db, $taskid, $userid, $retarray = false){
+	public static function Task(Ab_Database $db, $taskid, $userid, $retarray = false){
 		$sql = "
 			SELECT
 				".BotaskQuery::TASK_FIELDS.",
@@ -268,7 +278,7 @@ class BotaskQuery {
 		return $retarray ? $db->query_first($sql) : $db->query_read($sql);
 	}
 	
-	public static function TaskByContentId(CMSDatabase $db, $userid, $contentid, $retarray = false){
+	public static function TaskByContentId(Ab_Database $db, $userid, $contentid, $retarray = false){
 		$sql = "
 			SELECT
 				".BotaskQuery::TASK_FIELDS.",
@@ -283,8 +293,8 @@ class BotaskQuery {
 		return $retarray ? $db->query_first($sql) : $db->query_read($sql);
 	}
 	
-	public static function TaskAppend(CMSDatabase $db, $tk, $pubkey){
-		$contentid = CoreQuery::ContentAppend($db, $tk->bd, 'botask');
+	public static function TaskAppend(Ab_Database $db, $tk, $pubkey){
+		$contentid = Ab_CoreQuery::ContentAppend($db, $tk->bd, 'botask');
 		
 		$sql = "
 			INSERT INTO ".$db->prefix."btk_task (
@@ -308,9 +318,9 @@ class BotaskQuery {
 		return $db->insert_id();
 	}
 	
-	public static function TaskUpdate(CMSDatabase $db, $tk, $userid){
+	public static function TaskUpdate(Ab_Database $db, $tk, $userid){
 		$info = BotaskQuery::Task($db, $tk->id, $userid, true);
-		CoreQuery::ContentUpdate($db, $info['ctid'], $tk->bd);
+		Ab_CoreQuery::ContentUpdate($db, $info['ctid'], $tk->bd);
 		$sql = "
 			UPDATE ".$db->prefix."btk_task
 			SET
@@ -325,7 +335,7 @@ class BotaskQuery {
 		$db->query_write($sql);
 	}
 	
-	public static function TaskSetStatus(CMSDatabase $db, $taskid, $status, $statuserid){
+	public static function TaskSetStatus(Ab_Database $db, $taskid, $status, $statuserid){
 		$sql = "
 			UPDATE ".$db->prefix."btk_task
 			SET
@@ -337,7 +347,7 @@ class BotaskQuery {
 		$db->query_write($sql);
 	}
 	
-	public static function TaskUnsetStatus(CMSDatabase $db, $taskid){
+	public static function TaskUnsetStatus(Ab_Database $db, $taskid){
 		$sql = "
 			UPDATE ".$db->prefix."btk_task
 			SET status=".BotaskStatus::TASK_OPEN.", statuserid=0, statdate=0
@@ -348,10 +358,10 @@ class BotaskQuery {
 	
 	/**
 	 * Список пользователей и их права на задачу
-	 * @param CMSDatabase $db
+	 * @param Ab_Database $db
 	 * @param integer $taskid
 	 */
-	public static function TaskUserList(CMSDatabase $db, $taskid){
+	public static function TaskUserList(Ab_Database $db, $taskid){
 		$sql = "
 			SELECT 
 				p.userid as id,
@@ -368,10 +378,10 @@ class BotaskQuery {
 	/**
 	 * Список участников проекта с расшириными полями для служебных целей (отправка уведомлений и т.п.)
 	 * 
-	 * @param CMSDatabase $db
+	 * @param Ab_Database $db
 	 * @param integer $taskid
 	 */
-	public static function TaskUserListForNotify(CMSDatabase $db, $taskid){
+	public static function TaskUserListForNotify(Ab_Database $db, $taskid){
 		$sql = "
 			SELECT 
 				p.userid as id,
@@ -387,7 +397,7 @@ class BotaskQuery {
 	}
 	
 	
-	public static function UserRoleAppend(CMSDatabase $db, $taskid, $userid){
+	public static function UserRoleAppend(Ab_Database $db, $taskid, $userid){
 		$sql = "
 			INSERT INTO ".$db->prefix."btk_userrole (taskid, userid) VALUES
 			(
@@ -398,7 +408,7 @@ class BotaskQuery {
 		$db->query_write($sql);
 	}
 	
-	public static function UserRole(CMSDatabase $db, $taskid, $userid, $retarray = false){
+	public static function UserRole(Ab_Database $db, $taskid, $userid, $retarray = false){
 		$sql = "
 			SELECT
 				ur.userroleid as id
@@ -412,10 +422,10 @@ class BotaskQuery {
 	/**
 	 * Обновить информацию последнего просмотра задачи (для определения флага - Новая)
 	 * 
-	 * @param CMSDatabase $db
+	 * @param Ab_Database $db
 	 * @param integer $taskid
 	 */
-	public static function TaskUpdateLastView(CMSDatabase $db, $taskid, $userid){
+	public static function TaskUpdateLastView(Ab_Database $db, $taskid, $userid){
 		$sql = "
 			UPDATE ".$db->prefix."btk_userrole
 			SET viewdate=".TIMENOW."
@@ -425,7 +435,7 @@ class BotaskQuery {
 		$db->query_write($sql);
 	}
 	
-	public static function TaskVoting(CMSDatabase $db, $taskid, $userid, $value){
+	public static function TaskVoting(Ab_Database $db, $taskid, $userid, $value){
 		$sql = "
 			UPDATE ".$db->prefix."btk_userrole
 			SET ord=".bkint($value)."
@@ -435,7 +445,7 @@ class BotaskQuery {
 		$db->query_write($sql);
 	}
 	
-	public static function TaskFavorite(CMSDatabase $db, $taskid, $userid, $value){
+	public static function TaskFavorite(Ab_Database $db, $taskid, $userid, $value){
 		$sql = "
 			UPDATE ".$db->prefix."btk_userrole
 			SET favorite=".bkint($value)."
@@ -445,7 +455,7 @@ class BotaskQuery {
 		$db->query_write($sql);
 	}
 	
-	public static function TaskExpand(CMSDatabase $db, $taskid, $userid, $value){
+	public static function TaskExpand(Ab_Database $db, $taskid, $userid, $value){
 		$sql = "
 			UPDATE ".$db->prefix."btk_userrole
 			SET expanded=".bkint($value)."
@@ -455,7 +465,7 @@ class BotaskQuery {
 		$db->query_write($sql);
 	}
 	
-	public static function TaskShowComments(CMSDatabase $db, $taskid, $userid, $value){
+	public static function TaskShowComments(Ab_Database $db, $taskid, $userid, $value){
 		$sql = "
 			UPDATE ".$db->prefix."btk_userrole
 			SET showcomments=".bkint($value)."
@@ -465,7 +475,7 @@ class BotaskQuery {
 		$db->query_write($sql);
 	}
 	
-	public static function UserRoleRemove(CMSDatabase $db, $taskid, $userid){
+	public static function UserRoleRemove(Ab_Database $db, $taskid, $userid){
 		$sql = "
 			DELETE FROM ".$db->prefix."btk_userrole
 			WHERE taskid=".bkint($taskid)." AND userid=".bkint($userid)." 
@@ -473,7 +483,7 @@ class BotaskQuery {
 		$db->query_write($sql);
 	}
 	
-	public static function CommentList(CMSDatabase $db, $userid){
+	public static function CommentList(Ab_Database $db, $userid){
 		$sql = "
 			SELECT 
 				a.commentid as id,
@@ -501,7 +511,7 @@ class BotaskQuery {
 		return $db->query_read($sql);
 	}
 	
-	public static function ToWork(CMSDatabase $db, $userid, $fromtime){
+	public static function ToWork(Ab_Database $db, $userid, $fromtime){
 		$sql = "
 			SELECT
 				h.historyid as id,
@@ -522,7 +532,7 @@ class BotaskQuery {
 		return $db->query_read($sql);
 	}
 	
-	public static function CheckList(CMSDatabase $db, $taskid){
+	public static function CheckList(Ab_Database $db, $taskid){
 		$sql = "
 			SELECT
 				c.checklistid as id,
@@ -544,7 +554,7 @@ class BotaskQuery {
 		return $db->query_read($sql);
 	}
 	
-	public static function CheckListAppend(CMSDatabase $db, $taskid, $userid, $title){
+	public static function CheckListAppend(Ab_Database $db, $taskid, $userid, $title){
 		$sql = "
 			INSERT INTO ".$db->prefix."btk_checklist (taskid, userid, title, dateline) VALUES (
 				".bkint($taskid).",
@@ -557,7 +567,7 @@ class BotaskQuery {
 		return $db->insert_id();
 	}
 	
-	public static function CheckListRemove(CMSDatabase $db, $userid, $chid){
+	public static function CheckListRemove(Ab_Database $db, $userid, $chid){
 		$sql = "
 			UPDATE ".$db->prefix."btk_checklist
 			SET deldate=".TIMENOW.",
@@ -567,7 +577,7 @@ class BotaskQuery {
 		$db->query_write($sql);
 	}
 
-	public static function CheckListRestore(CMSDatabase $db, $userid, $chid){
+	public static function CheckListRestore(Ab_Database $db, $userid, $chid){
 		$sql = "
 			UPDATE ".$db->prefix."btk_checklist
 			SET deldate=0, deluserid=0
@@ -576,7 +586,7 @@ class BotaskQuery {
 		$db->query_write($sql);
 	}
 	
-	public static function CheckListUpdate(CMSDatabase $db, $userid, $chid, $title){
+	public static function CheckListUpdate(Ab_Database $db, $userid, $chid, $title){
 		$sql = "
 			UPDATE ".$db->prefix."btk_checklist
 			SET title='".bkstr($title)."',
@@ -587,7 +597,7 @@ class BotaskQuery {
 		$db->query_write($sql);
 	}
 	
-	public static function CheckListCheck(CMSDatabase $db, $userid, $chid, $check){
+	public static function CheckListCheck(Ab_Database $db, $userid, $chid, $check){
 		$sql = "
 			UPDATE ".$db->prefix."btk_checklist
 			SET checked=".(!empty($check) ? 1 : 0).",
@@ -598,7 +608,7 @@ class BotaskQuery {
 		$db->query_write($sql);
 	}
 	
-	public static function TaskFiles(CMSDatabase $db, $taskid){
+	public static function TaskFiles(Ab_Database $db, $taskid){
 		$sql = "
 			SELECT 
 				bf.filehash as id,
@@ -611,7 +621,7 @@ class BotaskQuery {
 		return $db->query_read($sql);
 	}
 	
-	public static function TaskFileAppend(CMSDatabase $db, $taskid, $filehash, $userid){
+	public static function TaskFileAppend(Ab_Database $db, $taskid, $filehash, $userid){
 		$sql = "
 			INSERT INTO ".$db->prefix."btk_file (taskid, filehash, userid) VALUES
 			(
@@ -623,7 +633,7 @@ class BotaskQuery {
 		$db->query_write($sql);
 	}
 	
-	public static function TaskFileRemove(CMSDatabase $db, $taskid, $filehash){
+	public static function TaskFileRemove(Ab_Database $db, $taskid, $filehash){
 		$sql = "
 			DELETE FROM ".$db->prefix."btk_file
 			WHERE taskid=".bkint($taskid)." AND filehash='".bkstr($filehash)."' 

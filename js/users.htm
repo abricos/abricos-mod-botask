@@ -1,0 +1,24 @@
+<!--{widget}-->
+<div class="teamuser boxitem boxstshow" id="{i#id}">
+	<div class="head" id="{i#head}">
+		<div class="info" id="{i#info}">
+			<span id="{i#tl}" class="title"></span>
+			<span id="{i#countlabel}">(<span id="{i#cnt}" class="count">0</span>)</span>
+		</div>
+		<div id="{i#shbox}" class="shbox"></div>
+	</div>
+	<div class="boxbody">
+		<div class="tlist" id="{i#tlist}">
+			<div id="{i#table}" class="ttable"></div>
+		</div>
+		<div class="emptyrows" id="{i#empty}">
+			Нет записей
+		</div>
+	</div>
+</div>
+
+<!--{user}-->
+<div class="userrow" id="{i#id}-{v#uid}" style="background-image: url('{v#avatar}');">
+	<a href="#" class="show-user-profile user-{v#uid}">{v#unm}</a>
+	<input id="{i#intask}-{v#uid}" class="intask" type="checkbox" title="Отметить все задачи, в которых участвует этот пользователь" />
+</div>

@@ -14,19 +14,14 @@ Component.requires = {
         {name: 'botask', files: ['lib.js']}
 	]
 };
-Component.entryPoint = function(){
+Component.entryPoint = function(NS){
 	
 	var Dom = YAHOO.util.Dom,
 		E = YAHOO.util.Event,
 		L = YAHOO.lang;
 	
-	var NS = this.namespace, 
-		TMG = this.template,
-		API = NS.API,
+	var TMG = this.template,
 		R = NS.roles;
-	
-	var UP = Brick.mod.uprofile,
-		LNG = Brick.util.Language.getc('mod.botask');
 	
 	var initCSS = false,
 		buildTemplate = function(w, ts){
@@ -51,12 +46,15 @@ Component.entryPoint = function(){
 		onLoad: function(){
 			
 			this.gmenu = new NS.GlobalMenuWidget(this._TM.getEl('panel.gmenu'), 'comments');
-
-			this.builder = new Brick.mod.comment.CommentManager(true);
-			this.loadLastComments();
+			
+			__self = this;
+			NS.buildTaskManager(function(tm){
+				__self.onBuildTaskManager();
+			});
 		},
-		loadLastComments: function(){
-			var __self = this
+		onBuildTaskManager: function(){
+			this.builder = new Brick.mod.comment.CommentManager(true);
+			var __self = this;
 			NS.taskManager.ajax({'do': 'lastcomments'}, function(r){ 
 				__self.updateList(r);
 			});
@@ -100,10 +98,12 @@ Component.entryPoint = function(){
 		}
 	});
 
-	API.showLastCommentsPanel = function(){
-		NS.buildTaskManager(function(tm){
-			new LastCommentsPanel();
-		});
+	var _activeCommentsPanel = null;
+	NS.API.showLastCommentsPanel = function(){
+		if (L.isNull(_activeCommentsPanel) || _activeCommentsPanel.isDestroy()){
+			_activeCommentsPanel = new LastCommentsPanel(); 
+		}
+		return _activeCommentsPanel;
 	};
 
 };
