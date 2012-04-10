@@ -39,13 +39,6 @@ class BotaskQuery {
 		if ($parenttaskid > 0){
 			$where .= " AND p.parenttaskid = ".bkint($parenttaskid);
 		}
-		/*
-		if ($status > 0){
-			$where .= " AND p.status = ".bkint($status);
-		}else{
-			$where .= " AND p.status <> ".BotaskStatus::TASK_REMOVE." AND p.status <> ".BotaskStatus::TASK_CLOSE."";
-		}
-		/**/
 		return $where;
 	}
 	
@@ -74,6 +67,31 @@ class BotaskQuery {
 			INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
 			LEFT JOIN ".$db->prefix."cmt_lastview cmtl ON p.contentid=cmtl.contentid AND cmtl.userid=".bkint($userid)." 
 			WHERE ur.userid=".bkint($userid)." AND p.deldate=0 ".$where."
+		";
+		return $db->query_read($sql);
+	}
+	
+	
+	public static function BoardOnline(Ab_Database $db, $userid){
+		$sql = "
+			SELECT * 
+			FROM (
+				SELECT
+					".BotaskQuery::TASK_FIELDS.",
+					cmtl.commentid as cmtv,
+					(
+						SELECT commentid as cmtid
+						FROM ".$db->prefix."cmt_comment cmt
+						WHERE p.contentid=cmt.contentid
+						ORDER BY commentid DESC
+						LIMIT 1
+					) as cmt
+				FROM ".$db->prefix."btk_userrole ur
+				INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
+				LEFT JOIN ".$db->prefix."cmt_lastview cmtl ON p.contentid=cmtl.contentid AND cmtl.userid=".bkint($userid)."
+				WHERE ur.userid=".bkint($userid)." AND p.deldate=0
+			) a
+			WHERE a.cmt > a.cmtv OR a.n > 0
 		";
 		return $db->query_read($sql);
 	}

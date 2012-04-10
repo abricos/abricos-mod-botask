@@ -78,6 +78,31 @@ class BotaskManager extends Ab_ModuleManager {
 		return $ret;
 	}
 	
+	private function ToArrayById($rows){
+		$ret = array();
+		while (($row = $this->db->fetch_array($rows))){
+			$ret[$row['id']] = $row;
+		}
+		return $ret;
+	}
+	
+	private function ToArray($rows){
+		$ret = array();
+		while (($row = $this->db->fetch_array($rows))){
+			array_push($ret, $row);
+		}
+		return $ret;
+	}
+	
+	public function Bos_OnlineData(){
+		if (!$this->IsViewRole()){
+			return null;
+		}
+	
+		$rows = BotaskQuery::BoardOnline($this->db, $this->userid);
+		return $this->ToArray($rows);
+	}
+	
 	/**
 	 * Список знакомых пользователй
 	 */
@@ -96,14 +121,6 @@ class BotaskManager extends Ab_ModuleManager {
 		$o->users = $users;
 		
 		return $o;
-	}
-	
-	private function ToArray($rows){
-		$ret = array();
-		while (($row = $this->db->fetch_array($rows))){
-			$ret[$row['id']] = $row;
-		}
-		return $ret;
 	}
 	
 	public function Sync(){
@@ -186,13 +203,13 @@ class BotaskManager extends Ab_ModuleManager {
 		if (!$this->IsViewRole()){ return null; }
 		$rows = BotaskQuery::TaskUserList($this->db, $taskid);
 		if (!$retarray){ return $rows; }
-		return $this->ToArray($rows);
+		return $this->ToArrayById($rows);
 	}
 	
 	private function TaskUserListForNotify($taskid, $retarray = false){
 		$rows = BotaskQuery::TaskUserListForNotify($this->db, $taskid);
 		if (!$retarray){ return $rows; }
-		return $this->ToArray($rows);
+		return $this->ToArrayById($rows);
 	}
 	
 	/**
@@ -654,7 +671,7 @@ class BotaskManager extends Ab_ModuleManager {
 		$uman = Abricos::$user->GetManager();
 		
 		$rows = $uman->UserConfigList($this->userid, 'botask');
-		$arr = $this->ToArray($rows);
+		$arr = $this->ToArrayById($rows);
 		
 		$names = array("tasksort", "tasksortdesc", "taskviewchild", "taskviewcmts");
 		
@@ -679,7 +696,7 @@ class BotaskManager extends Ab_ModuleManager {
 		if (!$this->IsViewRole()){ return null; }
 		
 		$rows = BotaskQuery::CommentList($this->db, $this->userid);
-		return $this->ToArray($rows);
+		return $this->ToArrayById($rows);
 	}
 
 	/**
@@ -691,7 +708,7 @@ class BotaskManager extends Ab_ModuleManager {
 		$fromtime = TIMENOW - 60*60*24*31;
 		
 		$rows = BotaskQuery::ToWork($this->db, $this->userid, $fromtime);
-		return $this->ToArray($rows);
+		return $this->ToArrayById($rows);
 	}
 	
 	////////////////////////////// комментарии /////////////////////////////
@@ -817,7 +834,7 @@ class BotaskManager extends Ab_ModuleManager {
 			if (!$this->TaskAccess($taskid)){ return null; }
 		}
 		$rows = BotaskQuery::CheckList($this->db, $taskid);
-		return $retarray ? $this->ToArray($rows) : $rows;
+		return $retarray ? $this->ToArrayById($rows) : $rows;
 	}
 
 	public function CheckListSave($taskid, $checkList, $history = null){
@@ -895,7 +912,7 @@ class BotaskManager extends Ab_ModuleManager {
 		if (!$retarray){
 			return $rows;
 		}
-		return $this->ToArray($rows);
+		return $this->ToArrayById($rows);
 	}
 	
 	
