@@ -128,10 +128,23 @@ class BotaskQuery {
 	 * @param Ab_Database $db
 	 * @param unknown_type $userid
 	 */
-	public static function BoardUsers(Ab_Database $db, $userid, $lastupdate = 0){
+	public static function BoardUsers(Ab_Database $db, $userid, $lastupdate = 0, $autors = array()){
 		$where = "";
 		if ($lastupdate > 0){
 			$where = " AND p.updatedate >= ".bkint($lastupdate);
+		}
+		
+		$whereu = "";
+		$whereun = "";
+		if (is_array($autors) && count($autors)>0){
+			$sa = array();
+			$san = array();
+			foreach($autors as $id => $v){
+				array_push($sa, " u.userid = ".bkint($id));
+				array_push($san, " u.userid <> ".bkint($id));
+			}
+			$whereu = "WHERE ".implode(" OR ", $sa);
+			$whereun = "WHERE ".implode(" OR ", $san);
 		}
 		$sql = "
 			SELECT
@@ -149,7 +162,24 @@ class BotaskQuery {
 			) ps
 			LEFT JOIN ".$db->prefix."btk_userrole ur1 ON ps.taskid=ur1.taskid
 			INNER JOIN ".$db->prefix."user u ON ur1.userid=u.userid
+			".$whereun."
 		";
+		
+		if (!empty($whereu)){
+			$sql .= "
+				UNION
+				SELECT
+					DISTINCT
+					u.userid as id,
+					u.username as unm,
+					u.firstname as fnm,
+					u.lastname as lnm,
+					u.avatar as avt
+				FROM ".$db->prefix."user u
+				".$whereu."
+			";
+		}
+		
 		return $db->query_read($sql);
 	}
 	

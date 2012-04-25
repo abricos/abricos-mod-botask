@@ -137,6 +137,9 @@ class BotaskManager extends Ab_ModuleManager {
 		$ret->board = array();
 		$ret->users = array();
 		
+		// авторы
+		$autors = array();
+		
 		if ($lastHId == 0){
 			$ret->cfg = $this->UserConfigList();
 		}
@@ -159,6 +162,7 @@ class BotaskManager extends Ab_ModuleManager {
 				}
 			}
 		}
+		
 		if ($lastHId > 0 && count($ret->hst) == 0){ // нет изменений
 			return null;
 		}
@@ -170,6 +174,7 @@ class BotaskManager extends Ab_ModuleManager {
 		while (($row = $this->db->fetch_array($rows))){
 			$row['users'] = array();
 			$ret->board[$row['id']] = $row;
+			$autors[$row['uid']] = true;
 		}
 		
 		$rows = BotaskQuery::BoardTaskUsers($this->db, $this->userid, $lastupdate);
@@ -177,7 +182,7 @@ class BotaskManager extends Ab_ModuleManager {
 			array_push($ret->board[$row['tid']]['users'], $row['uid']);
 		}
 
-		$rows = BotaskQuery::BoardUsers($this->db, $this->userid, $lastupdate);
+		$rows = BotaskQuery::BoardUsers($this->db, $this->userid, $lastupdate, $autors);
 		while (($row = $this->db->fetch_array($rows))){
 			$userid = $row['id'];
 			if ($userid == $this->userid && $lastHId > 0){

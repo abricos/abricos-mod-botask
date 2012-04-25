@@ -21,16 +21,7 @@ Component.entryPoint = function(NS){
 	var TST = NS.TaskStatus;
 
 	var LNG = Brick.util.Language.geta(['mod', '{C#MODNAME}']),
-		TMG = this.template,
-		initCSS = false,
-		buildTemplate = function(w, ts){
-		if (!initCSS){
-			Brick.util.CSS.update(Brick.util.CSS['{C#MODNAME}']['{C#COMNAME}']);
-			delete Brick.util.CSS['{C#MODNAME}']['{C#COMNAME}'];
-			initCSS = true;
-		}
-		w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;
-	};
+		buildTemplate = this.buildTemplate;
 
 	var TaskTableWidget = function(container, taskList, config){
 		this.init(container, taskList, config);
@@ -118,7 +109,7 @@ Component.entryPoint = function(NS){
 			if (!L.isNull(tk.deadline)){
 				ddl = Brick.dateExt.convert(tk.deadline.getTime()/1000, 0, !tk.ddlTime);
 			}
-			
+
 			var author = NS.taskManager.users.get(tk.userid);
 			
 			var expd = this.isChildExpanded(tk);
@@ -229,8 +220,8 @@ Component.entryPoint = function(NS){
 				'level': level,
 				'classch': chcls,
 				'tl': tk.title == "" ? LNG['nottitle'] : tk.title,
-				'aunm': author.getUserName(),
-				'auid': author.id,
+				'aunm': L.isNull(author) ? 'null' : author.getUserName(),
+				'auid': L.isNull(author) ? 'null' : author.id,
 				'cols': sCols
 			});
 			
