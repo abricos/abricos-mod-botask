@@ -23,16 +23,7 @@ Component.entryPoint = function(NS){
 	
 	var UP = Brick.mod.uprofile;
 	
-	var TMG = this.template,
-		initCSS = false,
-		buildTemplate = function(w, ts){
-		if (!initCSS){
-			Brick.util.CSS.update(Brick.util.CSS['{C#MODNAME}']['{C#COMNAME}']);
-			delete Brick.util.CSS['{C#MODNAME}']['{C#COMNAME}'];
-			initCSS = true;
-		}
-		w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;
-	};
+	var buildTemplate = this.buildTemplate;
 	
 	var TaskEditorWidget = function(container, task){
 		this.init(container, task);
@@ -82,9 +73,8 @@ Component.entryPoint = function(NS){
 			gel('path').innerHTML = TM.replace('tree', {'rows': lst});
 			TM.getEl('tree.id').value = L.isNull(task.parent) ? 0 : task.parent.id;
 			
-
 			gel('tl').value = task.title;
-			TM.getEl('widget.editor').innerHTML = task.descript;
+			TM.getEl('widget.editor').value = task.descript;
 
 			var Editor = Brick.widget.Editor;
 			this.editor = new Editor(this._TId['widget']['editor'], {
