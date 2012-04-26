@@ -1,5 +1,5 @@
 /*
-@version $Id: ws.js 1285 2011-11-23 07:42:29Z roosit $
+@version $Id$
 @package Abricos
 @copyright Copyright (C) 2008-2011 Abricos All rights reserved.
 @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
@@ -18,16 +18,7 @@ Component.entryPoint = function(NS){
 		E = YAHOO.util.Event,
 		L = YAHOO.lang;
 	
-	var TMG = this.template,
-		initCSS = false,
-		buildTemplate = function(w, ts){
-		if (!initCSS){
-			Brick.util.CSS.update(Brick.util.CSS['{C#MODNAME}']['{C#COMNAME}']);
-			delete Brick.util.CSS['{C#MODNAME}']['{C#COMNAME}'];
-			initCSS = true;
-		}
-		w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;
-	};
+	var buildTemplate = this.buildTemplate;
 	
 	var AboutWidget = function(container){
 		this.init(container);

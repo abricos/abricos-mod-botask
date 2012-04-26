@@ -20,17 +20,9 @@ Component.entryPoint = function(NS){
 		E = YAHOO.util.Event,
 		L = YAHOO.lang;
 	
-	var TMG = this.template,
-		R = NS.roles;
+	var R = NS.roles;
 	
-	var initCSS = false,
-		buildTemplate = function(w, ts){
-		if (!initCSS){
-			Brick.util.CSS.update(Brick.util.CSS['botask']['comments']);
-			initCSS = true;
-		}
-		w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;
-	};
+	var buildTemplate = this.buildTemplate;
 	
 	var LastCommentsPanel = function(){
 		LastCommentsPanel.superclass.constructor.call(this, {

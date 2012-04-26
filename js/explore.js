@@ -17,16 +17,7 @@ Component.entryPoint = function(NS){
 	
 	var LNG = Brick.util.Language.geta(['mod', '{C#MODNAME}']);
 	
-	var TMG = this.template,
-		initCSS = false,
-		buildTemplate = function(w, ts){
-		if (!initCSS){
-			Brick.util.CSS.update(Brick.util.CSS['{C#MODNAME}']['{C#COMNAME}']);
-			delete Brick.util.CSS['{C#MODNAME}']['{C#COMNAME}'];
-			initCSS = true;
-		}
-		w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;
-	};
+	var buildTemplate = this.buildTemplate;
 	
 	var ExploreWidget = function(container, config){
 		config = L.merge({

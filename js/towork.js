@@ -19,20 +19,9 @@ Component.entryPoint = function(NS){
 		E = YAHOO.util.Event,
 		L = YAHOO.lang;
 	
-	var NS = this.namespace, 
-		TMG = this.template,
-		R = NS.roles;
+	var R = NS.roles;
 	
-	var initCSS = false,
-		buildTemplate = function(w, ts){
-		if (!initCSS){
-			var CSS = Brick.util.CSS;
-			CSS.update(CSS['botask']['towork']);
-			delete CSS['botask']['towork'];
-			initCSS = true;
-		}
-		w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;
-	};
+	var buildTemplate = this.buildTemplate;
 	
 	var TST = NS.TaskStatus;
 	

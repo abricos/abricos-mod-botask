@@ -7,24 +7,15 @@
 
 var Component = new Brick.Component();
 Component.requires = {};
-Component.entryPoint = function(){
+Component.entryPoint = function(NS){
 	
 	var Dom = YAHOO.util.Dom,
 		E = YAHOO.util.Event,
 		L = YAHOO.lang;
 	
-	var NS = this.namespace, 
-		TMG = this.template,
-		R = NS.roles;
+	var R = NS.roles;
 	
-	var initCSS = false, buildTemplate = function(w, ts){
-		if (!initCSS){
-			Brick.util.CSS.update(Brick.util.CSS['botask']['checklist']);
-			delete Brick.util.CSS['botask']['checklist'];
-			initCSS = true;
-		}
-		w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;
-	};
+	var buildTemplate = this.buildTemplate;
 	
 	var ChecklistWidget = function(container, task, config){
 		config = L.merge({

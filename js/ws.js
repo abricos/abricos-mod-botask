@@ -145,9 +145,16 @@ Component.entryPoint = function(NS){
 				
 				if (wsMode == 'taskadd' || wsMode == 'taskedit'){
 					Brick.ff('botask', 'taskeditor', function(){
-						hidewait();
 						
 						var task = null;
+						
+						var showEditor = function(){
+							task = L.isNull(task) ? new NS.Task() : task;
+							hidewait();
+							wExplore.selectPath(task.parent);
+							wsw['taskEditor'] = new NS.TaskEditorWidget(elPage, task);
+						};
+						
 						if (wsMode == 'taskadd'){
 							var ptaskid = gcfg['p1']*1;
 
@@ -157,12 +164,18 @@ Component.entryPoint = function(NS){
 								var ptask = NS.taskManager.list.find(ptaskid);
 								task.parent = ptask;
 							}
-							wExplore.selectPath(task.parent);
+							showEditor();
 						} else {
 							task = NS.taskManager.getTask(gcfg['p1']*1);
-							wExplore.selectPath(task);
+							if (L.isNull(task)){
+								showEditor();
+							}else{
+								// запросить дополнительные данные по задаче (описание, история)
+								NS.taskManager.taskLoad(task.id, function(){
+									showEditor();
+								});
+							}
 						}
-						wsw['taskEditor'] = new NS.TaskEditorWidget(elPage, task);
 					});
 				}else if (wsMode == 'taskview'){
 					
