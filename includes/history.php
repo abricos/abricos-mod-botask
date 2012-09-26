@@ -30,6 +30,9 @@ class BotaskHistory {
 	public $body = "";
 	public $bodyc = false;
 	
+	public $imagedata = "";
+	public $imagedatac = false;
+	
 	public $check = "";
 	public $checkc = false;
 	
@@ -67,40 +70,47 @@ class BotaskHistory {
 		$this->taskid = $ot['id'];
 	}
 	
-	public function CompareTask($nt, $ot){
+	public function CompareTask($nt, $ot, $onlyimage = false){
 		
 		$this->taskid = $nt->id;
-		
-		if ($nt->tl != $ot['tl']){
-			$this->title = $ot['tl'];
-			$this->titlec = true;
-			$this->change = true;
+		if (!$onlyimage){
+			if ($nt->tl != $ot['tl']){
+				$this->title = $ot['tl'];
+				$this->titlec = true;
+				$this->change = true;
+			}
+			if ($nt->bd != $ot['bd']){
+				$this->body = $ot['bd'];
+				$this->bodyc = true;
+				$this->change = true;
+			}
+			if (intval($nt->pid) != intval($ot['pid'])){
+				$this->parenttaskid = $ot['pid'];
+				$this->parenttaskidc = true;
+				$this->change = true;
+			}
+			if (intval($nt->ddl) != intval($ot['ddl'])){
+				$this->deadline = $ot['ddl'];
+				$this->deadlinec = true;
+				$this->change = true;
+			}
+			if (intval($nt->ddlt) != intval($ot['ddlt'])){
+				$this->deadlinebytime = $ot['ddlt'];
+				$this->deadlinebytimec = true;
+				$this->change = true;
+			}
+			if (intval($nt->prt) != intval($ot['prt'])){
+				$this->priority = $ot['prt'];
+				$this->priorityc = true;
+				$this->change = true;
+			}
 		}
-		if ($nt->bd != $ot['bd']){
-			$this->body = $ot['bd'];
-			$this->bodyc = true;
-			$this->change = true;
-		}
-		if (intval($nt->pid) != intval($ot['pid'])){
-			$this->parenttaskid = $ot['pid'];
-			$this->parenttaskidc = true;
-			$this->change = true;
-		}
-		if (intval($nt->ddl) != intval($ot['ddl'])){
-			$this->deadline = $ot['ddl'];
-			$this->deadlinec = true;
-			$this->change = true;
-		}
-		if (intval($nt->ddlt) != intval($ot['ddlt'])){
-			$this->deadlinebytime = $ot['ddlt'];
-			$this->deadlinebytimec = true;
-			$this->change = true;
-		}
-		if (intval($nt->prt) != intval($ot['prt'])){
-			$this->priority = $ot['prt'];
-			$this->priorityc = true;
-			$this->change = true;
-		}
+	}
+	
+	public function ImagesChange($oldImages){
+		$this->imagedata = json_encode_ext($oldImages);
+		$this->imagedatac = true;
+		$this->change = true;
 	}
 	
 	public function SaveCheckList($taskid, $checklist){

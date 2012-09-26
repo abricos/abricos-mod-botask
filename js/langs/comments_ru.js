@@ -1,5 +1,9 @@
-Brick.util.Language.add('ru',{'mod':{'botask': {
+Brick.util.Language.add('ru',{'mod': {'{C#MODNAME}':{
 	'comments': {
-		'title': 'Комментарии'
+		'title': 'Комментарии',
+		'panel': {
+			'1': 'Менеджер задач - Комментарии',
+			'2': 'Идет загрузка данных. Пожалуйста, подождите...'
+		}
 	}
 }}});

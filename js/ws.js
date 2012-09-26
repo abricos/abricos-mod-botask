@@ -20,8 +20,6 @@ Component.entryPoint = function(NS){
 	
 	var buildTemplate = this.buildTemplate;
 	
-	var LNG = Brick.util.Language.geta(['mod', '{C#MODNAME}']);
-
 	var WorkspacePanel = function(gConfig){
 		this.gConfig = gConfig || {};
 		
@@ -31,23 +29,26 @@ Component.entryPoint = function(NS){
 	};
 	YAHOO.extend(WorkspacePanel, Brick.widget.Panel, {
 		initTemplate: function(){
-			buildTemplate(this, 'panel');
-			return this._TM.replace('panel');
+			return buildTemplate(this, 'panel').replace('panel');
 		},
 		onLoad: function(){
 			var TM = this._TM, __self = this;
 			
-			this.gmenu = new NS.GlobalMenuWidget(TM.getEl('panel.gmenu'), 'project', '');
 			this.wsMode = '';
 			this.wsw = {
 				'explore': null,
 				'easyList': null,
 				'taskEditor': null,
 				'taskViewer': null,
+				'folderEditor': null,
+				'folderView': null,
+				'projectEditor': null,
+				'projectView': null,
 				'teamUsers': null
 			};
 			
-			NS.buildTaskManager(function(tm){
+			this.gmenu = new NS.GlobalMenuWidget(TM.getEl('panel.gmenu'), 'project', '');
+			this.gmenu.buildTaskManager(function(){
 				__self.onBuildTaskManager();
 			});
 		},
@@ -108,8 +109,7 @@ Component.entryPoint = function(NS){
 			if (wsMode == this.wsMode){
 				// return;
 			}
-			var __self = this,
-				TM = this._TM, gel = function(name){ return TM.getEl('panel.'+name); },
+			var TM = this._TM, gel = function(name){ return TM.getEl('panel.'+name); },
 				elPage = gel('wspage'),
 				wsw = this.wsw,
 				wEasyList = wsw['easyList'],
@@ -126,10 +126,25 @@ Component.entryPoint = function(NS){
 				Dom.setStyle(gel('wspagemain'), 'display', '');
 			} else {
 				
+				var wname = '';
+				
 				switch(wsMode){
-				case 'taskadd': 
-				case 'taskedit': 
-				case 'taskview': 
+				case 'add': break;
+				case 'projectview': break;
+				case 'folderview': break;
+				case 'taskview': break;
+
+				case 'taskadd':
+				case 'taskedit':
+					wname = 'taskeditor';
+					break;
+				case 'folderadd':
+				case 'folderedit':
+					wname = 'foldereditor';
+					break;
+				case 'projectadd':
+				case 'projectedit':
+					wname = 'projecteditor';
 					break;
 				default: return;
 				}
@@ -143,19 +158,38 @@ Component.entryPoint = function(NS){
 					Dom.setStyle(gel('wspageloading'), 'display', 'none');
 				};
 				
-				if (wsMode == 'taskadd' || wsMode == 'taskedit'){
-					Brick.ff('botask', 'taskeditor', function(){
-						
+				if (wsMode == 'add'){
+					var taskid = gcfg['p1']*1,
+						task = NS.taskManager.getTask(taskid);
+					wExplore.selectPath(task);
+					
+					Brick.ff('botask', 'type', function(){
+						hidewait();
+						wsw['add'] = new NS.TypeSelectWidget(elPage, taskid);
+					});
+					
+				} else if (wsMode == 'taskadd' || wsMode == 'taskedit' ||
+						wsMode == 'folderadd' || wsMode == 'folderedit' ||
+						wsMode == 'projectadd' || wsMode == 'projectedit'){
+					
+					Brick.ff('botask', wname, function(){
 						var task = null;
-						
+
 						var showEditor = function(){
 							task = L.isNull(task) ? new NS.Task() : task;
 							hidewait();
 							wExplore.selectPath(task.parent);
-							wsw['taskEditor'] = new NS.TaskEditorWidget(elPage, task);
+							
+							if (wsMode == 'folderadd' || wsMode == 'folderedit'){
+								wsw['taskEditor'] = new NS.FolderEditorWidget(elPage, task);
+							}else if (wsMode == 'projectadd' || wsMode == 'projectedit'){
+								wsw['taskEditor'] = new NS.ProjectEditorWidget(elPage, task);
+							}else{
+								wsw['taskEditor'] = new NS.TaskEditorWidget(elPage, task);
+							}
 						};
 						
-						if (wsMode == 'taskadd'){
+						if (wsMode == 'taskadd' || wsMode == 'projectadd' || wsMode == 'folderadd'){
 							var ptaskid = gcfg['p1']*1;
 
 							task = new NS.Task();
@@ -177,20 +211,28 @@ Component.entryPoint = function(NS){
 							}
 						}
 					});
-				}else if (wsMode == 'taskview'){
+				}else if (wsMode == 'taskview' || wsMode == 'projectview' || wsMode == 'folderview'){
 					
 					var task = NS.taskManager.getTask(gcfg['p1']*1);
 					wExplore.selectPath(task);
 					
-					Brick.ff('botask', 'taskview', function(){
+					Brick.ff('botask', wsMode, function(){
 						hidewait();
-						wsw['taskViewer'] = new NS.TaskViewWidget(elPage, task);
+						
+						if (wsMode == 'folderview'){
+							wsw['taskViewer'] = new NS.FolderViewWidget(elPage, task);
+						}else if (wsMode == 'projectview'){
+							wsw['taskViewer'] = new NS.ProjectViewWidget(elPage, task);
+						}else{
+							wsw['taskViewer'] = new NS.TaskViewWidget(elPage, task);
+						}
+						
 						wTeamUsers.setFilter(task);
 					});					
 				}
 			}
-			
 			this.wsMode = wsMode;
+			this.gmenu.render();
 		}
 	});
 	NS.WorkspacePanel = WorkspacePanel;
@@ -203,7 +245,6 @@ Component.entryPoint = function(NS){
 			'p1': p1,
 			'p2': p2
 		};
-		
 		if (L.isNull(activeWSPanel) || activeWSPanel.isDestroy()){
 			activeWSPanel = new WorkspacePanel(gConfig);
 		}else{

@@ -283,14 +283,13 @@ Component.entryPoint = function(NS){
 			return this._TM.replace('panel');
 		},
 		onLoad: function(){
-			this.gmenu = new NS.GlobalMenuWidget(this._TM.getEl('panel.gmenu'), 'towork');
 			this.widgets = [];
-			
 			var __self = this;
-			
-			NS.buildTaskManager(function(tm){
+			this.gmenu = new NS.GlobalMenuWidget(this._TM.getEl('panel.gmenu'), 'towork', '');
+			this.gmenu.buildTaskManager(function(){
 				__self.onBuildTaskManager();
 			});
+
 		},
 		destroy: function(){
 			this.foreach(function(w){

@@ -1,0 +1,28 @@
+.aw-botask .typeselect .head {
+	border: 1px solid #8C8D8E;
+	background-color: #E3E3D7;
+	padding: 9px 11px;
+	font-size: 1em;
+	margin-bottom: 16px;
+	position: relative;
+}
+
+.aw-botask .typeselect .head .buttons {
+	position: absolute; right: 0; top: 0;
+}
+
+.aw-botask .typeselect .raditems {
+	margin: 10px 10px;
+}
+
+.aw-botask .typeselect .raditems p {
+	line-height: 1.5em;
+}
+
+.aw-botask .typeselect .raditems p label {
+	margin-left: 7px;
+	vertical-align: text-bottom;
+}
+.aw-botask .typeselect .raditems input {
+	margin-left: 10px;
+}

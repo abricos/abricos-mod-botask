@@ -3,9 +3,8 @@
  * @version $Id$
  * @package Abricos
  * @subpackage Botask
- * @copyright Copyright (C) 2008 Abricos. All rights reserved.
  * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
- * @author Alexander Kuzmin (roosit@abricos.org)
+ * @author Alexander Kuzmin <roosit@abricos.org>
  */
 
 require_once 'dbquery.php';
@@ -46,6 +45,8 @@ class BotaskManager extends Ab_ModuleManager {
 			case 'task': return $this->Task($d->taskid);
 			case 'sync': return $this->Sync();
 			case 'tasksave': return $this->TaskSave($d->task);
+			case 'custatsave': return $this->CustatusSave($d->custat);
+			case 'custatfull': return $this->CustatusFullList();
 			case 'tasksetexec': return $this->TaskSetExec($d->taskid);
 			case 'taskunsetexec': return $this->TaskUnsetExec($d->taskid);
 			case 'taskclose': return $this->TaskClose($d->taskid);
@@ -78,21 +79,31 @@ class BotaskManager extends Ab_ModuleManager {
 		return $ret;
 	}
 	
-	private function ToArrayById($rows){
+	public function ToArrayById($rows, $field = "id"){
 		$ret = array();
 		while (($row = $this->db->fetch_array($rows))){
-			$ret[$row['id']] = $row;
+			$ret[$row[$field]] = $row;
 		}
 		return $ret;
 	}
 	
-	private function ToArray($rows){
+	public function ToArray($rows, &$ids1 = "", $fnids1 = 'uid', &$ids2 = "", $fnids2 = '', &$ids3 = "", $fnids3 = ''){
 		$ret = array();
 		while (($row = $this->db->fetch_array($rows))){
 			array_push($ret, $row);
+			if (is_array($ids1)){
+				$ids1[$row[$fnids1]] = $row[$fnids1];
+			}
+			if (is_array($ids2)){
+				$ids2[$row[$fnids2]] = $row[$fnids2];
+			}
+			if (is_array($ids3)){
+				$ids3[$row[$fnids3]] = $row[$fnids3];
+			}
 		}
 		return $ret;
 	}
+	
 	
 	public function Bos_OnlineData(){
 		if (!$this->IsViewRole()){
@@ -132,6 +143,10 @@ class BotaskManager extends Ab_ModuleManager {
 	 */
 	public function BoardData($lastHId = 0){
 		if (!$this->IsViewRole()){ return null; }
+		
+		// очистить корзину
+		$this->RecycleClear();
+		
 		$ret = new stdClass();
 		$ret->hst = array();
 		$ret->board = array();
@@ -333,22 +348,17 @@ class BotaskManager extends Ab_ModuleManager {
 		if ($task['st'] != BotaskStatus::TASK_REMOVE){ return null; }
 		
 		// восстановить задачу
-		$rows = BotaskQuery::TaskHistory($this->db, $taskid);
-		$i=0; 
-		$prevStatus=BotaskStatus::TASK_OPEN;
-		while (($row = $this->db->fetch_array($rows))){
-			if ($i == 1){
-				$prevStatus = $row['st'];
-				break;
-			}
-			$i++;
-		}
 		
+		$row = BotaskQuery::TaskHistoryPrevStatus($this->db, $taskid, BotaskStatus::TASK_REMOVE);
+		$st=BotaskStatus::TASK_OPEN;
+		if (!empty($row)){
+			$st = $row['st'];
+		}
 		$history = new BotaskHistory($this->userid);
-		$history->SetStatus($task, $prevStatus, $this->userid);
+		$history->SetStatus($task, $st, $this->userid);
 		$history->Save();
 		
-		BotaskQuery::TaskSetStatus($this->db, $taskid, $prevStatus, $this->userid);
+		BotaskQuery::TaskSetStatus($this->db, $taskid, $st, $this->userid);
 		
 		return $this->Task($taskid);
 	}
@@ -450,6 +460,14 @@ class BotaskManager extends Ab_ModuleManager {
 		$history = new BotaskHistory($this->userid);
 		$sendNewNotify = false;
 		
+		if ($tk->type == 'folder'){
+			$tk->typeid = 1;
+		}else if ($tk->type == 'project'){
+			$tk->typeid = 2;
+		}else{
+			$tk->typeid = 3;
+		}
+		
 		$publish = false;
 		if ($tk->id == 0){
 			
@@ -485,12 +503,85 @@ class BotaskManager extends Ab_ModuleManager {
 				return null; 
 			}
 			
-			BotaskQuery::TaskUpdate($this->db, $tk, $this->userid);
+			if (!$tk->onlyimage){
+				BotaskQuery::TaskUpdate($this->db, $tk, $this->userid);
+			}
 			
 			$history->CompareTask($tk, $info);
 		}
 		
 		$users = $this->TaskUserList($tk->id, true);
+		$arr = $tk->users;
+		
+		if (!$tk->onlyimage){ // производиться полное редактирование
+			
+			$this->TaskSaveUsersUpdate($tk, $users, $history);
+			
+			// сохранить чеклист
+			$this->CheckListSave($tk->id, $tk->checks, $history);
+			
+			// обновить информацию по файлам, если есть на это роль
+			$this->TaskSaveFilesUpdate($tk, $history);
+		}
+		
+		// сохранить картинки
+		$this->TaskSaveImagesUpdate($tk, $history);
+		
+		$history->Save();
+		$taskid = $tk->id;
+		$task = $this->Task($tk->id);
+
+		$tppfx = "";
+		if ($task['tp'] == 2){
+			$tppfx = "proj";
+		}else if ($task['tp'] == 3){
+			$tppfx = "task";
+		}
+		
+		if ($sendNewNotify && !empty($tppfx)){
+			
+			$brick = Brick::$builder->LoadBrickS('botask', 'templates', null, null);
+			$v = $brick->param->var;
+			$host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_ENV['HTTP_HOST'];
+			$plnk = "http://".$host."/bos/#app=botask/taskview/showTaskViewPanel/".$task['id']."/";
+			
+			$tppfx = "";
+			if ($task['tp'] == 2){
+				$tppfx = "proj";
+				$plnk = "http://".$host."/bos/#app=botask/ws/showWorkspacePanel/projectview/".$task['id']."/";
+			}else if ($task['tp'] == 3){
+				$tppfx = "task";
+				$plnk = "http://".$host."/bos/#app=botask/ws/showWorkspacePanel/taskview/".$task['id']."/";
+			}else{
+				return;
+			}
+			
+			$users = $this->TaskUserListForNotify($taskid, true);
+			foreach($users as $user){
+				if ($user['id'] == $this->userid){ continue; }
+				
+				$email = $user['email'];
+				if (empty($email)){ continue; }
+				
+				$subject = Brick::ReplaceVarByData($v[$tppfx.'newprojectsubject'], array(
+					"tl" => $task['tl']
+				));
+				$body = Brick::ReplaceVarByData($v[$tppfx.'newprojectbody'], array(
+					"email" => $email,
+					"tl" => $task['tl'],
+					"plnk" => $plnk,
+					"unm" => $this->UserNameBuild($this->user->info),
+					"prj" => $task['bd'],
+					"sitename" => Brick::$builder->phrase->Get('sys', 'site_name')
+				));
+				Abricos::Notify()->SendMail($email, $subject, $body);
+			}
+		}
+		return $task;
+	}
+	
+	private function TaskSaveUsersUpdate($tk, $users, $history){
+		
 		$arr = $tk->users;
 		
 		// обновить информацию по правам пользователей
@@ -520,77 +611,92 @@ class BotaskManager extends Ab_ModuleManager {
 				$history->UserAdd($uid);
 			}
 		}
-		
-		// сохранить чеклист
-		$this->CheckListSave($tk->id, $tk->checks, $history);
-		
-		// обновить информацию по файлам, если есть на это роль
-		Abricos::GetModule('filemanager');
-		if (FileManagerModule::$instance->GetManager()->IsFileUploadRole()){
-			$files = $this->TaskFiles($tk->id, true);
-			$arr = $tk->files;
-			
-			foreach ($files as $rFileId => $cfile){
-				$find = false;
-				foreach ($arr as $file){
-					if ($file->id == $rFileId){
-						$find = true;
-						break;
-					}
-				}
-				if (!$find){
-					BotaskQuery::TaskFileRemove($this->db, $tk->id, $rFileId);
-					// $history->FileRemove($rFileId);
-				}
-			}
-			foreach ($arr as $file){
-				$find = false;
-				foreach ($files as $rFileId => $cfile){
-					if ($file->id == $rFileId){
-						$find = true;
-						break;
-					}
-				}
-				if (!$find){
-					BotaskQuery::TaskFileAppend($this->db, $tk->id, $file->id, $this->userid);
-					// $history->FileAdd($uid);
-				}
-			}
-		}
-		
-		
-		$history->Save();
-		$taskid = $tk->id;
-		$task = $this->Task($tk->id);
-		
-		if ($sendNewNotify){
+	}
 	
-			$brick = Brick::$builder->LoadBrickS('botask', 'templates', null, null);
-			$v = $brick->param->var;
-			$host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_ENV['HTTP_HOST'];
-			$plnk = "http://".$host."/bos/#app=botask/taskview/showTaskViewPanel/".$task['id']."/";
-			
-			$users = $this->TaskUserListForNotify($taskid, true);
-			foreach($users as $user){
-				if ($user['id'] == $this->userid){ continue; }
-				
-				$email = $user['email'];
-				if (empty($email)){ continue; }
-				
-				$subject = Brick::ReplaceVarByData($v['newprojectsubject'], array(
-					"tl" => $task['tl']
-				));
-				$body = Brick::ReplaceVarByData($v['newprojectbody'], array(
-					"tl" => $task['tl'],
-					"plnk" => $plnk,
-					"unm" => $this->UserNameBuild($this->user->info),
-					"prj" => $task['bd'],
-					"sitename" => Brick::$builder->phrase->Get('sys', 'site_name')
-				));
-				Abricos::Notify()->SendMail($email, $subject, $body);
+	private function TaskSaveFilesUpdate($tk, $history){
+		$mod = Abricos::GetModule('filemanager');
+		if (empty($mod) || !FileManagerModule::$instance->GetManager()->IsFileUploadRole()){
+			return;
+		}
+		$files = $this->TaskFiles($tk->id, true);
+		$arr = $tk->files;
+	
+		foreach ($files as $rFileId => $cfile){
+			$find = false;
+			foreach ($arr as $file){
+				if ($file->id == $rFileId){
+					$find = true;
+					break;
+				}
+			}
+			if (!$find){
+				BotaskQuery::TaskFileRemove($this->db, $tk->id, $rFileId);
+				// $history->FileRemove($rFileId);
 			}
 		}
-		return $task;
+		foreach ($arr as $file){
+			$find = false;
+			foreach ($files as $rFileId => $cfile){
+				if ($file->id == $rFileId){
+					$find = true;
+					break;
+				}
+			}
+			if (!$find){
+				BotaskQuery::TaskFileAppend($this->db, $tk->id, $file->id, $this->userid);
+				// $history->FileAdd($uid);
+			}
+		}
+	}
+	
+	private function TaskSaveImagesUpdate($tk, BotaskHistory $history){
+		// TODO: необходимо осуществить проверку в текстовых записях картинки $tk->img дабы исключить проникновения javascript
+		// $tk->img = json_encode_ext($tk->img);
+		
+		$imgchanges = false;
+		if (!is_array($tk->images)){
+			$tk->images = array();
+		}
+		
+		$cImgs = $this->ImageList($tk->id);
+		foreach ($tk->images as $img){
+			$img->d = json_encode_ext($img->d);
+		
+			if ($img->id == 0){ // новое изображение
+				BotaskQuery::ImageAppend($this->db, $tk->id, $img->tl, $img->d);
+				$imgchanges = true;
+			}else{
+				$cfimg = null;
+				foreach ($cImgs as $cimg){
+					if ($cimg['id'] == $img->id){
+						$cfimg = $cimg;
+						break;
+					}
+				}
+				if (!is_null($cfimg) && ($img->tl != $cimg['tl'] || $img->d != $cimg['d'])){
+					BotaskQuery::ImageUpdate($this->db, $img->id, $img->tl, $img->d);
+					$imgchanges = true;
+				}
+			}
+		}
+		// удаленные изображения
+		foreach ($cImgs as $cimg){
+			$find = false;
+			foreach ($tk->images as $img){
+				if ($cimg['id'] == $img->id){
+					$find = true;
+					break;
+				}
+			}
+			if (!$find){
+				$this->TaskImageRemove($tk->id, $cimg);
+				// BotaskQuery::ImageRemove($this->db, $cimg['id']);
+				$imgchanges = true;
+			}
+		}
+		if ($imgchanges){
+			$history->ImagesChange($cImgs);
+		}		
 	}
 	
 	public function Task($taskid){
@@ -613,7 +719,10 @@ class BotaskManager extends Ab_ModuleManager {
 			array_push($task['files'], $file);
 		}
 		
-
+		$task['images'] = $this->ImageList($taskid, true);
+		
+		$task['custatus'] = $this->CustatusList($taskid);
+		
 		$hst = array();
 
 		$rows = BotaskQuery::TaskHistory($this->db, $taskid);
@@ -758,11 +867,22 @@ class BotaskManager extends Ab_ModuleManager {
 
 		$task = BotaskQuery::TaskByContentId($this->db, $this->userid, $data->cid, true);
 		if (empty ($task) || !$this->TaskAccess($task['id'])){ return; }
-
+		
 		$brick = Brick::$builder->LoadBrickS('botask', 'templates', null, null);
 		$v = &$brick->param->var;
 		$host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_ENV['HTTP_HOST'];
-		$plnk = "http://".$host."/bos/#app=botask/taskview/showTaskViewPanel/".$task['id']."/";
+		
+		$tppfx = "";
+		if ($task['tp'] == 2){
+			$tppfx = "proj";
+			$plnk = "http://".$host."/bos/#app=botask/ws/showWorkspacePanel/projectview/".$task['id']."/";
+		}else if ($task['tp'] == 3){
+			$tppfx = "task";
+			$plnk = "http://".$host."/bos/#app=botask/ws/showWorkspacePanel/taskview/".$task['id']."/";
+		}else{
+			return;
+		}
+		
 		
 		$emails = array();
 		$users = $this->TaskUserListForNotify($task['id'], true);
@@ -775,10 +895,11 @@ class BotaskManager extends Ab_ModuleManager {
 				$email = $user['email'];
 				if (!empty($email)){
 					$emails[$email] = true;
-					$subject = Brick::ReplaceVarByData($v['cmtemlanssubject'], array(
+					$subject = Brick::ReplaceVarByData($v[$tppfx.'cmtemlanssubject'], array(
 						"tl" => $task['tl']
 					));
-					$body = Brick::ReplaceVarByData($v['cmtemlansbody'], array(
+					$body = Brick::ReplaceVarByData($v[$tppfx.'cmtemlansbody'], array(
+						"email" => $email,
 						"tl" => $task['tl'],
 						"plnk" => $plnk,
 						"unm" => $this->UserNameBuild($this->user->info),
@@ -797,10 +918,11 @@ class BotaskManager extends Ab_ModuleManager {
 			$email = $autor['email'];
 			if (!empty($email) && !$emails[$email]){
 				$emails[$email] = true;
-				$subject = Brick::ReplaceVarByData($v['cmtemlautorsubject'], array(
+				$subject = Brick::ReplaceVarByData($v[$tppfx.'cmtemlautorsubject'], array(
 					"tl" => $task['tl']
 				));
-				$body = Brick::ReplaceVarByData($v['cmtemlautorbody'], array(
+				$body = Brick::ReplaceVarByData($v[$tppfx.'cmtemlautorbody'], array(
+					"email" => $email,
 					"tl" => $task['tl'],
 					"plnk" => $plnk,
 					"unm" => $this->UserNameBuild($this->user->info),
@@ -819,10 +941,11 @@ class BotaskManager extends Ab_ModuleManager {
 				continue;
 			}
 			$emails[$email] = true;
-			$subject = Brick::ReplaceVarByData($v['cmtemlsubject'], array(
+			$subject = Brick::ReplaceVarByData($v[$tppfx.'cmtemlsubject'], array(
 				"tl" => $task['tl']
 			));
-			$body = Brick::ReplaceVarByData($v['cmtemlbody'], array(
+			$body = Brick::ReplaceVarByData($v[$tppfx.'cmtemlbody'], array(
+				"email" => $email,
 				"tl" => $task['tl'],
 				"plnk" => $plnk,
 				"unm" => $this->UserNameBuild($this->user->info),
@@ -831,6 +954,49 @@ class BotaskManager extends Ab_ModuleManager {
 			));
 			Abricos::Notify()->SendMail($email, $subject, $body);
 		}
+	}
+	
+	public function ImageList($taskid){
+		if (!$this->TaskAccess($taskid)){
+			return null;
+		}
+		$rows = BotaskQuery::ImageList($this->db, $taskid);
+		$ret = array();
+		while (($row = $this->db->fetch_array($rows))){
+			$row['d'] = json_decode($row['d']);
+			array_push($ret, $row);
+		}
+		return $ret;
+	}
+	
+	public function CustatusList($taskid){
+		if (!$this->TaskAccess($taskid)){ return null; }
+		$ret = new stdClass();
+		$ret->list = $this->ToArrayById(BotaskQuery::CustatusList($this->db, $taskid));
+		$ret->my = $this->ToArray(BotaskQuery::CustatusListByUser($this->db, $this->userid));
+		
+		return $ret;
+	}
+	
+	public function CustatusSave($sd){
+		if (!$this->TaskAccess($sd->taskid)){ return null; }
+		
+		$parser = Abricos::TextParser(true);
+		$sd->title = $parser->Parser($sd->title);
+		BotaskQuery::CustatusSave($this->db, $sd->taskid, $this->userid, $sd->title);
+		 
+		return $this->CustatusList($sd->taskid);
+	}
+	
+	/**
+	 * Список статусов всех пользователей общих проектов
+	 */
+	public function CustatusFullList(){
+		if (!$this->IsViewRole()){ return null; }
+		
+		
+		$rows = BotaskQuery::CustatusFullList($this->db, $this->userid);
+		return $this->ToArray($rows);
 	}
 
 	public function CheckList($taskid, $retarray = false, $notCheckTaskAccess = false){
@@ -920,6 +1086,93 @@ class BotaskManager extends Ab_ModuleManager {
 		return $this->ToArrayById($rows);
 	}
 	
+	/**
+	 * Очистить удаленные задачи из системы
+	 */
+	public function RecycleClear(){
+		// return;
+		$rows = BotaskQuery::TaskRemovedClearList($this->db, 10);
+	
+		while (($row = $this->db->fetch_array($rows))){
+			$this->TaskRemovedClear($row);
+		}
+	}
+	
+	/**
+	 * Удалить файл из преокта
+	 */
+	public function TaskFileRemove($taskid, $fileid){
+		Abricos::GetModule('filemanager');
+		$fmanager = FileManagerModule::$instance->GetManager();
+		$fmanager->RolesDisable();
+	
+		$finfo = $fmanager->GetFileInfo($fileid);
+		$rows = BotaskQuery::TaskUserList($this->db, $taskid);
+		$find = false;
+		while (($row = $this->db->fetch_array($rows))){
+			if ($row['id'] == $finfo['uid']){
+				$find = true;
+				break;
+			}
+		}
+		if ($find){
+			$fmanager->FileRemove($fileid);
+			BotaskQuery::TaskFileRemove($this->db, $taskid, $fileid);
+		}
+		$fmanager->RolesEnable();
+	}
+	
+	public function TaskImageRemove($taskid, $image){
+		$d = json_decode($image['d']);
+		foreach($d->canvas->ls as $lr){
+			foreach ($lr->fs as $fe){
+				if ($fe->tp == 'image'){
+					$arr = explode("filemanager/i/", $fe->src);
+					if (count($arr) == 2){
+						$fileid = explode("/", $arr[1]);
+						$this->TaskFileRemove($taskid, $fileid[0]);
+					}
+				}
+			}
+		}
+		BotaskQuery::ImageRemove($this->db, $image['id']);
+	}
+	
+	/**
+	 * Вычистить проект из системы
+	 * @param array $task
+	 */
+	private function TaskRemovedClear($task){
+		
+		$taskid = $task['taskid'];
+	
+		// сначало зачистка всех дочерних проектов по рекурсии
+		$rows = BotaskQuery::TaskRemovedChildList($this->db, $task['taskid']);
+		while (($row = $this->db->fetch_array($rows))){
+			$this->TaskRemovedClear($row);
+		}
+	
+		// теперь удаление всего что связано с проектом
+		// прикрепленные файлы
+		$rows = BotaskQuery::TaskFiles($this->db, $taskid);
+		while (($file = $this->db->fetch_array($rows))){
+			$this->TaskFileRemove($taskid, $file['id']);
+		}
+	
+		// удалить изобрежения во вкладках
+		$rows = BotaskQuery::ImageList($this->db, $taskid);
+		while (($row = $this->db->fetch_array($rows))){
+			$this->TaskImageRemove($taskid, $row);
+		}
+	
+		// удалить роли пользвотелей на проект
+		BotaskQuery::UserRoleAllRemove($this->db, $taskid);
+	
+		// TODO: удалить историю. Необходимо зачищать историю через месяц после удаления проекта
+	
+		// удалить сам проект
+		BotaskQuery::TaskRemovedClear($this->db, $taskid);
+	}
 	
 }
 

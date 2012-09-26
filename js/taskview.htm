@@ -1,25 +1,26 @@
-<!--{panel}-->
-<div id="{i#id}" class="taskview">
+<!--{panel}--><div id="{i#id}" class="taskview">
 	
 	<div class="head">
 		<table><tbody><tr>
 			<td class="title">
-				{v#tl}
+				<div>
+					<img src="/modules/botask/images/ttask.gif" title="{#mod.botask.taskview.panel.29}" /> {v#tl}
+				</div>
 			</td>
 			<td class="fav">
 				<table><tbody><tr>
 					<td>
-						<div id="{i#fav}" class="fav-icon-normal" title="Избранное (добавить/удалить)">
+						<div id="{i#fav}" class="fav-icon-normal" title="{#mod.botask.taskview.panel.1}">
 							<img id="{i#favi}" class="{v#fav}" src="/images/empty.gif">
 						</div>
 					</td>
 					<td id="{i#vbieditor}">
-						<div class="bc" title="Редактировать">
+						<div class="bc" title="{#mod.botask.taskview.panel.2}">
 							<div id="{i#biedit}" class="bedit-icon b"></div>
 						</div>
 					</td>
 					<td id="{i#vbiadd}">
-						<div class="bc" title="Добавить подзадачу">
+						<div class="bc" title="{#mod.botask.taskview.panel.3}">
 							<div id="{i#biadd}" class="badd-icon b"></div>
 						</div>
 					</td>
@@ -34,17 +35,20 @@
 		<table><tbody>
 		<tr>
 			<td>
+				<dl><dt>№</dt><dd id="{i#taskid}"></dd></dl>
+			</td>
+			<td>
 				<dl><dt>Автор</dt><dd id="{i#author}"></dd></dl>
 			</td>
 			<td>
-				<dl><dt>Приоритет</dt><dd id="{i#priority}" title="Приоритет"></dd></dl>
+				<dl><dt>{#mod.botask.taskview.panel.5}</dt><dd id="{i#priority}" title="{#mod.botask.taskview.panel.4}"></dd></dl>
 			</td>
 			<td>
-				<dl><dt>Старт</dt><dd id="{i#dl}"></dd></dl>
+				<dl><dt>{#mod.botask.taskview.panel.6}</dt><dd id="{i#dl}"></dd></dl>
 			</td>
 			<td>
 				<dl>
-					<dt>Срок</dt>
+					<dt>{#mod.botask.taskview.panel.7}</dt>
 					<dd>
 						<span id="{i#ddl}"></span>
 						&nbsp;
@@ -53,7 +57,7 @@
 				</dl>
 			</td>
 			<td>
-				<dl><dt>Исполнитель</dt><dd id="{i#exec}"></dd></dl>
+				<dl><dt>{#mod.botask.taskview.panel.8}</dt><dd id="{i#exec}"></dd></dl>
 			</td>
 			
 		</tr></tbody></table>
@@ -62,18 +66,18 @@
 	
 	<div class="manbuttons" id="{i#manbuttons}">
 		<span id="{i#buttons}">
-			<a style="display: none" id="{i#ptappend}" class="bsetexec btkbt" href="#app=botask/taskeditor/showCreateTaskPanel/{v#id}/">Добавить подзадачу</a>
+			<a style="display: none" id="{i#ptappend}" class="bsetexec btkbt" href="#app=botask/taskeditor/showCreateTaskPanel/{v#id}/">{#mod.botask.taskview.panel.9}</a>
 		
-			<a id="{i#bsetexec}" style="display: none;" class="bsetexec btkbt" href="#" title="Принять в работу эту задачу">Принять в работу</a>
-			<a id="{i#bunsetexec}" style="display: none;" class="bsetexec btkbt" href="#" title="Остановить выполнение данной задачи">Остановить выполнение</a>
-			<a id="{i#bclose}" style="display: none;" class="bsetexec btkbt" href="#" title="Завершить и закрыть задачу">Завершить</a>
-			<a id="{i#bclosens}" style="display: none;" class="bsetexec btkbt" href="#" title="Завершить и закрыть задачу">Завершить</a>
-			<a id="{i#bopen}" style="display: none;" class="bsetexec btkbt" href="#" title="Открыть задачу повторно">Открыть повторно</a>
-			<a id="{i#barhive}" style="display: none;" class="bsetexec btkbt" href="#" title="Переместить задачу в архив">В архив</a>
-			<a id="{i#brestore}" style="display: none;" class="bsetexec btkbt" href="#" title="Восстановить удаленную задачу">Восстановить</a>
+			<a id="{i#bsetexec}" style="display: none;" class="bsetexec btkbt" href="#" title="{#mod.botask.taskview.panel.10}">{#mod.botask.taskview.panel.11}</a>
+			<a id="{i#bunsetexec}" style="display: none;" class="bsetexec btkbt" href="#" title="{#mod.botask.taskview.panel.12}">{#mod.botask.taskview.panel.13}</a>
+			<a id="{i#bclose}" style="display: none;" class="bsetexec btkbt" href="#" title="{#mod.botask.taskview.panel.14}">{#mod.botask.taskview.panel.15}</a>
+			<a id="{i#bclosens}" style="display: none;" class="bsetexec btkbt" href="#" title="{#mod.botask.taskview.panel.16}">{#mod.botask.taskview.panel.17}</a>
+			<a id="{i#bopen}" style="display: none;" class="bsetexec btkbt" href="#" title="{#mod.botask.taskview.panel.18}">{#mod.botask.taskview.panel.19}</a>
+			<a id="{i#barhive}" style="display: none;" class="bsetexec btkbt" href="#" title="{#mod.botask.taskview.panel.20}">{#mod.botask.taskview.panel.21}</a>
+			<a id="{i#brestore}" style="display: none;" class="bsetexec btkbt" href="#" title="{#mod.botask.taskview.panel.22}">{#mod.botask.taskview.panel.23}</a>
 			
-			<a id="{i#beditor}" class="hide beditor btkbt" href="#app=botask/ws/showWorkspacePanel/taskedit/{v#id}/">Редактировать</a>
-			<a id="{i#bremove}" class="bremove btkbt" href="#">Удалить</a>
+			<a id="{i#beditor}" class="hide beditor btkbt" href="#app=botask/ws/showWorkspacePanel/taskedit/{v#id}/">{#mod.botask.taskview.panel.24}</a>
+			<a id="{i#bremove}" class="bremove btkbt" href="#">{#mod.botask.taskview.panel.25}</a>
 		</span>
 		<img id="{i#bloading}" src="/images/loading.gif" style="display: none;"/>
 	</div>
@@ -86,61 +90,65 @@
 		<div id="{i#checklist}" class="taskbody"></div>
 	
 		<ul id="{i#files}" class="dfiles" style="display: none">
-			<li class="tl">Прикрепленные файлы:</li>
+			<li class="tl">{#mod.botask.taskview.panel.26}:</li>
 			<li id="{i#ftable}"></li>
 		</ul>
 		<div class="clear"></div>
 	</div>
+
+	<div class="imgcanvas" id="{i#imgwidget}">
+		<img id="{i#bimgsaveload}" src="/images/loading.gif" class="bimgsaveload" style="display: none" />
+		
+		<div class="imgsave">
+			<a id="{i#bimgsave}" class="bimgsave btkbt" href="#" style="display: none">Сохранить изменения</a>
+		</div>
+		
+		<div id="{i#images}"></div>
+	</div>
+	
 	
 	<div class="tkcomments">
 		<div class="shbuttons" style="display: none;">
-			<a id="{i#cmthide}" class="ptlistsh btkbt" href="#">Скрыть комментарии</a>
-			<a id="{i#cmtshow}" class="ptlistsh btkbt" href="#" style="display: none;">Показать комментарии</a> 
+			<a id="{i#cmthide}" class="ptlistsh btkbt" href="#">{#mod.botask.taskview.panel.27}</a>
+			<a id="{i#cmtshow}" class="ptlistsh btkbt" href="#" style="display: none;">{#mod.botask.taskview.panel.28}</a> 
 		</div>
 		<div class="comments" id="{i#comments}"></div>
 	</div>
 </div>
-
-<!--{user}-->
-<a href="#" class="show-user-profile user-{v#uid}">{v#unm}</a>
-
-<!--{tkclosepanel}-->
-<div class='hd'>Завершение задачи</div>
+<!--{empty}--><div class="taskview"><div class="empty">{#mod.botask.taskview.empty.1}</div></div>
+<!--{user}--><a href="#" class="show-user-profile user-{v#uid}">{v#unm}</a>
+<!--{tkclosepanel}--><div class='hd'>{#mod.botask.taskview.tkclosepanel.1}</div>
 <div class='bd aw-botask'>
 	<div id="{i#dialogremove}" class="field">
-		<h4>Завершение задачи</h4>
+		<h4>{#mod.botask.taskview.tkclosepanel.2}</h4>
 		<p>
-			Внимание! <br />
-			Вы действительно хотите завершить задачу и все ее подзадачи?
+			{#mod.botask.taskview.tkclosepanel.3}
 		</p>
 		<div class="buttons right">
 			<span id="{i#btns}">
-				<input id="{i#bremove}" value="Подтверждаю" type="button" />
-				<input id="{i#bcancel}" value="Отмена" type="button" />
+				<input id="{i#bremove}" value="{#mod.botask.taskview.tkclosepanel.4}" type="button" />
+				<input id="{i#bcancel}" value="{#mod.botask.taskview.tkclosepanel.5}" type="button" />
 			</span>
 			<span id="{i#bloading}" style="display: none">
-				<img src="/images/loading.gif" /> Удаление...
+				<img src="/images/loading.gif" /> {#mod.botask.taskview.tkclosepanel.6}
 			</span>
 		</div>
 	</div>
 </div>
-
-<!--{tkremovepanel}-->
-<div class='hd'>Удаление задачи</div>
+<!--{tkremovepanel}--><div class='hd'>{#mod.botask.taskview.tkremovepanel.1}</div>
 <div class='bd aw-botask'>
 	<div id="{i#dialogremove}" class="field">
-		<h4>Удаление задачи</h4>
+		<h4>{#mod.botask.taskview.tkremovepanel.2}</h4>
 		<p>
-			Внимание! <br />
-			Вы действительно хотите удалить задачу и все ее подзадачи?
+			{#mod.botask.taskview.tkremovepanel.3}
 		</p>
 		<div class="buttons right">
 			<span id="{i#btns}">
-				<input id="{i#bremove}" value="Подтверждаю" type="button" />
-				<input id="{i#bcancel}" value="Отмена" type="button" />
+				<input id="{i#bremove}" value="{#mod.botask.taskview.tkremovepanel.4}" type="button" />
+				<input id="{i#bcancel}" value="{#mod.botask.taskview.tkremovepanel.5}" type="button" />
 			</span>
 			<span id="{i#bloading}" style="display: none">
-				<img src="/images/loading.gif" /> Удаление...
+				<img src="/images/loading.gif" /> {#mod.botask.taskview.tkremovepanel.6}
 			</span>
 		</div>
 	</div>

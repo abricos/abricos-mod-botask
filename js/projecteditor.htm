@@ -1,0 +1,98 @@
+<!--{widget}--><div id="{i#id}" class="taskedit ui-form">
+	<div class="head">
+		<span id="{i#tlnew}">{#mod.botask.projecteditor.widget.1}</span>
+		<span id="{i#tledit}">{#mod.botask.projecteditor.widget.2}</span>
+		
+		<div class="buttons right">
+			<input type="button" value="{#mod.botask.projecteditor.widget.3}" id="{i#bsavei}" class="btn" />
+			<input type="button" value="{#mod.botask.projecteditor.widget.4}" id="{i#bcanceli}" class="btn" />
+			<img src="/images/loading.gif" id="{i#loadingi}" style="display: none;" />
+		</div>
+	</div>
+	<dl class="tepath">
+		<dt>
+			<label>{#mod.botask.projecteditor.widget.5}</label>
+		</dt>
+		<dd>
+			<div id="{i#path}" class="path" >&nbsp;</div>
+		</dd>
+	</dl>
+	
+	<dl class="tetitle" >
+		<dt>
+			<label for="{i#tl}">{#mod.botask.projecteditor.widget.6}</label>
+		</dt>
+		<dd>
+			<input id="{i#tl}" type="text" class="input-text font-large" style="width: 90%;" />
+		</dd>
+	</dl>
+	
+	<dl class="teeditor">
+		<dt>
+			<label>{#mod.botask.projecteditor.widget.7}</label>
+		</dt>
+		<dd>
+			<textarea id="{i#editor}" style="width: 700px; height: 300px"></textarea>
+		</dd>
+	</dl>
+	<dl class="techecklist">
+		<dt>
+			<label>{#mod.botask.projecteditor.widget.8}</label>
+		</dt>
+		<dd>
+			<div id="{i#checklist}" class="taskbody"></div>
+		</dd>
+	</dl>
+	
+
+	<dl class="tefiles" id="{i#rfiles}">
+		<dt>
+			<label>{#mod.botask.projecteditor.widget.9}</label>
+		</dt>
+		<dd>
+			<div id="{i#files}"></div>
+		</dd>
+	</dl>
+	
+	<dl id="{i#rimage}" class="pimg">
+		<dt>
+			<label title="URL">{#mod.botask.projecteditor.widget.10}</label>
+		</dt>
+		<dd>
+		
+			<ul class="m">
+				<li class="imgbuse">
+					<a href="#" id="{i#bimgdis}" class="abtn" title="{#mod.botask.projecteditor.widget.11}">{#mod.botask.projecteditor.widget.12}</a>
+					<a href="#" id="{i#bimgen}" class="abtn" title="{#mod.botask.projecteditor.widget.13}" style="display: none">{#mod.botask.projecteditor.widget.14}</a>
+				</li>
+				<li class="">
+					<a href="#" id="{i#baddtab}" class="abtn addtab" title="{#mod.botask.projecteditor.widget.15}">{#mod.botask.projecteditor.widget.16}</a>
+				</li>
+			</ul>
+			<div class="clear"></div>
+		</dd>
+	</dl>
+	
+	<div id="{i#widget}"></div>
+
+	<dl class="teusers">
+		<dt><label>{#mod.botask.projecteditor.widget.17}</label></dt>
+		<dd>
+			<div id="{i#users}"></div>
+		</dd>
+	</dl>
+	
+	<dl class="tebuttons">
+		<dt></dt>
+		<dd>
+			<div class="field">
+				<div class="buttons right">
+					<input type="button" value="{#mod.botask.projecteditor.widget.18}" id="{i#bsave}" class="btn" />
+					<input type="button" value="{#mod.botask.projecteditor.widget.19}" id="{i#bcancel}" class="btn" />
+					<img src="/images/loading.gif" id="{i#loading}" style="display: none;" />
+				</div>
+			</div>
+		</dd>
+	</dl>
+	
+</div>

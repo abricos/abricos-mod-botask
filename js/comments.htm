@@ -1,19 +1,16 @@
-<!--{panel}-->
-<div class='hd'>Менеджер задач - Комментарии</div>
+<!--{panel}--><div class='hd'>{#mod.botask.comments.panel.1}</div>
 <div class='bd aw-botask'>
 	<div class="comments">
 		
 		<div id="{i#gmenu}"></div>
 
 		<div id="{i#comments}" class>
-			<span><img src="/images/loading.gif" /> Идет загрузка данных. Пожалуйста, подождите...</span>
+			<span><img src="/images/loading.gif" /> {#mod.botask.comments.panel.2}</span>
 		</div>
 		
 	</div>
 </div>
-
-<!--{comment}-->
-<ul class="tkitem">
+<!--{comment}--><ul class="tkitem">
 	<li class="task">
 		<div class="navlist">
 			{v#nav}
@@ -27,6 +24,4 @@
 	<div style="clear: both;"></div>
 </ul>
 <div class="delim">&nbsp;</div>
-
-<!--{task}-->
-<a href="#app=botask/ws/showWorkspacePanel/taskview/{v#id}/">{v#tl}</a>
+<!--{task}--><a href="#app=botask/ws/showWorkspacePanel/taskview/{v#id}/">{v#tl}</a>

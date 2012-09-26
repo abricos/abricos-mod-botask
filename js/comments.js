@@ -36,11 +36,10 @@ Component.entryPoint = function(NS){
 			return this._TM.replace('panel');
 		},
 		onLoad: function(){
+			var __self = this;
+			this.gmenu = new NS.GlobalMenuWidget(this._TM.getEl('panel.gmenu'), 'comments', '');
 			
-			this.gmenu = new NS.GlobalMenuWidget(this._TM.getEl('panel.gmenu'), 'comments');
-			
-			__self = this;
-			NS.buildTaskManager(function(tm){
+			this.gmenu.buildTaskManager(function(){
 				__self.onBuildTaskManager();
 			});
 		},

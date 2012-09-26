@@ -11,7 +11,8 @@ Component.requires = {
 		{name: 'sys', files: ['container.js']},
         {name: 'filemanager', files: ['attachment.js']},
         {name: 'uprofile', files: ['users.js']},
-        {name: 'botask', files: ['tasklist.js', 'checklist.js']}
+        {name: 'botask', files: ['tasklist.js', 'checklist.js']},
+        {name: 'pictab', files: ['draw.js']}
 	]
 };
 Component.entryPoint = function(NS){
@@ -48,6 +49,11 @@ Component.entryPoint = function(NS){
 	TaskViewWidget.prototype = {
 		init: function(container, task){
 			this.task = task;
+			if (L.isNull(task)){
+				container.innerHTML = buildTemplate(this, 'empty').replace('empty');
+				return;
+			}
+			
 			buildTemplate(this, 'panel,user');
 			
 			var TM = this._TM;
@@ -64,8 +70,7 @@ Component.entryPoint = function(NS){
 			});
 		},
 		onLoad: function(){
-			var task = this.task,
-				__self = this;
+			var task = this.task, __self = this;
 			
 			this._firstRender = true;
 			
@@ -73,18 +78,28 @@ Component.entryPoint = function(NS){
 			NS.taskManager.historyChangedEvent.subscribe(this.onHistoryChanged, this, true);
 			NS.taskManager.userConfigChangedEvent.subscribe(this.onUserConfigChanged, this, true);
 			
+			this.drawListWidget = null;
+			
 			// запросить дополнительные данные по задаче (описание, история)
 			NS.taskManager.taskLoad(task.id, function(){
 				__self.renderTask();
 			});
 		},
 		destroy: function(){
+			if (L.isNull(this.task)){ return; }
 			
 			NS.taskManager.historyChangedEvent.unsubscribe(this.onHistoryChanged);
 			NS.taskManager.userConfigChangedEvent.unsubscribe(this.onUserConfigChanged);
 			
+			if (!L.isNull(this.drawListWidget)){
+				this.drawListWidget.destroy();
+			}
+			
 			var elw = this._TM.getEl('panel.id');
 			elw.parentNode.removeChild(elw);
+		},
+		onCanvasChanged: function(type, args){
+			Dom.setStyle(this._TM.getEl('panel.bimgsave'), 'display', '');
 		},
 		onHistoryChanged: function(type, args){
 			var history = args[0];
@@ -107,6 +122,8 @@ Component.entryPoint = function(NS){
 			var TM = this._TM, task = this.task;
 			var gel = function(nm){ return TM.getEl('panel.'+nm); };
 			
+			Dom.setStyle(gel('bimgsave'), 'display', 'none');
+
 			gel('taskbody').innerHTML = task.descript;
 			if (this._firstRender){ // первичная рендер
 				this._firstRender = false;
@@ -131,12 +148,21 @@ Component.entryPoint = function(NS){
 				
 				this.checklist = new NS.ChecklistWidget(TM.getEl('panel.checklist'), task);
 				this.attachListWidget = new Brick.mod.filemanager.AttachmentListWidget(TM.getEl('panel.ftable'));
+				
+				var mPT = Brick.mod.pictab;
+				if (mPT && mPT.ImageListWidget){
+					this.drawListWidget = new mPT.ImageListWidget(TM.getEl('panel.images'), task.images, true);
+					this.drawListWidget.changedEvent.subscribe(this.onCanvasChanged, this, true);
+				}
+				task.isNewCmt = false;
 			}
 			this.checklist.update();
 
+			gel('taskid').innerHTML = task.id;
+			
 			// Статус
 			gel('status').innerHTML = LNG['status'][task.status];
-			
+
 			// Приоритет
 			gel('priority').innerHTML = LNG['priority'][task.priority];
 
@@ -250,6 +276,8 @@ Component.entryPoint = function(NS){
 			case tp['cmtshow']: 
 				this.showHideComments(); return true;
 
+			case tp['bimgsave']: this.saveImages(); return true;
+				
 			}
 			return false;
 		},
@@ -319,6 +347,17 @@ Component.entryPoint = function(NS){
 			var taskid = this.task.id;
 			Brick.ff('botask', 'taskeditor', function(){
 				NS.API.showTaskEditorPanel(taskid);
+			});
+		},
+		saveImages: function(){
+			this._shLoading(true);
+			var newdata = {
+				'onlyimage': true,
+				'images': this.drawListWidget.toSave()
+			};
+			var __self = this;
+			NS.taskManager.taskSave(this.task, newdata, function(){
+				__self._shLoading(false);
 			});
 		}
 	};

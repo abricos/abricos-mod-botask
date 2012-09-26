@@ -3,7 +3,6 @@
  * @version $Id$
  * @package Abricos
  * @subpackage Botask
- * @copyright Copyright (C) 2008 Abricos. All rights reserved.
  * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
  * @author Alexander Kuzmin (roosit@abricos.org)
  */
@@ -13,9 +12,11 @@ class BotaskQuery {
 	const TASK_FIELDS = "
 		p.taskid as id,
 		p.parenttaskid as pid,
+		p.tasktype as tp,
 		p.userid as uid,
 		p.title as tl,
 		p.dateline as dl,
+		p.updatedate as udl,
 		p.deadline as ddl,
 		p.deadlinebytime as ddlt,
 		p.status as st,
@@ -206,6 +207,7 @@ class BotaskQuery {
 				parenttaskid, parenttaskidc,
 				title, titlec,
 				body, bodyc, 
+				imagedata, imagedatac, 
 				checklist, checkc,
 				deadline, deadlinec, 
 				deadlinebytime, deadlinebytimec,
@@ -222,6 +224,10 @@ class BotaskQuery {
 				".bkint($h->titlec).",
 				'".bkstr($h->body)."',
 				".bkint($h->bodyc).",
+				
+				'".bkstr($h->imagedata)."',
+				".bkint($h->imagedatac).",
+				
 				'".bkstr($h->check)."',
 				".bkint($h->checkc).",
 				".bkint($h->deadline).",
@@ -311,6 +317,20 @@ class BotaskQuery {
 		return $db->query_read($sql);
 	}
 	
+	public static function TaskHistoryPrevStatus(Ab_Database $db, $taskid, $curst){
+		$sql = "
+			SELECT
+				".BotaskQuery::HISTORY_FIELDS."
+			FROM ".$db->prefix."btk_history h
+			INNER JOIN ".$db->prefix."btk_task p ON h.taskid=p.taskid
+			WHERE h.taskid=".bkint($taskid)." 
+				AND h.status>0 AND h.status<>".bkint($curst)."
+			ORDER BY h.dateline DESC
+			LIMIT 1
+		";
+		return $db->query_first($sql);
+	}
+	
 	public static function Task(Ab_Database $db, $taskid, $userid, $retarray = false){
 		$sql = "
 			SELECT
@@ -346,10 +366,11 @@ class BotaskQuery {
 		
 		$sql = "
 			INSERT INTO ".$db->prefix."btk_task (
-				userid, parenttaskid, title, status, statdate, pubkey, contentid, 
+				userid, parenttaskid, tasktype, title, status, statdate, pubkey, contentid, 
 				deadline, deadlinebytime, dateline, updatedate, priority) VALUES (
 				".bkint($tk->uid).",
 				".bkint($tk->pid).",
+				".bkint($tk->typeid).",
 				'".bkstr($tk->tl)."',
 				".BotaskStatus::TASK_OPEN.",
 				".TIMENOW.",
@@ -467,6 +488,22 @@ class BotaskQuery {
 		return $retarray ? $db->query_first($sql) : $db->query_read($sql);
 	}
 	
+	public static function UserRoleRemove(Ab_Database $db, $taskid, $userid){
+		$sql = "
+			DELETE FROM ".$db->prefix."btk_userrole
+			WHERE taskid=".bkint($taskid)." AND userid=".bkint($userid)."
+		";
+		$db->query_write($sql);
+	}
+	
+	public static function UserRoleAllRemove(Ab_Database $db, $taskid){
+		$sql = "
+			DELETE FROM ".$db->prefix."btk_userrole
+			WHERE taskid=".bkint($taskid)."
+		";
+		$db->query_write($sql);
+	}
+	
 	/**
 	 * Обновить информацию последнего просмотра задачи (для определения флага - Новая)
 	 * 
@@ -519,14 +556,6 @@ class BotaskQuery {
 			SET showcomments=".bkint($value)."
 			WHERE taskid=".bkint($taskid)." AND userid=".bkint($userid)."
 			LIMIT 1
-		";
-		$db->query_write($sql);
-	}
-	
-	public static function UserRoleRemove(Ab_Database $db, $taskid, $userid){
-		$sql = "
-			DELETE FROM ".$db->prefix."btk_userrole
-			WHERE taskid=".bkint($taskid)." AND userid=".bkint($userid)." 
 		";
 		$db->query_write($sql);
 	}
@@ -685,6 +714,148 @@ class BotaskQuery {
 		$sql = "
 			DELETE FROM ".$db->prefix."btk_file
 			WHERE taskid=".bkint($taskid)." AND filehash='".bkstr($filehash)."' 
+		";
+		$db->query_write($sql);
+	}
+	
+	public static function CustatusListByUser(Ab_Database $db, $userid){
+		$sql = "
+			SELECT DISTINCT title as tl
+			FROM ".$db->prefix."btk_custatus
+			WHERE userid=".bkint($userid)."
+		";
+		return $db->query_read($sql);
+	}
+	
+	public static function CustatusList(Ab_Database $db, $taskid){
+		$sql = "
+			SELECT
+				userid as id,
+				title as tl,
+				dateline as dl
+			FROM ".$db->prefix."btk_custatus
+			WHERE taskid=".bkint($taskid)."
+		";
+		return $db->query_read($sql);
+	}
+	
+	public static function CustatusFullList(Ab_Database $db, $userid){
+		$limit = "";
+		$where = BotaskQuery::BoardWhere(0, 0, 0);
+		$sql = "
+			SELECT
+				t.taskid as tid,
+				s.userid as uid,
+				s.title as tl
+			FROM (
+				SELECT ur.taskid
+				FROM ".$db->prefix."btk_userrole ur
+				INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
+				WHERE ur.userid=".bkint($userid)." AND p.deldate=0 ".$where."
+			) t
+			INNER JOIN ".$db->prefix."btk_custatus s ON t.taskid=s.taskid
+		";
+		return $db->query_read($sql);
+	}
+	
+	
+	public static function CustatusSave(Ab_Database $db, $taskid, $userid, $title){
+		$sql = "
+			REPLACE ".$db->prefix."btk_custatus (taskid, userid, title, dateline) VALUES (
+				".bkint($taskid).",
+				".bkint($userid).",
+				'".bkstr($title)."',
+				".TIMENOW."
+			)
+		";
+		$db->query_write($sql);
+	}
+	
+	public static function ImageList(Ab_Database $db, $taskid){
+		$sql = "
+			SELECT
+				imageid as id,
+				title as tl,
+				data as d
+			FROM ".$db->prefix."btk_image
+			WHERE taskid=".bkint($taskid)."
+			ORDER BY imageid
+		";
+		return $db->query_read($sql);
+	}
+	
+	public static function ImageAppend(Ab_Database $db, $taskid, $title, $data){
+		$sql = "
+			INSERT INTO ".$db->prefix."btk_image (taskid, title, data) VALUES (
+				".bkint($taskid).",
+				'".bkstr($title)."',
+				'".bkstr($data)."'
+			)
+		";
+		$db->query_write($sql);
+	}
+	
+	public static function ImageUpdate(Ab_Database $db, $imageid, $title, $data){
+		$sql = "
+			UPDATE ".$db->prefix."btk_image
+			SET title='".bkstr($title)."',
+				data='".bkstr($data)."'
+				WHERE imageid=".bkint($imageid)."
+			LIMIT 1
+		";
+		$db->query_write($sql);
+	}
+	
+	public static function ImageRemove(Ab_Database $db, $imageid){
+		$sql = "
+			DELETE FROM ".$db->prefix."btk_image
+			WHERE imageid=".bkint($imageid)."
+			LIMIT 1
+		";
+		$db->query_write($sql);
+	}	
+	
+	/**
+	 * Очистить партию удаленных проектов из корзины.
+	 * Проект на очистку становиться по истечению 10 минут.
+	 *
+	 * @param Ab_Database $db
+	 */
+	public static function TaskRemovedClearList(Ab_Database $db, $limit = 10){
+		$time = TIMENOW-10*60;
+		$sql = "
+			UPDATE ".$db->prefix."btk_task
+			SET deldate=".TIMENOW."
+			WHERE deldate=0
+				AND status=".BotaskStatus::TASK_REMOVE."
+				AND statdate<".$time."
+			LIMIT ".bkint($limit)."
+		";
+		$db->query_write($sql);
+	
+		$sql = "
+			SELECT *
+			FROM ".$db->prefix."btk_task
+			WHERE deldate>0
+			LIMIT ".bkint($limit)."
+		";
+		return $db->query_read($sql);
+	}
+	
+	public static function TaskRemovedChildList(Ab_Database $db, $taskid){
+		$sql = "
+			SELECT *
+			FROM ".$db->prefix."btk_task
+			WHERE parenttaskid=".bkint($taskid)."
+				AND status=".BotaskStatus::TASK_REMOVE."
+		";
+		return $db->query_read($sql);
+	}
+	
+	public static function TaskRemovedClear(Ab_Database $db, $taskid){
+		$sql = "
+			DELETE FROM ".$db->prefix."btk_task
+			WHERE taskid=".bkint($taskid)."
 		";
 		$db->query_write($sql);
 	}

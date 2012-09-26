@@ -1,21 +1,17 @@
-<!--{panel}-->
-<div class='hd'>Менеджер задач - Сводка</div>
+<!--{panel}--><div class='hd'>{#mod.botask.towork.panel.1}</div>
 <div class='bd aw-botask'>
 	<div class="towork">
 		
 		<div id="{i#gmenu}"></div>
 
 		<div id="{i#users}">
-			<span><img src="/images/loading.gif" /> Идет загрузка данных. Пожалуйста, подождите...</span>
+			<span><img src="/images/loading.gif" /> {#mod.botask.towork.panel.2}</span>
 		</div>
 
 	</div>
 </div>
-
 <!--{row}--><div class="twuser" id="{i#id}-{v#uid}"></div>
-
-<!--{user}-->
-<div class="twavatar">
+<!--{user}--><div class="twavatar">
 	<a class="show-user-profile user-{v#uid}" href="#" title="{v#unm}">{v#avatar}</a>
 </div>
 <div class="manger">
@@ -25,9 +21,9 @@
 			<a href="#" class="username show-user-profile user-{v#uid}">{v#unm}</a>
 		</div>
 		<div class="twmenu">
-			<div id="{i#towork}" class="twitem current">В работе</div>
-			<div id="{i#monthchart}" class="twitem">Деятельность - график</div>
-			<div id="{i#month}" class="twitem">Деятельность - таблица</div>
+			<div id="{i#towork}" class="twitem current">{#mod.botask.towork.user.1}</div>
+			<div id="{i#monthchart}" class="twitem">{#mod.botask.towork.user.2}</div>
+			<div id="{i#month}" class="twitem">{#mod.botask.towork.user.3}</div>
 		</div>
 	</div>
 	<div class="clear"></div>

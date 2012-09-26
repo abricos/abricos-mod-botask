@@ -149,6 +149,8 @@ Component.entryPoint = function(NS){
 
 			this.widgets['tasknew'] = new NS.TaskListBoxWidget(gel('boxnew'), NS.taskManager.list, {
 				'columns': 'name,deadline,priority,favorite',
+				'globalsort': true,
+				'tasksort': 'date',
 				'childs': false,
 				'showflagnew': false,
 				'boxtitle': LNG['boxtitle']['new'],
@@ -183,9 +185,48 @@ Component.entryPoint = function(NS){
 	};
 	NS.EasyListWidget = EasyListWidget;
 	
+	NS.API.taskCommentsBoxWidget = function(container){
+		return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
+			'columns': 'name,favorite,voting',
+			'globalsort': true,
+			'tasksort': 'voting',
+			'childs': false,
+			'showflagnew': false,
+			'boxtitle': LNG['boxtitle']['comment'],
+			'funcfilter': function(tk){
+				return tk.isNewCmt && !tk.isNew;
+			}
+		});
+	};
+	NS.API.taskUpdatingBoxWidget = function(container){
+		return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
+			'columns': 'name,favorite,voting',
+			'globalsort': true,
+			'tasksort': 'udate',
+			'childs': false,
+			'showflagnew': false,
+			'boxtitle': LNG['boxtitle']['update'],
+			'funcfilter': function(tk){
+				return tk.vDate < tk.uDate && !tk.isNew;
+			}
+		});
+	};
+	NS.API.taskIncomingBoxWidget = function(container){
+		return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
+			'columns': 'name,favorite,voting',
+			'globalsort': true,
+			'tasksort': 'date',
+			'childs': false,
+			'showflagnew': false,
+			'boxtitle': LNG['boxtitle']['new'],
+			'funcfilter': function(tk){
+				return tk.isNew;
+			}
+		});
+	};
 	NS.API.taskFavoriteBoxWidget = function(container){
 		return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
-			'columns': 'name,deadline,priority,favorite,voting',
+			'columns': 'name,favorite,voting',
 			'globalsort': true,
 			'tasksort': 'voting',
 			'childs': false,

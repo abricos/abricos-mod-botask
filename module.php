@@ -3,7 +3,6 @@
  * @version $Id$
  * @package Abricos
  * @subpackage Botask
- * @copyright Copyright (C) 2008 Abricos. All rights reserved.
  * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
  * @author Alexander Kuzmin (roosit@abricos.org)
  */
@@ -11,7 +10,7 @@
 class BotaskModule extends Ab_Module {
 	
 	public function __construct(){
-		$this->version = "0.2";
+		$this->version = "0.2.2.1";
 		$this->name = "botask";
 		$this->permission = new BotaskPermission($this);
 	}

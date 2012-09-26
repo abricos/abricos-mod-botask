@@ -8,7 +8,7 @@
 var Component = new Brick.Component();
 Component.requires = { 
 	mod:[
-        {name: 'uprofile', files: ['users.js']},
+        {name: 'sys', files: ['item.js']},
         {name: 'social', files: ['lib.js']},
         {name: 'botask', files: ['roles.js']}
 	]		
@@ -18,15 +18,20 @@ Component.entryPoint = function(NS){
 	var Dom = YAHOO.util.Dom,
 		E = YAHOO.util.Event,
 		L = YAHOO.lang,
-		TMG = this.template,
 		R = NS.roles;
+	
 	var SC = Brick.mod.social;
 
 	Brick.util.CSS.update(Brick.util.CSS['botask']['lib']);
 	delete Brick.util.CSS['botask']['lib'];
 	
-	var buildTemplate = function(w, ts){w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;};
-	
+	var buildTemplate = this.buildTemplate;
+
+	NS.lif = function(f){return L.isFunction(f) ? f : function(){}; };
+	NS.life = function(f, p1, p2, p3, p4, p5, p6, p7){
+		f = NS.lif(f); f(p1, p2, p3, p4, p5, p6, p7);
+	};
+
 	// дополнить эксперементальными функциями менеджер шаблонов
 	var TMP = Brick.Template.Manager.prototype;
 	TMP.elHide = function(els){ this.elShowHide(els, false); };
@@ -35,13 +40,15 @@ Component.entryPoint = function(NS){
 		if (L.isString(els)){
 			var arr = els.split(','), tname = '';
 			els = [];
+			
 			for (var i=0;i<arr.length;i++){
 				var arr1 = arr[i].split('.');
 				if (arr1.length == 2){
 					tname = L.trim(arr1[0]);
 					els[els.length] = L.trim(arr[i]);
+				}else{
+					els[els.length] = tname+'.'+L.trim(arr[i]);
 				}
-				els[els.length] = tname+'.'+L.trim(arr[i]);
 			}
 		}
 		if (!L.isArray(els)){ return; }
@@ -62,24 +69,6 @@ Component.entryPoint = function(NS){
 	};
 	NS.TaskStatus = TaskStatus;
 	
-	/*
-	var Folder = function(data){
-		this.init(data);
-	};
-	Folder.prototype = {
-		init: function(d){
-			d = L.merge({
-				'id': 0,
-				'tl': '',
-				'dl': 0,
-				'uid': Brick.env.user.id,
-				'users': [Brick.env.user.id]
-			}, d || {});			
-		}
-	};
-	NS.Folder = Folder;
-	/**/
-
 	var Task = function(data){
 		this.init(data);
 	};
@@ -88,6 +77,7 @@ Component.entryPoint = function(NS){
 		
 			d = L.merge({
 				'id': 0,
+				'tp': 3,
 				'tl': '',
 				'dl': 0,
 				'uid': Brick.env.user.id,
@@ -106,6 +96,8 @@ Component.entryPoint = function(NS){
 			this.history = null;
 			this.checks = null;				// чек-лист
 			this.files = [];
+			this.images = [];
+			this.custatus = null;
 			
 			// была ли загрузка оставшихся данных (описание задачи, история изменений)?
 			this.isLoad = false;
@@ -115,9 +107,17 @@ Component.entryPoint = function(NS){
 		},
 		update: function(d){
 			this.id = d['id']*1;				// идентификатор
+
+			switch(d['tp']*1){
+			case 1: this.type = 'folder'; break;
+			case 2: this.type = 'project'; break;
+			default: this.type = 'task'; break;
+			}
+			
 			this.title = d['tl'];				// заголовок
 			this.userid = d['uid'];				// идентификатор автора
-			this.date = NS.dateToClient(d['dl']); // Дата создания задачи
+			this.date = NS.dateToClient(d['dl']); // дата создания 
+			this.uDate = NS.dateToClient(d['udl']); // дата обновления
 			
 			this.deadline = NS.dateToClient(d['ddl']); // Срок исполнения
 			this.ddlTime = d['ddlt']*1 > 0;		// уточнено ли время?
@@ -152,6 +152,8 @@ Component.entryPoint = function(NS){
 			this.ctid = d['ctid'];
 			this.checks = d['chlst'];
 			this.files = d['files'];
+			this.images = d['images'];
+			this.custatus = d['custatus'];
 			this.update(d);
 		},
 		_updateFlagNew: function(d){
@@ -276,6 +278,12 @@ Component.entryPoint = function(NS){
 
 			return sortDCPD(tk1, tk2);
 		},
+		'date': function(tk1, tk2){ return sortDate(tk1.date, tk2.date); },
+		'datedesc': function(tk1, tk2){ return sortDateDesc(tk1.date, tk2.date); },
+		
+		'udate': function(tk1, tk2){ return sortDate(tk1.uDate, tk2.uDate); },
+		'udatedesc': function(tk1, tk2){ return sortDateDesc(tk1.uDate, tk2.uDate); },
+		
 		'deadline': function(tk1, tk2){ return NS.taskSort['default'](tk1, tk2); },
 		'deadlinedesc': function(tk1, tk2){ return NS.taskSort['deadline'](tk2, tk1); },
 		'name': function(tk1, tk2){
@@ -546,7 +554,6 @@ Component.entryPoint = function(NS){
 			this.taskListChangedEvent.fire();
 		},
 		
-
 		getTask: function(taskid){
 			return this.list.find(taskid);
 		},
@@ -678,16 +685,39 @@ Component.entryPoint = function(NS){
 			});
 		},
 		
+		custatusSave: function(task, sd, callback){
+			// var __self = this;
+			this.ajax({
+				'do': 'custatsave',
+				'custat': sd
+			}, function(r){
+				if (!L.isNull(r)){
+					task.custatus = r;
+				}
+				callback();
+			});
+		},
+		
+		custatusFullUserLoad: function(callback){
+			this.ajax({
+				'do': 'custatfull'
+			}, function(r){
+				NS.life(callback, r);
+			});
+		},
+		
 		// сохранить задачу (task - задача, newdata - новые данных по задаче)
 		taskSave: function(task, d, callback){
 			callback = callback || function(){};
 			var __self = this;
 			
 			d = L.merge({
-				'id': 0, 'title': '',
+				'onlyimage': false,
+				'id': 0, 'type': 3, 'title': '',
 				'descript': '',
 				'checks': [],
 				'files': [],
+				'images': [],
 				'users': [Brick.env.user.id],
 				'parentid': 0,
 				'deadline': null,
@@ -700,15 +730,18 @@ Component.entryPoint = function(NS){
 				'task': {
 					'id': task.id,
 					'pid': d['parentid'],
+					'type': d['type'],
 					'tl': d['title'],
 					'bd': d['descript'],
 					'checks': d['checks'],
 					'files': d['files'],
+					'images': d['images'],
 					'users': d['users'],
 					'pid':  d['parentid'],
 					'ddl': NS.dateToServer(d['deadline']),
 					'ddlt': d['ddlTime'] ? 1 : 0,
-					'prt': d['priority']
+					'prt': d['priority'],
+					'onlyimage': d['onlyimage']
 				}
 			}, function(r){
 				__self._setLoadedTaskData(r);
@@ -733,54 +766,6 @@ Component.entryPoint = function(NS){
 			});
 		});
 	};
-	
-	var TaskNavigateWidget = function(container, task){
-		task = task || null;
-		this.init(container, task);
-	};
-	TaskNavigateWidget.prototype = {
-		init: function(container, task){
-			buildTemplate(this, 'nav,navrow,navrowadd');
-			
-			this.container = container;
-			this.task = task;
-			
-			// Подписаться на событие изменений в задачах
-			NS.taskManager.historyChangedEvent.subscribe(this.onHistoryChanged, this, true);
-			this.render();
-		},
-		onHistoryChanged: function(type, args){
-			this.render();
-		},
-		render: function(){
-			var TM = this._TM,
-				task = this.task,
-				first = true;
-			
-			var get = function(tk){
-				var lst = "";
-				if (!L.isNull(tk.parent)){
-					lst += get(tk.parent);
-				}
-				lst += TM.replace('navrow', {
-					'id': tk.id,
-					'tl': tk.title,
-					'first': first ? 'first' : '',
-					'current': tk.id == task.id ? 'current' : ''
-				});
-				first = false;
-				return lst;
-			};
-			
-			this.container.innerHTML = TM.replace('nav', {
-				'rows': L.isNull(task) ? TM.replace('navrowadd') : get(task)
-			});
-		},
-		destroy: function(){
-			NS.taskManager.historyChangedEvent.unsubscribe(this.onHistoryChanged);
-		}
-	};
-	NS.TaskNavigateWidget = TaskNavigateWidget;
 	
 	NS.getDate = function(){ return new Date(); };
 	
@@ -871,25 +856,47 @@ Component.entryPoint = function(NS){
 			this.bosapp = bosapp;
 			this.page = page;
 			
-			buildTemplate(this, 'gbmenu');
-			container.innerHTML = this._TM.replace('gbmenu');
+			var TM = buildTemplate(this, 'gbmenu');
+			container.innerHTML = TM.replace('gbmenu');
 			
 			var __self = this; 
 			E.on(container, 'click', function(e){
                 if (__self.onClick(E.getTarget(e))){ E.preventDefault(e); }
 			});
 
+			E.on(this._TM.getEl('gbmenu.gmfilter'), 'mouseover', function(e){
+                __self.loadFilter(); 
+			});
 			E.on(this._TM.getEl('gbmenu.gmfavorite'), 'mouseover', function(e){
-                __self.loadingFavorite(); 
+                __self.loadFavorite(); 
+			});
+			E.on(this._TM.getEl('gbmenu.gmincoming'), 'mouseover', function(e){
+                __self.loadingIncoming(); 
+			});
+			E.on(this._TM.getEl('gbmenu.gmupdating'), 'mouseover', function(e){
+                __self.loadingUpdating(); 
+			});
+			E.on(this._TM.getEl('gbmenu.gmcomments'), 'mouseover', function(e){
+                __self.loadingComments(); 
 			});
 
 			this.render();
 		},
+		buildTaskManager: function(callback){
+			var __self = this;
+			NS.buildTaskManager(function(tm){
+				__self.onBuildTaskManager();
+				NS.life(callback);
+			});
+		},
+		onBuildTaskManager: function(){
+			this.render();
+		},
 		render: function(){
 			var TM = this._TM,
+				gel = function(n){ return TM.getEl("gbmenu."+n); },
 				bosapp = this.bosapp,
 				page = this.page,
-				gel = function(name){ return TM.getEl("gbmenu."+name); },
 				show = function(name){ Dom.setStyle(gel(name), 'display', ''); };
 		
 			show('m'+bosapp);
@@ -897,6 +904,42 @@ Component.entryPoint = function(NS){
 			
 			Dom.addClass(gel('gm'+bosapp), 'sel');
 			Dom.addClass(gel('mi'+bosapp+page), 'current');
+			
+			this.updateCountLabel();
+		},
+		updateCountLabel: function(){
+			if (L.isNull(NS.taskManager)){ return; }
+			var TM = this._TM,
+				gel = function(n){ return TM.getEl("gbmenu."+n); };
+			
+			var countFav = 0, countIncom = 0, countUpd = 0, countCmt = 0;
+			NS.taskManager.list.foreach(function(tk){
+				if (tk.favorite){ countFav++; }
+				if (tk.isNew){ countIncom++; }
+				if (tk.vDate < tk.uDate && !tk.isNew){ countUpd++; }
+				if (tk.isNewCmt && !tk.isNew){ countCmt++; }
+			});
+			
+			gel('countfav').innerHTML = countFav;
+			gel('countincom').innerHTML = countIncom;
+			gel('countupd').innerHTML = countUpd;
+			gel('countcmt').innerHTML = countCmt;
+			
+			if (countIncom > 0){
+				Dom.addClass(gel('countincom'), 'red');
+			}else{
+				Dom.removeClass(gel('countincom'), 'red');
+			}
+			if (countUpd > 0){
+				Dom.addClass(gel('countupd'), 'red');
+			}else{
+				Dom.removeClass(gel('countupd'), 'red');
+			}
+			if (countCmt > 0){
+				Dom.addClass(gel('countcmt'), 'red');
+			}else{
+				Dom.removeClass(gel('countcmt'), 'red');
+			}
 		},
 		onClick: function(el){
 			if (el.id == this._TId['gbmenu']['bhome']){
@@ -905,9 +948,22 @@ Component.entryPoint = function(NS){
 			}
 			return false;
 		},
-		loadingFavorite: function(){
-			if (this._loadingFavorite){ return false; }
-			this._loadingFavorite = true;
+		loadFilter: function(){
+			if (this._loadFilter){ return false; }
+			this._loadFilter = true;
+			
+			var TM = this._TM;
+			Brick.ff('botask', 'filter', function(){
+				NS.buildTaskManager(function(tm){
+					tm.custatusFullUserLoad(function(sts){
+						new NS.FilterWidget(TM.getEl('gbmenu.filtcont'), sts);
+					});
+				});
+			});
+		},
+		loadFavorite: function(){
+			if (this._loadFavorite){ return false; }
+			this._loadFavorite = true;
 			
 			var TM = this._TM;
 			Brick.ff('botask', 'easylist', function(){
@@ -915,25 +971,88 @@ Component.entryPoint = function(NS){
 					NS.API.taskFavoriteBoxWidget(TM.getEl('gbmenu.favcont'));
 				});
 			});
+		},
+		loadingIncoming: function(){
+			if (this._loadingIncoming){ return false; }
+			this._loadingIncoming = true;
+			
+			var TM = this._TM;
+			Brick.ff('botask', 'easylist', function(){
+				NS.buildTaskManager(function(tm){
+					NS.API.taskIncomingBoxWidget(TM.getEl('gbmenu.incomcont'));
+				});
+			});
+		},
+		loadingUpdating: function(){
+			if (this._loadingUpdating){ return false; }
+			this._loadingUpdating = true;
+			
+			var TM = this._TM;
+			Brick.ff('botask', 'easylist', function(){
+				NS.buildTaskManager(function(tm){
+					NS.API.taskUpdatingBoxWidget(TM.getEl('gbmenu.updcont'));
+				});
+			});
+		},
+		loadingComments: function(){
+			if (this._loadingComments){ return false; }
+			this._loadingComments = true;
+			
+			var TM = this._TM;
+			Brick.ff('botask', 'easylist', function(){
+				NS.buildTaskManager(function(tm){
+					NS.API.taskCommentsBoxWidget(TM.getEl('gbmenu.cmtcont'));
+				});
+			});
 		}
 	};
 	NS.GlobalMenuWidget = GlobalMenuWidget;
 	
+	var nWS = '#app=botask/ws/showWorkspacePanel/';
+	
 	NS.navigator = {
-		'taskHome': function(){
-			Brick.Page.reload("#app=botask/ws/showWorkspacePanel/");
+		'home': function(){
+			Brick.Page.reload(nWS);
 		},
+		'taskHome': function(){
+			Brick.Page.reload(nWS);
+		},
+		'add': function(parentid){
+			Brick.Page.reload(nWS + "add/"+parentid+"/");
+		},
+		
+		'folderCreate': function(parentid){
+			Brick.Page.reload(nWS + "folderadd/"+parentid+"/");
+		},
+		'folderEdit': function(id){
+			Brick.Page.reload(nWS + "folderedit/"+id+"/");
+		},
+		'folderView': function(id){
+			Brick.Page.reload(nWS + "folderview/"+id+"/");
+		},
+
+		'projectCreate': function(parentid){
+			Brick.Page.reload(nWS + "projectadd/"+parentid+"/");
+		},
+		'projectEdit': function(id){
+			Brick.Page.reload(nWS + "projectedit/"+id+"/");
+		},
+		'projectView': function(id){
+			Brick.Page.reload(nWS + "projectview/"+id+"/");
+		},
+		
 		'taskCreate': function(parenttaskid){
-			Brick.Page.reload("#app=botask/ws/showWorkspacePanel/taskadd/"+parenttaskid+"/");
+			Brick.Page.reload(nWS + "taskadd/"+parenttaskid+"/");
 		},
 		'taskEdit': function(taskid){
-			Brick.Page.reload("#app=botask/ws/showWorkspacePanel/taskedit/"+taskid+"/");
+			Brick.Page.reload(nWS + "taskedit/"+taskid+"/");
 		},
+		
 		'taskView': function(taskid){
-			Brick.Page.reload(NS.navigator.taskViewLink(taskid));
+			Brick.Page.reload(nWS + "taskview/"+taskid+"/");
 		},
-		'taskViewLink': function(taskid){
-			return "#app=botask/ws/showWorkspacePanel/taskview/"+taskid+"/";
+		'taskViewLink': function(tk){
+			return nWS + tk.type +"view/"+tk.id+"/";
 		}
 	};
 	

@@ -11,8 +11,9 @@ Component.requires = {
 		{name: 'sys', files: ['editor.js']},
 		{name: 'widget', files: ['calendar.js']},
         {name: 'uprofile', files: ['users.js']},
-        {name: 'botask', files: ['lib.js', 'roles.js', 'calendar.js', 'checklist.js']},
-        {name: 'filemanager', files: ['attachment.js']}
+        {name: 'botask', files: ['widgets.js', 'calendar.js', 'checklist.js']},
+        {name: 'filemanager', files: ['attachment.js']},
+        {name: 'pictab', files: ['draw.js']}
 	]
 };
 Component.entryPoint = function(NS){
@@ -32,8 +33,7 @@ Component.entryPoint = function(NS){
 		init: function(container, task){
 			this.task = task;
 			
-			buildTemplate(this, 'widget,tree,node');
-			var TM = this._TM;
+			var TM = buildTemplate(this, 'widget');
 			
 			container.innerHTML = TM.replace('widget', {
 				'pid': L.isNull(task.parent) ? 0 : task.parent.id,
@@ -43,35 +43,12 @@ Component.entryPoint = function(NS){
 		},
 		onLoad: function(){
 			var TM = this._TM,
-				gel = function(n){ return TM.getEl('widget.'+n); };
+				gel = function(n){ return TM.getEl('widget.'+n); },
 				task = this.task;
 			
 			Dom.setStyle(TM.getEl('widget.tl'+(task.id*1 > 0 ? 'new' : 'edit')), 'display', 'none');
 			
-			// путь
-			var getPT = function(tk){
-				var tl = tk.title;
-				if (!L.isNull(tk.parent)){ tl = getPT(tk.parent)+" / "+tl; }
-				return tl;
-			};
-			var isChild = function(tk){
-				if (tk.id == task.id){ return true; }
-				if (!L.isNull(tk.parent)){ return isChild(tk.parent); }
-				return false;
-			};
-			
-			var lst = "";
-			NS.taskManager.list.foreach(function(tk){
-				if (tk.id == task.id || isChild(tk)){ return; }
-				lst += TM.replace('node', {
-					'id': tk.id,
-					'tl': getPT(tk)
-				});
-				tk.childs.foreach();
-			}, false, NS.taskSort['name']);
-			
-			gel('path').innerHTML = TM.replace('tree', {'rows': lst});
-			TM.getEl('tree.id').value = L.isNull(task.parent) ? 0 : task.parent.id;
+			this.parentSelWidget = new NS.TaskTreeSelectWidget(gel('path'), task.id, L.isNull(task.parent) ? 0 : task.parent.id);
 			
 			gel('tl').value = task.title;
 			TM.getEl('widget.editor').value = task.descript;
@@ -104,7 +81,12 @@ Component.entryPoint = function(NS){
 			});
 			
 			TM.getEl('widget.prt').value = task.priority;
-			
+
+			this.drawListWidget = null;
+			if (Brick.mod.pictab && Brick.mod.pictab.ImageListWidget){
+				this.drawListWidget = new Brick.mod.pictab.ImageListWidget(gel('widget'), task.images);
+			}
+
 			var __self = this;
 			E.on(TM.getEl('widget.id'), 'click', function(e){
                 if (__self.onClick(E.getTarget(e))){ E.preventDefault(e); }
@@ -119,6 +101,10 @@ Component.entryPoint = function(NS){
 			var tp = this._TId['widget'];
 			switch(el.id){
 			
+			case tp['bimgdis']: this.imageEnable(false); return true;
+			case tp['bimgen']: this.imageEnable(true); return true; 
+			case tp['baddtab']: this.drawListWidget.createTab(); return true; 
+			
 			case tp['bsave']: 
 			case tp['bsavei']: 
 				this.saveTask(); 
@@ -129,6 +115,12 @@ Component.entryPoint = function(NS){
 				return true;
 			}
 			return false;
+		},
+		imageEnable: function(en){
+			this._imageEnabled = en;
+			var TM = this._TM;
+			TM.elShowHide('widget.imgurl,imgremove,bimgupload,bshowfm,bimgdis,widget', en);
+			TM.elShowHide('widget.bimgen', !en);
 		},
 		close: function(){
 			var tk = this.task;
@@ -146,24 +138,24 @@ Component.entryPoint = function(NS){
 				task = this.task,
 				users = this.usersWidget.getSelectedUsers();
 			
-			Dom.setStyle(gel('bsave'), 'display', 'none');
-			Dom.setStyle(gel('bsavei'), 'display', 'none');
-			
-			Dom.setStyle(gel('bcancel'), 'display', 'none');
-			Dom.setStyle(gel('bcanceli'), 'display', 'none');
-			
-			Dom.setStyle(gel('loading'), 'display', '');
-			Dom.setStyle(gel('loadingi'), 'display', '');
+			TM.elHide('widget.bsave,bsavei,bcancel,bcanceli');
+			TM.elShow('widget.loading,loadingi');
 			
 			users[users.length] = Brick.env.user.id;
 			
+			var images = [];
+			if (!L.isNull(this.drawListWidget)){
+				images = this.drawListWidget.toSave();
+			}
+
 			var newdata = {
 				'title': gel('tl').value,
 				'descript': this.editor.getContent(),
 				'checks': this.checklist.getSaveData(),
 				'files': L.isNull(this.filesWidget) ? task.files : this.filesWidget.files,
+				'images': images,
 				'users': users,
-				'parentid': TM.getEl('tree.id').value,
+				'parentid': this.parentSelWidget.getValue(),
 				'deadline': this.ddlDateTime.getValue(),
 				'ddlTime': this.ddlDateTime.getTimeVisible(),
 				'priority': gel('prt').value

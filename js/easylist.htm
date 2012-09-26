@@ -1,13 +1,10 @@
-<!--{widget}-->
-<div id="{i#id}" class="easylist">
+<!--{widget}--><div id="{i#id}" class="easylist">
 	<div id="{i#boxnew}"></div>
 	<div id="{i#boxcmt}"></div>
 	<div id="{i#boxwork}"></div>
 	<div id="{i#boxhst}"></div>
 </div>
-
-<!--{boxitem}-->
-<div class="boxitem boxstshow" id="{i#id}">
+<!--{boxitem}--><div class="boxitem boxstshow" id="{i#id}">
 	<div class="head" id="{i#head}">
 		<div class="info" id="{i#info}">
 			<span id="{i#tl}" class="title"></span>
@@ -20,17 +17,15 @@
 			<div id="{i#table}" class="ttable"></div>
 		</div>
 		<div class="emptyrows hide" id="{i#empty}">
-			Нет записей
+			{#mod.botask.easylist.boxitem.1}
 		</div>
 	</div>
 </div>
-
-<!--{inwork}-->
-<div id="{i#id}" class="inwork">
+<!--{inwork}--><div id="{i#id}" class="inwork">
 	<div class="head">
-		Активные задачи 
+		{#mod.botask.easylist.inwork.1}
 	</div>
 	<div id="{i#empty}" class="emptyrows">
-		Нет записей
+		{#mod.botask.easylist.inwork.2}
 	</div>
 </div>

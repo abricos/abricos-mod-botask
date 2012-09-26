@@ -30,6 +30,7 @@ if ($updateManager->isInstall()){
 		CREATE TABLE IF NOT EXISTS ".$pfx."btk_task (
 		  `taskid` int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор задачи',
 		  `parenttaskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор родительской задачи',
+		  `tasktype` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Тип записи: 1-раздел, 2-проект, 3-задача',
 		  `userid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор автора',
 		  `title` varchar(250) NOT NULL DEFAULT '' COMMENT 'Название',
 		  `contentid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор контента',
@@ -98,6 +99,9 @@ if ($updateManager->isInstall()){
 		  `body` TEXT NOT NULL  COMMENT 'Сохраненная версия контента',
 		  `bodyc` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
 		  
+		  `imagedata` TEXT NOT NULL  COMMENT 'Сохраненная версия зарисовки',
+		  `imagedatac` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
+		  
 		  `deadline` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Сохраненный срок выполнения',
 		  `deadlinec` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
 		  
@@ -161,14 +165,43 @@ if ($updateManager->isUpdate('0.1.2')){
 	
 }
 
-if ($updateManager->isUpdate('0.2')){
-/*
+if ($updateManager->isUpdate('0.2.2') && !$updateManager->isInstall()){
+	$db->query_write("
+		ALTER TABLE ".$pfx."btk_task
+		ADD `tasktype` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Тип записи: 1-раздел, 2-проект, 3-задача'
+	");
+	$db->query_write("UPDATE ".$pfx."btk_task SET tasktype=3");
+	
 	$db->query_write("
 		ALTER TABLE ".$pfx."btk_history
-			ADD `checklist` TEXT NOT NULL  COMMENT 'Сохраненная версия чеклиста',
-			ADD `checkc` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен'
+		ADD `imagedata` TEXT NOT NULL  COMMENT 'Сохраненная версия зарисовки',
+		ADD `imagedatac` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен'
 	");
-/**/
+	
+}
+if ($updateManager->isUpdate('0.2.2')){
+
+	$db->query_write("
+		CREATE TABLE IF NOT EXISTS ".$pfx."btk_image (
+			`imageid` int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор',
+			`taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор',
+			`title` varchar(250) NOT NULL DEFAULT '' COMMENT 'Название',
+			`data` TEXT NOT NULL  COMMENT '',
+		PRIMARY KEY  (`imageid`)
+		)".$charset
+	);
 }
 
+if ($updateManager->isUpdate('0.2.2.1')){
+	$db->query_write("
+		CREATE TABLE IF NOT EXISTS ".$pfx."btk_custatus (
+			`taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор',
+		  	`userid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор',
+		  	`title` varchar(250) NOT NULL DEFAULT '' COMMENT '',
+			`dateline` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время',
+		UNIQUE KEY `custatus` (`taskid`,`userid`)
+		)".$charset
+	);
+	
+}
 ?>

@@ -21,7 +21,7 @@
 	border-bottom: 1px solid #8C8D8E;
 }
 .aw-botask .explore .head .info {
-	padding-top: 6px;
+	padding-top: 5px;
 	padding-left: 12px;
 }
 .aw-botask .explore .head a.title {
@@ -111,6 +111,45 @@
     top: 0;
     width: 16px;
 }
+
+.aw-botask .explore .rowuser .ch-tl,
+.aw-botask .explore .ttypefolder .ch-tl,
+.aw-botask .explore .ttypeproject .ch-tl,
+.aw-botask .explore .ttypetask .ch-tl {
+	padding-left: 16px;
+}
+
+.aw-botask .explore .ticon {
+	position: absolute; left: 0; top: 1px;
+}
+
+.aw-botask .explore .rowuser .ticon,
+.aw-botask .explore .ttypefolder .ticon,
+.aw-botask .explore .ttypeproject .ticon,
+.aw-botask .explore .ttypetask .ticon {
+	width: 18px;
+    height: 18px;
+}
+.aw-botask .explore .rowuser .ticon img {
+	margin-left: 1px;
+	margin-top: 1px;
+	width: 16px;
+	height: 16px;
+}
+
+.aw-botask .explore .ttypefolder .ticonchdcls {
+	background: url("/modules/botask/images/tfolderopen.gif") no-repeat scroll 0 0 transparent;    
+}
+.aw-botask .explore .ttypefolder .ticonchdexpd {
+    background: url("/modules/botask/images/tfolderclose.gif") no-repeat scroll 0 0 transparent;    
+}
+.aw-botask .explore .ttypetask .ticon {
+	background: url("/modules/botask/images/ttask.gif") no-repeat scroll 0 0 transparent;    
+}
+.aw-botask .explore .ttypeproject .ticon {
+	background: url("/modules/botask/images/tproject.gif") no-repeat scroll 0 0 transparent;    
+}
+
 .aw-botask .explore .row .tkline:hover {
 	background-color: #FFF0C6;
 }
@@ -169,6 +208,10 @@
 	width: 12px;
 	height: 14px;
 }
+.aw-botask .explore .tkmenu .bgo {
+	background: url("/modules/botask/images/icons002.png") no-repeat scroll -20px -39px transparent;
+}
+
 .aw-botask .explore .tkmenu .badd {
 	background: url("/modules/botask/images/icons001.png") no-repeat scroll -57px -24px transparent;
 }

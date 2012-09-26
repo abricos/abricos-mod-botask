@@ -1,3 +1,7 @@
+.aw-botask .taskview .empty {
+	text-align: center;
+	padding: 50px 0;
+}
 .aw-botask .taskview .head {
 	border: 1px solid #8C8D8E;
 	background-color: #E3E3D7;
@@ -8,7 +12,21 @@
 .aw-botask .taskview .head td.title,
 .aw-botask .taskview .head td.status {
 	padding: 7px 11px;
+	font-size: 1.3em;
 }
+.aw-botask .taskview .head td.title {
+	width: 85%;
+	padding-left: 7px;
+}
+.aw-botask .taskview .head td.title div {
+	position: relative;
+	padding-left: 24px;
+}
+.aw-botask .taskview .head td.title div img {
+	position: absolute; left: 0; 
+	top: 2px;
+}
+
 .aw-botask .taskview .head td.title {
 	width: 85%;
 	font-size: 1.3em;
@@ -101,6 +119,28 @@
 }
 .aw-botask .taskview ul.dfiles li {
 	float: left;
+}
+
+/* * * * * * Images * * * * * */
+.aw-botask .taskview .imgcanvas {
+	margin: 10px 0;
+	position: relative;
+}
+.aw-botask .taskview .imgsave {
+	margin-top: 1em;
+	height: 1em;
+	text-align: center;
+}
+
+.aw-botask .taskview .bimgsave {
+	color: #D6583F;
+	font-weight: bold;
+}
+
+.aw-botask .taskview .bimgsaveload {
+	position: absolute;
+	right: 15px;
+	top: 12px;
 }
 
 /* * * * * * * Comments * * * * * */

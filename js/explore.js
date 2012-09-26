@@ -15,24 +15,24 @@ Component.entryPoint = function(NS){
 		E = YAHOO.util.Event,
 		L = YAHOO.lang;
 	
-	var LNG = Brick.util.Language.geta(['mod', '{C#MODNAME}']);
+	var UID = Brick.env.user.id;
 	
 	var buildTemplate = this.buildTemplate;
 	
 	var ExploreWidget = function(container, config){
 		config = L.merge({
 			'showArhive': false,
-			'showRemoved': false
+			'showRemoved': false,
+			'shUsers': {}
 		}, config || {});
 		this.init(container, config);
 	};
 	ExploreWidget.prototype = {
 		init: function(container, cfg){
-			
+
 			this.config = cfg;
 			
-			buildTemplate(this, 'widget,table,row,rowuser');
-			var TM = this._TM;
+			var TM = buildTemplate(this, 'widget,table,row,rowuser');
 			container.innerHTML = TM.replace('widget');
 			
 			TM.getEl('widget.showarch').checked = cfg['showArhive'];
@@ -61,26 +61,30 @@ Component.entryPoint = function(NS){
 		buildRow: function(tk, level, first, islast){
 			this._taskRender[tk.id] = true;
 			
+			var cfg = this.config;
+			
 			var sChild = tk.childs.count() > 0 ? this.buildRows(tk, tk.childs, level+1) : '';
 
 			if (tk.isUserRow){
 				var user = NS.taskManager.users.get(tk.userid);
 				return this._TM.replace('rowuser', {
 					'id': tk.id,
+					'avatar': user.avatar24(true),
 					'tl': user.getUserName(),
 					'linkview': '#',
 					'child': sChild,
 					'clst': islast ? 'ln' : 'tn',
 					'chdicoview': tk.childs.count() == 0 ? 'hide' : 'none',
-					'chdicon': true ? 'chdcls' : 'chdexpd'
+					'chdicon': cfg['shUsers'][tk.userid] ? 'chdcls' : 'chdexpd'
 				});
 			}else{
 				return this._TM.replace('row', {
 					'id': tk.id,
 					'tl': tk.title,
-					'linkview': NS.navigator.taskViewLink(tk.id),
+					'linkview': NS.navigator.taskViewLink(tk),
 					'csstrem': tk.isRemoved() ? 'strem' : '',
 					'csstarch': tk.isArhive() ? 'starch' : '',
+					'cssttype': tk.type,
 					'child': sChild,
 					'clst': islast ? 'ln' : 'tn',
 					'chdicoview': tk.childs.count() == 0 ? 'hide' : 'none',
@@ -90,7 +94,7 @@ Component.entryPoint = function(NS){
 		},
 		
 		buildRows: function(ptk, list, level){
-
+			
 			var cfg = this.config, a = [], anp = null;
 			
 			list.foreach(function(tk){
@@ -99,16 +103,20 @@ Component.entryPoint = function(NS){
 					return; 
 				}
 				
-				if ((level == 0 && L.isNull(tk.parent) && tk.parentTaskId > 0)){
+				if (level == 0 && ((L.isNull(tk.parent) && tk.parentTaskId > 0) || tk.userid != UID)){
+					
 					if (L.isNull(anp)){
 						anp = {};
 					}
 					if (!anp[tk.userid]){
+						var user = NS.taskManager.users.get(tk.userid);
 						anp[tk.userid] = {
 							'id': tk.userid,
+							'title': user.getUserName(),
 							'userid': tk.userid,
 							'isUserRow': true,
-							'childs': new NS.TaskList()
+							'childs': new NS.TaskList(),
+							'expanded': cfg['shUsers'][tk.userid]
 						};
 					}
 					anp[tk.userid].childs.add(tk);
@@ -118,9 +126,19 @@ Component.entryPoint = function(NS){
 			}, true, 'name');
 			
 			if (!L.isNull(anp)){
+				var at = [];
 				for (var n in anp){
-					a[a.length] = anp[n];
+					at[at.length] = anp[n];
 				}
+				at = at.sort(function(tk1, tk2){
+					if (tk1.title < tk2.title){ return -1; }
+					if (tk1.title > tk2.title){ return 1; }
+					return 0;
+				});
+				for (var i=0;i<at.length;i++){
+					a[a.length] = at[i];
+				}
+				this.urows = anp;
 			}
 
 			var lst = "";
@@ -141,7 +159,7 @@ Component.entryPoint = function(NS){
 				'clshide': '',
 				'rows': lst
 			};
-			if (!L.isNull(ptk) && !ptk.isUserRow){
+			if (!L.isNull(ptk)){
 				sRow['pid'] = ptk.id;
 				sRow['clshide'] = ptk.expanded ? '' : 'hide';
 			}
@@ -150,6 +168,8 @@ Component.entryPoint = function(NS){
 		},
 		
 		render: function(){
+			this.urows = null;
+			
 			this._firstRenderRows = true;
 			var TM = this._TM;
 			Dom.setStyle(TM.getEl('widget.empty'), 'display', '');
@@ -169,7 +189,12 @@ Component.entryPoint = function(NS){
 			task.expanded = !task.expanded;
 			this.render();
 		},
-		
+
+		shChildsUser: function(taskid){
+			this.config['shUsers'][taskid] = !this.config['shUsers'][taskid];
+			this.render();
+		},
+
 		onClick: function(el){
 			var TId = this._TId,
 				tp = TId['widget'],
@@ -183,7 +208,12 @@ Component.entryPoint = function(NS){
 			
 			case tp['badd']: 
 			case tp['baddc']:
-				NS.navigator.taskCreate(0);
+				NS.navigator.add(0);
+				return true;
+			
+			case tp['bgo']:
+			case tp['bgoc']:
+				this.showGoByIdPanel();
 				return true;
 			}
 			
@@ -191,18 +221,36 @@ Component.entryPoint = function(NS){
 			switch(prefix){
 			case (tp['badd']+'-'): 
 			case (tp['baddc']+'-'):
-				NS.navigator.taskCreate(numid);
+				NS.navigator.add(numid);
 				return true;
 				
 			case (tp['bedit']+'-'): 
 			case (tp['beditc']+'-'):
-				NS.navigator.taskEdit(numid);
+				this.editById(numid);
 				return true;
 				
-			case (TId['row']['bclsexpd']+'-'): this.shChilds(numid); return true;
+			case (tp['bclsexpd']+'-'): this.shChilds(numid); return true;
+			}
+			
+			tp = TId['rowuser'];
+			switch(prefix){
+			case (tp['bclsexpd']+'-'): 
+			case (tp['btitle']+'-'): 
+				this.shChildsUser(numid); return true;
 			}
 			
 			return false;
+		},
+		
+		editById: function(id){
+			var task = NS.taskManager.list.get(id);
+			if (L.isNull(task)){ return; }
+			
+			switch(task.type){
+			case 'folder': NS.navigator.folderEdit(id); break;
+			case 'project': NS.navigator.projectEdit(id); break;
+			case 'task': NS.navigator.taskEdit(id); break;
+			}
 		},
 		
 		shArhive: function(){
@@ -218,17 +266,26 @@ Component.entryPoint = function(NS){
 		
 		selectPathMethod: function(task){
 			if (L.isNull(task)){ return; }
-			var TId = this._TId, gel = function(id){ return Dom.get(TId['row']['title']+'-'+id); };
-			Dom.addClass(gel(task.id), 'select');
+			var TId = this._TId, gel = function(n, id){ return Dom.get(TId[n]['title']+'-'+id); };
+			Dom.addClass(gel('row', task.id), 'select');
+			
+			if ((L.isNull(task.parent) && task.parentTaskId > 0) || (task.parentTaskId == 0 && task.userid != UID)){
+				Dom.addClass(gel('rowuser', task.userid), 'select');
+			}
+
 			this.selectPathMethod(task.parent);
 		},
 		
 		selectPath: function(task){
 			this.selectedTask = task;
-			var TId = this._TId, gel = function(id){ return Dom.get(TId['row']['title']+'-'+id); };
+			var TId = this._TId, gel = function(n, id){ return Dom.get(TId[n]['title']+'-'+id); };
 			NS.taskManager.list.foreach(function(tk){
-				Dom.removeClass(gel(tk.id), 'select');
+				Dom.removeClass(gel('row', tk.id), 'select');
 			}, false);
+			for (var uid in this.urows){
+				var utk = this.urows[uid];
+				Dom.removeClass(gel('rowuser', utk.id), 'select');
+			}
 			this.selectPathMethod(task);
 		},
 		
@@ -252,8 +309,63 @@ Component.entryPoint = function(NS){
 					Dom.removeClass(gel(tk.id), 'seluser');
 				}
 			}, false);
+		},
+		
+		showGoByIdPanel: function(){
+			new GoByIdPanel(function(task){
+				switch(task.type){
+				case 'folder':
+					NS.navigator.folderView(task.id);
+					break;
+				case 'task':
+					NS.navigator.taskView(task.id);
+					break;
+				case 'project':
+					NS.navigator.projectView(task.id);
+					break;
+				}
+				
+			});
 		}
 	};
 	NS.ExploreWidget = ExploreWidget;
+	
+	
+	var GoByIdPanel = function(callback){
+		this.callback = L.isFunction(callback) ? callback : function(){};
+		GoByIdPanel.superclass.constructor.call(this, {fixedcenter: true});
+	};
+	YAHOO.extend(GoByIdPanel, Brick.widget.Dialog, {
+		initTemplate: function(){
+			return buildTemplate(this, 'gopanel').replace('gopanel');
+		},
+		onClick: function(el){
+			var tp = this._TId['gopanel'];
+			switch(el.id){
+			case tp['bcancel']: this.close(); return true;
+			case tp['bok']: this.goById(); return true;
+			}
+			
+			return false;
+		},
+		goById: function(){
+			var TM = this._TM, gel = function(n){ return TM.getEl('gopanel.'+n); };
+			
+			var numid = gel('number').value;
+			
+			var task = NS.taskManager.getTask(numid);
+
+			if (L.isNull(task)){
+				gel('num').innerHTML = numid;
+				Dom.setStyle(gel('err'), 'display', '');
+				return;
+			}
+
+			this.close();
+			this.callback(task);
+		}
+	});
+	NS.GoByIdPanel = GoByIdPanel;	
+
 	
 };

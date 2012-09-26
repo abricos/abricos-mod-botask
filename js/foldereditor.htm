@@ -1,0 +1,49 @@
+<!--{widget}--><div id="{i#id}" class="taskedit ui-form">
+	<div class="head">
+		<span id="{i#tlnew}">{#mod.botask.foldereditor.widget.1}</span>
+		<span id="{i#tledit}">{#mod.botask.foldereditor.widget.2}</span>
+		
+		<div class="buttons right">
+			<input type="button" value="{#mod.botask.foldereditor.widget.3}" id="{i#bsavei}" class="btn" />
+			<input type="button" value="{#mod.botask.foldereditor.widget.4}" id="{i#bcanceli}" class="btn" />
+			<img src="/images/loading.gif" id="{i#loadingi}" style="display: none;" />
+		</div>
+	</div>
+	<dl class="tepath">
+		<dt>
+			<label>{#mod.botask.foldereditor.widget.5}</label>
+		</dt>
+		<dd>
+			<div id="{i#path}" class="path" >&nbsp;</div>
+		</dd>
+	</dl>
+	
+	<dl class="tetitle" >
+		<dt>
+			<label for="{i#tl}">{#mod.botask.foldereditor.widget.6}</label>
+		</dt>
+		<dd>
+			<input id="{i#tl}" type="text" class="input-text font-large" style="width: 90%;" />
+		</dd>
+	</dl>
+	
+	<dl class="teusers">
+		<dt><label>{#mod.botask.foldereditor.widget.7}</label></dt>
+		<dd>
+			<div id="{i#users}"></div>
+		</dd>
+	</dl>
+	
+	<dl class="tebuttons">
+		<dt></dt>
+		<dd>
+			<div class="field">
+				<div class="buttons right">
+					<input type="button" value="{#mod.botask.foldereditor.widget.8}" id="{i#bsave}" class="btn" />
+					<input type="button" value="{#mod.botask.foldereditor.widget.9}" id="{i#bcancel}" class="btn" />
+					<img src="/images/loading.gif" id="{i#loading}" style="display: none;" />
+				</div>
+			</div>
+		</dd>
+	</dl>
+</div>

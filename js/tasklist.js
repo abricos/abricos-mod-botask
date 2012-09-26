@@ -122,9 +122,19 @@ Component.entryPoint = function(NS){
 				sCols = "";
 			
 			if (enCols['name']){
+				var sViewLink = 'taskview';
+				if (tk.type == 'folder'){
+					sViewLink = 'folderview';
+				}else if (tk.type == 'project'){
+					sViewLink = 'projectview';
+				}
 				sCols += TM.replace('rcolname', {
 					'id': tk.id,
-					'tl': tk.title == "" ? LNG['nottitle'] : tk.title
+					'viewlink': sViewLink,
+					'aunm': L.isNull(author) ? 'null' : author.getUserName(),
+					'tl': tk.title == "" ? LNG['nottitle'] : tk.title,
+					'dl': Brick.dateExt.convert(tk.date.getTime()/1000),
+					'udl': Brick.dateExt.convert(tk.uDate.getTime()/1000)
 				});
 			}
 			

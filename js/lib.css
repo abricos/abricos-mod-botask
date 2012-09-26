@@ -1,3 +1,6 @@
+.aw-botask .red { color: red; }
+.aw-botask .bold { font-weight: bold; }
+
 /* * * * * * Navigate * * * * * */
 .aw-botask table.maintable {
 	width: 100%;
@@ -72,6 +75,16 @@
 	color: #000;
 	text-decoration: none;
 }
+.aw-botask .gbbuttons {
+	position: absolute; top: 92px; right: 0px;
+}
+.aw-botask .gbaboutbuttons {
+	position: absolute; top: 23px; right: 10px;
+}
+.aw-botask .gbaboutbuttons a {
+	color: #dadada;
+	font-size: .95em;
+}
 
 .aw-botask .gbmenu a {
 	text-decoration: none;
@@ -112,9 +125,22 @@
 	position: absolute; top: 15px; left: 0;
 	display: none;
 	padding-top: 5px;
-	width: 700px;
+	width: 600px;
 	background-color: #FFF;
 	z-index: 1;
+}
+.aw-botask .ghm .miincoming .vcont {
+	left: -50px !important;
+}
+.aw-botask .ghm .miupdating .vcont {
+	left: -100px !important;
+}
+.aw-botask .ghm .micomments .vcont {
+	left: -220px !important;
+}
+
+.aw-botask .ghm .red {
+	color: red;
 }
 .aw-botask .ghm .mifav:hover .vcont {
 	display: block;

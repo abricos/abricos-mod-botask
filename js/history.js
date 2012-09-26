@@ -12,25 +12,17 @@ Component.requires = {
         {name: 'botask', files: ['lib.js']}
 	]
 };
-Component.entryPoint = function(){
+Component.entryPoint = function(NS){
 	
 	var Dom = YAHOO.util.Dom,
 		E = YAHOO.util.Event,
 		L = YAHOO.lang;
 	
-	var NS = this.namespace, 
-		TMG = this.template,
-		API = NS.API,
-		R = NS.roles;
+	var R = NS.roles;
 
-	var UP = Brick.mod.uprofile;
-	
 	var LNG = Brick.util.Language.getc('mod.botask.history');
 
-
-	Brick.util.CSS.update(Brick.util.CSS['botask']['history']);
-	
-	var buildTemplate = function(w, ts){w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;};
+	var buildTemplate = this.buildTemplate;
 
 	var HistoryWidget = function(container, history, cfg){
 		this.init(container, history, cfg);
