@@ -19,7 +19,14 @@ Brick.util.Language.add('en',{'mod': {'{C#MODNAME}':{
 			'16': 'Not Important',
 			'17': 'Users',
 			'18': 'Save',
-			'19': 'Cancel'
+			'19': 'Cancel',
+			'20': 'Image',
+			'21': '+ Add Tab',
+			'22': 'Add Tab',
+			'23': 'Not User',
+			'24': 'Turn off the image in this project',
+			'25': 'Include an image in this project',
+			'26': 'Use'
 		}
 	}
 }}});

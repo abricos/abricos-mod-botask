@@ -1,5 +1,5 @@
 Brick.util.Language.add('en',{'mod': {'{C#MODNAME}':{
-	'emptyrows': 'Нет записей',
+	'emptyrows': 'No records',
 	'status': {
 		'1': 'Opened',
 		'2': 'Opened Again',
@@ -30,7 +30,10 @@ Brick.util.Language.add('en',{'mod': {'{C#MODNAME}':{
 			'9': 'Board',
 			'10': 'Report',
 			'11': 'Comments',
-			'12': 'About'
+			'12': 'About',
+			'13': 'Filter',
+			'14': 'Changed ',
+			'15': 'New'
 		},
 		'nav': {
 			'1': 'Board'

@@ -13,7 +13,9 @@ Brick.util.Language.add('en',{'mod': {'{C#MODNAME}':{
 			'10': 'Move Folder to archive',
 			'11': 'To Archive',
 			'12': 'Restore a deleted folder',
-			'13': 'Resotre'
+			'13': 'Resotre',
+			'14': 'Edit',
+			'15': 'Delete'
 		},
 		'empty': {
 			'1': 'Folder not found'
@@ -23,7 +25,7 @@ Brick.util.Language.add('en',{'mod': {'{C#MODNAME}':{
 			'2': 'Do you really want to delete Folder and its contents?',
 			'3': 'Confirmed',
 			'4': 'Cancel',
-			'5': 'Removed...'
+			'5': 'Deleting...'
 		}
 	}
 }}});

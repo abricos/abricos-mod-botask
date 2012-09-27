@@ -15,18 +15,20 @@ Brick.util.Language.add('en',{'mod': {'{C#MODNAME}':{
 			'12': 'Restore',
 			'13': 'Restore',
 			'14': 'Files',
-			'15': 'Save Changes'
+			'15': 'Save Changes',
+			'16': 'Edit',
+			'17': 'Delete'
 		},
 		'empty': {
 			'1': 'Project not found'
 		},
 		'tkremovepanel': {
-			'1': 'Remove Project',
+			'1': 'Delete Project',
 			'2': 'Attention!',
 			'3': 'Do you really want to delete the project and all its contents?',
 			'4': 'Confirmed',
 			'5': 'Cancel',
-			'6': 'Removed...'
+			'6': 'Deleting...'
 		}
 	}
 }}});
