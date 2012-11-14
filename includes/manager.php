@@ -606,9 +606,13 @@ class BotaskManager extends Ab_ModuleManager {
 					break;
 				}
 			}
-			if (!$find){
-				BotaskQuery::UserRoleAppend($this->db, $tk->id, $uid);
-				$history->UserAdd($uid);
+			if (!$find){ // добавление нового пользователя
+				// проверить, а вдруг пользователь не хочет чтоб его добавляли
+				$uprofileManager = Abricos::GetModule('uprofile')->GetManager();
+				if ($uprofileManager->UserPublicityCheck($uid)){
+					BotaskQuery::UserRoleAppend($this->db, $tk->id, $uid);
+					$history->UserAdd($uid);
+				} 
 			}
 		}
 	}

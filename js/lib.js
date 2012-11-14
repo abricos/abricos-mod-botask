@@ -1008,51 +1008,51 @@ Component.entryPoint = function(NS){
 	};
 	NS.GlobalMenuWidget = GlobalMenuWidget;
 	
-	var nWS = '#app=botask/ws/showWorkspacePanel/';
-	
 	NS.navigator = {
+		'URI': '#app=botask/ws/showWorkspacePanel/',
+		
 		'home': function(){
-			Brick.Page.reload(nWS);
+			Brick.Page.reload(this.URI);
 		},
 		'taskHome': function(){
-			Brick.Page.reload(nWS);
+			Brick.Page.reload(this.URI);
 		},
 		'add': function(parentid){
-			Brick.Page.reload(nWS + "add/"+parentid+"/");
+			Brick.Page.reload(this.URI + "add/"+parentid+"/");
 		},
 		
 		'folderCreate': function(parentid){
-			Brick.Page.reload(nWS + "folderadd/"+parentid+"/");
+			Brick.Page.reload(this.URI + "folderadd/"+parentid+"/");
 		},
 		'folderEdit': function(id){
-			Brick.Page.reload(nWS + "folderedit/"+id+"/");
+			Brick.Page.reload(this.URI + "folderedit/"+id+"/");
 		},
 		'folderView': function(id){
-			Brick.Page.reload(nWS + "folderview/"+id+"/");
+			Brick.Page.reload(this.URI + "folderview/"+id+"/");
 		},
 
 		'projectCreate': function(parentid){
-			Brick.Page.reload(nWS + "projectadd/"+parentid+"/");
+			Brick.Page.reload(this.URI + "projectadd/"+parentid+"/");
 		},
 		'projectEdit': function(id){
-			Brick.Page.reload(nWS + "projectedit/"+id+"/");
+			Brick.Page.reload(this.URI + "projectedit/"+id+"/");
 		},
 		'projectView': function(id){
-			Brick.Page.reload(nWS + "projectview/"+id+"/");
+			Brick.Page.reload(this.URI + "projectview/"+id+"/");
 		},
 		
 		'taskCreate': function(parenttaskid){
-			Brick.Page.reload(nWS + "taskadd/"+parenttaskid+"/");
+			Brick.Page.reload(this.URI + "taskadd/"+parenttaskid+"/");
 		},
 		'taskEdit': function(taskid){
-			Brick.Page.reload(nWS + "taskedit/"+taskid+"/");
+			Brick.Page.reload(this.URI + "taskedit/"+taskid+"/");
 		},
 		
 		'taskView': function(taskid){
-			Brick.Page.reload(nWS + "taskview/"+taskid+"/");
+			Brick.Page.reload(this.URI + "taskview/"+taskid+"/");
 		},
 		'taskViewLink': function(tk){
-			return nWS + tk.type +"view/"+tk.id+"/";
+			return this.URI + tk.type +"view/"+tk.id+"/";
 		}
 	};
 	

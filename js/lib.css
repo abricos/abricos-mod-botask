@@ -1,5 +1,21 @@
 .aw-botask .red { color: red; }
 .aw-botask .bold { font-weight: bold; }
+.aw-botask .btn {
+    margin: 4px 2px;
+    padding: 1px 6px;
+}
+.aw-botask select, 
+.aw-botask input, 
+.aw-botask button, 
+.aw-botask textarea, 
+.aw-botask button {
+    font: 99% arial,helvetica,clean,sans-serif;
+}
+
+.aw-botask .yui-nav .selected a,
+.aw-botask .yui-nav .selected a:hover {
+    color: #FFFFFF !important;
+}
 
 /* * * * * * Navigate * * * * * */
 .aw-botask table.maintable {

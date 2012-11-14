@@ -1,7 +1,6 @@
 /*
 @version $Id: taskeditor.js 1629 2012-05-28 11:48:48Z roosit $
 @package Abricos
-@copyright Copyright (C) 2011 Abricos All rights reserved.
 @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
 */
 
@@ -26,12 +25,17 @@ Component.entryPoint = function(NS){
 	
 	var buildTemplate = this.buildTemplate;
 	
-	var ProjectEditorWidget = function(container, task){
-		this.init(container, task);
+	var ProjectEditorWidget = function(container, task, config){
+		config = L.merge({
+			'onSaveCallback': null,
+			'onCancelCallback': null
+		},config || {});
+		this.init(container, task, config);
 	};
 	ProjectEditorWidget.prototype = {
-		init: function(container, task){
+		init: function(container, task, config){
 			this.task = task;
+			this.cfg = config;
 			
 			var TM = buildTemplate(this, 'widget');
 			
@@ -72,12 +76,13 @@ Component.entryPoint = function(NS){
 			}
 			
 			var users = task.id*1==0 && !L.isNull(task.parent) ? task.parent.users : task.users;
-			
 			this.usersWidget = new UP.UserSelectWidget(gel('users'), users);
 			
 			this.drawListWidget = null;
 			if (Brick.mod.pictab && Brick.mod.pictab.ImageListWidget){
 				this.drawListWidget = new Brick.mod.pictab.ImageListWidget(gel('widget'), task.images);
+			}else{
+				Dom.setStyle(gel('rimage'), 'display', 'none');
 			}
 			
 			var __self = this;
@@ -106,14 +111,21 @@ Component.entryPoint = function(NS){
 		imageEnable: function(en){
 			this._imageEnabled = en;
 			var TM = this._TM;
-			TM.elShowHide('widget.imgurl,imgremove,bimgupload,bshowfm,bimgdis,widget', en);
+			TM.elShowHide('widget.bimgdis,baddtab,widget', en);
 			TM.elShowHide('widget.bimgen', !en);
 		},
 		close: function(){
+			var cfg = this.cfg;
+			if (L.isFunction(cfg['onCancelCallback'])){
+				if (cfg['onCancelCallback']()){
+					return;
+				}
+			}
+
 			var tk = this.task;
 			if (tk.id > 0){
 				NS.navigator.projectView(tk.id);
-			}else if (tk.id == 0 || !L.isNull(tk.parent)){
+			}else if (tk.id == 0 && !L.isNull(tk.parent)){
 				NS.navigator.projectView(tk.parent.id);
 			}else{
 				NS.navigator.home();
@@ -122,7 +134,7 @@ Component.entryPoint = function(NS){
 		saveTask: function(){
 			var TM = this._TM,
 				gel = function(n){ return TM.getEl('widget.'+n);},
-				task = this.task,
+				__self = this, task = this.task,
 				users = this.usersWidget.getSelectedUsers();
 			
 			TM.elHide('widget.bsave,bsavei,bcancel,bcanceli');
@@ -147,13 +159,22 @@ Component.entryPoint = function(NS){
 			};
 			NS.taskManager.taskSave(task, newdata, function(d){
 				d = d || {};
-				var taskid = (d['id'] || 0)*1;
-
-				setTimeout(function(){
-					NS.navigator.projectView(taskid);
-				}, 500);
+				__self.onSaveProject(d);
 			});
-		}		
+		},
+		onSaveProject: function(d){
+			var cfg = this.cfg;
+			if (L.isFunction(cfg['onSaveCallback'])){
+				if (cfg['onSaveCallback'](d)){
+					return;
+				}
+			}
+
+			var taskid = (d['id'] || 0)*1;
+			setTimeout(function(){
+				NS.navigator.projectView(taskid);
+			}, 500);
+		}
 	};
 	NS.ProjectEditorWidget = ProjectEditorWidget;
 
