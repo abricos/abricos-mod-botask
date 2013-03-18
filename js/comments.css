@@ -12,8 +12,8 @@
 .aw-botask .comments .delim {
 	maring-bottom: 10px;
 }
-.aw-botask .comments ul.tkitem li.comment .mod-comment,
-.aw-botask .comments ul.tkitem li.comment .mod-comment .item .meta {
+.aw-botask .comments ul.tkitem li.comment .aw-comment,
+.aw-botask .comments ul.tkitem li.comment .aw-comment .item .meta {
 	margin-top: 0;
 }
 .aw-botask .comments ul.tkitem li.task {

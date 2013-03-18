@@ -126,11 +126,11 @@
 	right: 0;
 	top: 0;
 }
-.aw-botask .folderview .mod-comment {
+.aw-botask .folderview .aw-comment {
 	width: 735px;
 	margin-top: 0;
 }
-.aw-botask .folderview .mod-comment .content .text img {
+.aw-botask .folderview .aw-comment .content .text img {
 	max-width: 100%;
 	height: auto;
 }
