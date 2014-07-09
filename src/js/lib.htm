@@ -1,65 +1,116 @@
-<!--{gbmenu}--><div class="aw-botask">
-	<div class="gheadermenu ghm">
-		<h2 id="{i#bhome}">
-			{#mod.botask.lib.gbmenu.1}
-		</h2>
-		
-		<img class="logo" src="/modules/botask/images/logo-96x96.gif" />
-		
-		<ul class="topmenu">
-			<li id="{i#gmproject}"><a href="#app={C#MODNAMEURI}/ws/showWorkspacePanel">{#mod.botask.lib.gbmenu.2}</a></li>
-			<li id="{i#gmadd}"><a href="#app=botask/ws/showWorkspacePanel/add/0/">{#mod.botask.lib.gbmenu.5}</a></li>
-			<li id="{i#gmfilter}" class="mifav">
-				<a href="#">{#mod.botask.lib.gbmenu.13}</a>
-				<div id="{i#filtcont}" class="vcont">
-					<div class="ldg">
-						<img src="/images/loading.gif" /> {#mod.botask.lib.gbmenu.4}
-					</div>
-				</div>
-			</li>
-			<li id="{i#gmfavorite}" class="mifav">
-				<a href="#">{#mod.botask.lib.gbmenu.3} (<span id="{i#countfav}"></span>)</a>
-				<div id="{i#favcont}" class="vcont">
-					<div class="ldg">
-						<img src="/images/loading.gif" /> {#mod.botask.lib.gbmenu.4}
-					</div>
-				</div>
-			</li>
-			<li id="{i#gmincoming}" class="mifav miincoming">
-				<a href="#">{#mod.botask.lib.gbmenu.15} (<span id="{i#countincom}" ></span>)</a>
-				<div id="{i#incomcont}" class="vcont">
-					<div class="ldg">
-						<img src="/images/loading.gif" /> {#mod.botask.lib.gbmenu.4}
-					</div>
-				</div>
-			</li>
-			<li id="{i#gmupdating}" class="mifav miupdating">
-				<a href="#">{#mod.botask.lib.gbmenu.14}(<span id="{i#countupd}"></span>)</a>
-				<div id="{i#updcont}" class="vcont">
-					<div class="ldg">
-						<img src="/images/loading.gif" /> {#mod.botask.lib.gbmenu.4}
-					</div>
-				</div>
-			</li>
-			<li id="{i#gmcomments}" class="mifav micomments">
-				<a href="#">{#mod.botask.lib.gbmenu.7} (<span id="{i#countcmt}"></span>)</a>
-				<div id="{i#cmtcont}" class="vcont">
-					<div class="ldg">
-						<img src="/images/loading.gif" /> {#mod.botask.lib.gbmenu.4}
-					</div>
-				</div>
-			</li>
-			<li id="{i#gmtowork}"><a href="#app={C#MODNAMEURI}/towork/showToWorkPanel">{#mod.botask.lib.gbmenu.6}</a></li>
-			<li id="{i#gmabout}" style="display: none"><a href="#app={C#MODNAMEURI}/about/showAboutPanel">{#mod.botask.lib.gbmenu.8}</a></li>
-		</ul>
-		<div class="clear"></div>
-		<div class="gbaboutbuttons">
-			<a href="#app={C#MODNAMEURI}/about/showAboutPanel">{#mod.botask.lib.gbmenu.8}</a>
-		</div>
-		<div class="gbbuttons"> </div>
-	</div>
-	
-	<div class="gbmenu">
-		<div class="line"></div>
-	</div>
+<!--{gbmenu}-->
+<div class="aw-botask">
+
+    <div class="app-nav">
+
+        <nav class="navbar navbar-default" role="navigation">
+
+            <div class="container-fluid">
+
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#app={C#MODNAMEURI}/ws/showWorkspacePanel">
+                        <img class="icon" src="/modules/botask/images/logo-96x96.gif"/>
+                        {#mod.botask.lib.gbmenu.1}
+                    </a>
+                </div>
+
+                <ul class="nav navbar-nav">
+
+                    <li id="{i#gmadd}">
+                        <a href="#app=botask/ws/showWorkspacePanel/add/0/">
+                            {#mod.botask.lib.gbmenu.5}
+                        </a>
+                    </li>
+
+                    <li id="{i#gmfilter}" class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            {#mod.botask.lib.gbmenu.13}
+                            <b class="caret"></b>
+                        </a>
+
+                        <div class="dropdown-menu">
+                            <div id="{i#filtcont}" class="vcont">
+                                <div class="ldg"><img src="/images/loading.gif"/> {#mod.botask.lib.gbmenu.4}</div>
+                            </div>
+
+                        </div>
+                    </li>
+
+
+                    <li id="{i#gmfavorite}" class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            {#mod.botask.lib.gbmenu.3}
+                            <span id="{i#countfav}" class="badge"></span>
+                            <b class="caret"></b>
+                        </a>
+
+                        <div class="dropdown-menu">
+                            <div id="{i#favcont}" class="vcont">
+                                <div class="ldg"><img src="/images/loading.gif"/> {#mod.botask.lib.gbmenu.4}</div>
+                            </div>
+                        </div>
+                    </li>
+
+
+                    <li id="{i#gmincoming}" class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            {#mod.botask.lib.gbmenu.15}
+                            <span id="{i#countincom}" class="badge"></span>
+                            <b class="caret"></b>
+                        </a>
+
+                        <div class="dropdown-menu">
+                            <div id="{i#incomcont}" class="vcont">
+                                <div class="ldg"><img src="/images/loading.gif"/> {#mod.botask.lib.gbmenu.4}</div>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li id="{i#gmupdating}" class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            {#mod.botask.lib.gbmenu.14}
+                            <span id="{i#countupd}" class="badge"></span>
+                            <b class="caret"></b>
+                        </a>
+
+                        <div class="dropdown-menu">
+                            <div id="{i#updcont}" class="vcont">
+                                <div class="ldg"><img src="/images/loading.gif"/> {#mod.botask.lib.gbmenu.4}</div>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li id="{i#gmcomments}" class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+
+                            {#mod.botask.lib.gbmenu.7}
+                            <span id="{i#countcmt}" class="badge"></span>
+                            <b class="caret"></b>
+                        </a>
+
+                        <div class="dropdown-menu">
+                            <div id="{i#cmtcont}" class="vcont">
+                                <div class="ldg"><img src="/images/loading.gif"/> {#mod.botask.lib.gbmenu.4}</div>
+                            </div>
+                        </div>
+
+                    </li>
+
+                    <li id="{i#gmtowork}">
+                        <a href="#app={C#MODNAMEURI}/towork/showToWorkPanel">
+                            {#mod.botask.lib.gbmenu.6}
+                        </a>
+                    </li>
+
+                </ul>
+
+                <p class="navbar-text navbar-right" style="display: none">
+                    <a class="navbar-link" href="#app={C#MODNAMEURI}/about/showAboutPanel">
+                        {#mod.botask.lib.gbmenu.8}
+                    </a>
+                </p>
+
+            </div>
+        </nav>
+    </div>
 </div>
