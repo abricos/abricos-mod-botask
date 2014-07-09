@@ -1,103 +1,117 @@
-<!--{widget}--><div class="explore">
-	<div class="head">
-		<div class="info">
-			<a id="{i#btitle}" class="title" href="#" title="{#mod.botask.explore.widget.1}">{#mod.botask.explore.widget.2}</a>
-			<span class="shgroup">
+<!--{widget}-->
+
+<div class="explore">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <a id="{i#btitle}" class="title" href="#" title="{#mod.botask.explore.widget.1}">{#mod.botask.explore.widget.2}</a>
+
+            <span class="shgroup">
 				(
 				<label for="{i#showarch}" class="arch" title="{#mod.botask.explore.widget.3}">
-					{#mod.botask.explore.widget.4}
-					<input id="{i#showarch}" type="checkbox" />
-				</label>
+                    {#mod.botask.explore.widget.4}
+                    <input id="{i#showarch}" type="checkbox"/>
+                </label>
 				<label for="{i#showrem}" title="{#mod.botask.explore.widget.5}">
-					{#mod.botask.explore.widget.6}
-					<input id="{i#showrem}" type="checkbox" />
-				</label>
+                    {#mod.botask.explore.widget.6}
+                    <input id="{i#showrem}" type="checkbox"/>
+                </label>
 				)
 			</span>
-		</div>
-		<div class="tkmenu">
-			<div id="{i#bgo}" class="b" title="Перейти по номеру">
-				<div id="{i#bgoc}" class="bgo bc"></div>
-			</div>
-			<div id="{i#badd}" class="b" title="{#mod.botask.explore.widget.7}">
-				<div id="{i#baddc}" class="badd bc"></div>
-			</div>
-		</div>
-		
-	</div>
-	<div class="tm"></div>
-	<div id="{i#table}" class="list"></div>
-	<div id="{i#empty}" class="empty">
-		<span>{#mod.botask.explore.widget.8}</span><br />
-		<a href="#app=botask/ws/showWorkspacePanel/add/0/">{#mod.botask.explore.widget.9}</a>
-	</div>
+
+            <div class="tkmenu">
+                <div id="{i#bgo}" class="b" title="Перейти по номеру">
+                    <div id="{i#bgoc}" class="bgo bc"></div>
+                </div>
+                <div id="{i#badd}" class="b" title="{#mod.botask.explore.widget.7}">
+                    <div id="{i#baddc}" class="badd bc"></div>
+                </div>
+            </div>
+
+
+        </div>
+        <div class="panel-body">
+
+            <div id="{i#table}" class="list"></div>
+            <div id="{i#empty}" class="text-center">
+                <div>{#mod.botask.explore.widget.8}</div>
+                <a href="#app=botask/ws/showWorkspacePanel/add/0/">{#mod.botask.explore.widget.9}</a>
+            </div>
+
+        </div>
+    </div>
 </div>
 
 <!--{table}-->
-<table id="{i#id}-{v#pid}" class="{v#clshide}"><tbody>{v#rows}</tbody></table>
+<table id="{i#id}-{v#pid}" class="{v#clshide}">
+    <tbody>{v#rows}</tbody>
+</table>
 
 <!--{row}-->
-<tr class="row">
-	<td class="{v#clst}">
-		<div class="staticon">
-			<div id="{i#bclsexpd}-{v#id}" class="chd {v#chdicon} {v#chdicoview}"></div>
-		</div>
-	</td>
-	<td>
-		<div class="tkline {v#csstrem} {v#csstarch} ttype{v#cssttype}">
-			<div class="ticon ticon{v#chdicon}"></div>
-			<div id="{i#title}-{v#id}" class="ch-tl" title="{v#tl}">
-				<a href="{v#linkview}">{v#tl}</a>
-				<div class="shadow"></div>
-			</div>
-			<div class="tkmenu">
-				<div id="{i#bedit}-{v#id}" class="b" title="{#mod.botask.explore.row.1}">
-					<div id="{i#beditc}-{v#id}" class="bedit bc"></div>
-				</div>
-				<div id="{i#badd}-{v#id}" class="b" title="{#mod.botask.explore.row.2}">
-					<div id="{i#baddc}-{v#id}" class="badd bc"></div>
-				</div>
-			</div>
-		</div>
-		{v#child}
-	</td>
+<tr class="trrow">
+    <td class="{v#clst}">
+        <div class="staticon">
+            <div id="{i#bclsexpd}-{v#id}" class="chd {v#chdicon} {v#chdicoview}"></div>
+        </div>
+    </td>
+    <td>
+        <div class="tkline {v#csstrem} {v#csstarch} ttype{v#cssttype}">
+            <div class="ticon ticon{v#chdicon}"></div>
+            <div id="{i#title}-{v#id}" class="ch-tl" title="{v#tl}">
+                <a href="{v#linkview}">{v#tl}</a>
+
+                <div class="shadow"></div>
+            </div>
+            <div class="tkmenu">
+                <div id="{i#bedit}-{v#id}" class="b" title="{#mod.botask.explore.row.1}">
+                    <div id="{i#beditc}-{v#id}" class="bedit bc"></div>
+                </div>
+                <div id="{i#badd}-{v#id}" class="b" title="{#mod.botask.explore.row.2}">
+                    <div id="{i#baddc}-{v#id}" class="badd bc"></div>
+                </div>
+            </div>
+        </div>
+        {v#child}
+    </td>
 </tr>
 
 <!--{rowuser}-->
-<tr class="row rowuser">
-	<td class="{v#clst}">
-		<div class="staticon">
-			<div id="{i#bclsexpd}-{v#id}" class="chd {v#chdicon} {v#chdicoview}"></div>
-		</div>
-	</td>
-	<td>
-		<div class="tkline">
-			<div class="ticon">
-				<img src="{v#avatar}" />
-			</div>
-			<div id="{i#title}-{v#id}" class="ch-tl" title="{v#tl}">
-				<a href="#" id="{i#btitle}-{v#id}">{v#tl}</a>
-				<div class="shadow"></div>
-			</div>
-		</div>
-		{v#child}
-	</td>
+<tr class="trrow rowuser">
+    <td class="{v#clst}">
+        <div class="staticon">
+            <div id="{i#bclsexpd}-{v#id}" class="chd {v#chdicon} {v#chdicoview}"></div>
+        </div>
+    </td>
+    <td>
+        <div class="tkline">
+            <div class="ticon">
+                <img src="{v#avatar}"/>
+            </div>
+            <div id="{i#title}-{v#id}" class="ch-tl" title="{v#tl}">
+                <a href="#" id="{i#btitle}-{v#id}">{v#tl}</a>
+
+                <div class="shadow"></div>
+            </div>
+        </div>
+        {v#child}
+    </td>
 </tr>
-<!--{iconuser}--><img src="{v#src}" title="{v#tl}" class="exicouser" />
+<!--{iconuser}--><img src="{v#src}" title="{v#tl}" class="exicouser"/>
 
 <!--{gopanel}-->
 <div class='hd'>Быстрый переход</div>
 <div class='bd aw-botask'>
-	<div id="{i#dialogremove}" class="field">
-		<p>
-			Быстрый переход к проекту/задачи/разделу по номеру: 
-			<input id="{i#number}" type="text" />
-			<br /> 
-			<span class="red" id="{i#err}" style="display: none">Проект/задача/раздел по номеру <span id="{i#num}" class="bold"></span> не найден</span>
-		</p>
-		<div class="buttons right">
-			<input id="{i#bok}" value="Перейти" type="button" />
-			<input id="{i#bcancel}" value="Отмена" type="button" />
-		</div>
-	</div>
+    <div id="{i#dialogremove}" class="field">
+        <p>
+            Быстрый переход к проекту/задачи/разделу по номеру:
+            <input id="{i#number}" type="text"/>
+            <br/>
+            <span class="red" id="{i#err}" style="display: none">Проект/задача/раздел по номеру <span id="{i#num}"
+                                                                                                      class="bold"></span> не найден</span>
+        </p>
+
+        <div class="buttons right">
+            <input id="{i#bok}" value="Перейти" type="button"/>
+            <input id="{i#bcancel}" value="Отмена" type="button"/>
+        </div>
+    </div>
 </div>

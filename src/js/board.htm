@@ -6,26 +6,39 @@
 
     <div class="board">
 
+        <div class="row">
+
+            <div class="col-md-4">
+
+                <div id="{i#explore}"></div>
+
+                <div style="display: none">
+                    <span style="font-weight: bold; line-height: 1.5em">История</span>
+
+                    <div id="{i#history}"></div>
+                </div>
+
+            </div>
+            <div class="col-md-8">
+
+                <a class="baddtask" href="#app=botask/ws/showWorkspacePanel/taskadd/0/">{#mod.botask.board.panel.2}</a>
+
+                <div id="{i#list}" class="list">
+                    {#mod.botask.board.panel.3}
+                </div>
+
+
+            </div>
+        </div>
+
         <table class="maintable">
             <tbody>
             <tr>
                 <td>
-                    <div id="{i#explore}"></div>
-
-                    <div style="display: none">
-                        <span style="font-weight: bold; line-height: 1.5em">История</span>
-
-                        <div id="{i#history}"></div>
-                    </div>
                 </td>
                 <td>
                     <div class="colbody">
 
-                        <a class="baddtask" href="#app=botask/ws/showWorkspacePanel/taskadd/0/">{#mod.botask.board.panel.2}</a>
-
-                        <div id="{i#list}" class="list">
-                            {#mod.botask.board.panel.3}
-                        </div>
                     </div>
                 </td>
             </tr>
