@@ -1,7 +1,10 @@
 <?php
-return array(
-	'brick' => array(
-		'templates' => array(
+return [
+    "bosmenu" => [
+        "botask" => "Проекты и задачи"
+    ],
+	'brick' => [
+		'templates' => [
 			"1" => "Новый комментарий к задаче \"{v#tl}\"",
 			"2" => "
 <p>
@@ -96,8 +99,7 @@ return array(
 	Сообщение было отправлено на ваш {v#email} 
 </p>
 				"
-		)
-
-	)
-);
+		]
+	]
+];
 ?>

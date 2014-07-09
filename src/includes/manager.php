@@ -78,7 +78,22 @@ class BotaskManager extends Ab_ModuleManager {
 		
 		return $ret;
 	}
-	
+
+    public function Bos_MenuData() {
+        if (!$this->IsAdminRole()) {
+            return null;
+        }
+        $lng = $this->module->lang;
+        return [
+            [
+                "name" => "botask",
+                "title" => $lng['bosmenu']['botask'],
+                "icon" => "/modules/botask/images/logo-96x96.gif",
+                "url" => "botask/ws/showWorkspacePanel"
+            ]
+        ];
+    }
+
 	public function ToArrayById($rows, $field = "id"){
 		$ret = array();
 		while (($row = $this->db->fetch_array($rows))){
