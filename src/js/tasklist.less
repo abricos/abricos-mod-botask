@@ -1,0 +1,408 @@
+.aw-botask {
+  .tlist table {
+    table-layout: fixed;
+    border-collapse: collapse;
+    width: 100%;
+  }
+  .tlist table th {
+    background-color: #F4F4EE;
+    font-weight: normal;
+    padding: 0;
+    white-space: nowrap;
+    text-align: left;
+  }
+
+  .tlist th a {
+    color: #000;
+    text-decoration: none;
+  }
+  .tlist th a:hover {
+    text-decoration: underline;
+  }
+
+  .tlist th ul {
+    height: 24px;
+  }
+  .tlist th li {
+    margin-top: 0.4em;
+    float: left;
+  }
+  .tlist th .sort-asc,
+  .tlist th .sort-desc,
+  .tlist th .sortstr-asc,
+  .tlist th .sortstr-desc,
+  .tlist th .sortdate-asc,
+  .tlist th .sortdate-desc {
+    display: none;
+    margin-top: 2px;
+    margin-left: 2px;
+    height: 13px;
+    background: url("/modules/botask/images/icons001.png") no-repeat 0 0 transparent;
+  }
+  .tlist th .sort-asc,
+  .tlist th .sort-desc {
+    width: 3px;
+    background-position: 0 -11px;
+  }
+  .tlist th .sort-desc {
+    background-position: -4px -11px;
+  }
+  .tlist th .sortstr-asc {
+    width: 9px;
+    background-position: -7px -11px;
+  }
+  .tlist th .sortstr-desc {
+    width: 9px;
+    background-position: -16px -11px;
+  }
+  .tlist th .sortdate-asc {
+    width: 22px;
+    background-position: -25px -11px;
+  }
+  .tlist th .sortdate-desc {
+    width: 22px;
+    background-position: -47px -11px;
+  }
+  .tlist th ul.sa .sort-asc,
+  .tlist th ul.sa .sortstr-asc,
+  .tlist th ul.sa .sortdate-asc {
+    display: inherit;
+  }
+  .tlist th ul.sb .sort-desc,
+  .tlist th ul.sb .sortstr-desc,
+  .tlist th ul.sb .sortdate-desc {
+    display: inherit;
+  }
+
+  .tlist tr.trrow td {
+    padding: 3px 0.3em 4px 3px;
+  }
+
+  .tlist table th.tname {
+    width: 75%;
+  }
+  .tlist table th.tname .tl {
+    margin-left: 30px;
+  }
+  .tlist .tname .ch-ico {
+    float: left;
+    height: 15px;
+  }
+  .tlist .tname .ch-tl {
+    margin-left: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    position: relative;
+  }
+  .tlist .tname .ch-tl .shadow {
+    background: url("/modules/botask/images/shadow.png") repeat-y scroll 0 0 transparent;
+    height: 1.3em;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 16px;
+  }
+
+  .tlist tr.trrow:hover .tname .ch-tl .shadow,
+  .tlist tr.trrow-hover .tname .ch-tl .shadow {
+    background: url("/modules/botask/images/shadow-row.png") repeat-y scroll 0 0 transparent;
+  }
+
+  .tlist div.ch-btn {
+    background: url("/modules/botask/images/expd.gif") no-repeat scroll 0 0 transparent;
+    cursor: pointer;
+    margin-top: 0.25em;
+    margin-left: 4px;
+    width: 20px;
+  }
+  .tlist .expanded div.ch-btn {
+    background-image: url("/modules/botask/images/clps.gif");
+  }
+  .tlist .nochild div.ch-btn {
+    background-image: none;
+  }
+  .tlist .tname .new,
+  .tlist .tname .chnew {
+    display: none;
+    font-family: sans-serif;
+    vertical-align: top;
+    font-size: 60%;
+    color: red;
+  }
+  .tlist .tname .chnew {
+    font-size: 50%;
+    vertical-align: bottom;
+  }
+  .tlist .tchnew .tname .chnew,
+  .tlist .tnew .tname .new {
+    /* display: inline; /**/
+  }
+
+  .tlist .level0 .tname .ch-ico {
+  }
+  .tlist .level0 .tname .ch-tl {
+    font-size: 1.2em;
+  }
+
+  .tlist .level1 .tname .ch-ico {
+    margin-left: 15px;
+  }
+  .tlist .level1 .tname W.ch-tl {
+    font-size: 1.1em;
+  }
+
+  .tlist .level2 .tname .ch-ico {
+    margin-left: 30px;
+  }
+  .tlist .level2 .tname .ch-tl {
+    font-size: 1.05em;
+  }
+
+  .tlist .level3 .tname .ch-ico {
+    margin-left: 45px;
+  }
+  .tlist .level3 .tname .ch-tl {
+    font-size: 1em;
+  }
+
+  .tlist .level4 .tname .ch-ico {
+    margin-left: 60px;
+  }
+  .tlist .level4 .tname .ch-tl {
+    font-size: 0.9em;
+  }
+
+  .tlist .level5 .tname .ch-ico {
+    margin-left: 75px;
+  }
+  .tlist .level5 .tname .ch-tl {
+    font-size: 0.8em;
+  }
+
+  .tlist .level6 .tname .ch-ico {
+    margin-left: 90px;
+  }
+  .tlist .level6 .tname .ch-tl {
+    font-size: 0.75em;
+  }
+
+  .tlist .level7 .tname .ch-ico {
+    margin-left: 105px;
+  }
+  .tlist .level7 .tname .ch-tl {
+    font-size: 0.7em;
+  }
+
+  .tlist .level8 .tname .ch-ico {
+    margin-left: 120px;
+  }
+  .tlist .level8 .tname .ch-tl {
+    font-size: 0.65em;
+  }
+
+  .tlist .level9 .tname .ch-ico {
+    margin-left: 135px;
+  }
+  .tlist .level9 .tname .ch-tl {
+    font-size: 0.6em;
+  }
+
+  .tlist .level10 .tname .ch-ico {
+    margin-left: 150px;
+  }
+  .tlist .level10 .tname .ch-tl {
+    font-size: 0.55em;
+  }
+
+  .tlist .level11 .tname .ch-ico {
+    margin-left: 150px;
+  }
+  .tlist .level11 .tname .ch-tl {
+    font-size: 0.55em;
+  }
+
+  .tlist .level12 .tname .ch-ico {
+    margin-left: 150px;
+  }
+  .tlist .level12 .tname .ch-tl {
+    font-size: 0.55em;
+  }
+
+  .tlist .level13 .tname .ch-ico {
+    margin-left: 150px;
+  }
+  .tlist .level13 .tname .ch-tl {
+    font-size: 0.55em;
+  }
+
+  .tlist .level14 .tname .ch-ico {
+    margin-left: 150px;
+  }
+  .tlist .level14 .tname .ch-tl {
+    font-size: 0.55em;
+  }
+
+  .tlist .level15 .tname .ch-ico {
+    margin-left: 150px;
+  }
+  .tlist .level15 .tname .ch-tl {
+    font-size: 0.55em;
+  }
+
+  .tlist .level16 .tname .ch-ico {
+    margin-left: 150px;
+  }
+  .tlist .level16 .tname .ch-tl {
+    font-size: 0.55em;
+  }
+
+  .tlist table th.tddl {
+    width: 9em;
+  }
+
+  .tlist table td.tddl {
+    vertical-align: middle;
+    font-size: 0.9em;
+  }
+
+  .tlist table th.tautor,
+  .tlist table th.texec {
+    width: 150px;
+    padding-left: 10px;
+  }
+  .tlist table th.tfav {
+    width: 32px;
+  }
+  .tlist table th.tfav ul {
+    margin-left: 2px;
+  }
+
+  .tlist table th.tvot {
+    width: 60px;
+  }
+  .tlist table th.tvot ul {
+    margin-left: 15px;
+  }
+
+  .tlist table th.tprt {
+    width: 8em;
+    text-align: center;
+  }
+  .tlist table th.tprt ul {
+    margin-left: 10px;
+  }
+  .tlist table td.tprt .prtclr {
+    text-align: center;
+  }
+
+  .tlist table th.twork {
+    width: 7em;
+  }
+  .tlist table td.twork {
+    vertical-align: middle;
+  }
+
+  .tlist table th.texec {
+    text-align: center;
+  }
+  .tlist table td.texec {
+    white-space: nowrap;
+  }
+
+  .tlist table td a {
+    text-decoration: none;
+  }
+
+  .tlist table .expired td,
+  .tlist table .expired td a,
+  .tlist table .expired td.tprt .tl {
+    color: #C82100;
+  }
+
+  .tlist table .closed td,
+  .tlist table .closed td .prtclr,
+  .tlist table .closed td a,
+  .tlist table .closed td.tprt .tl {
+    color: #839097;
+  }
+
+  .tlist table .removed td,
+  .tlist table .removed td .prtclr,
+  .tlist table .removed td a,
+  .tlist table .removed td.tprt .tl {
+    color: #839097;
+    text-decoration: line-through;
+  }
+
+  .tlist tr.trrow:hover,
+  .tlist tr.trrow-hover {
+    background: none repeat scroll 0 0 #FFF0C6;
+  }
+
+  .tlist .tlmenu {
+    margin-left: 10px;
+  }
+  .tlist .tlitem {
+    cursor: pointer;
+    float: left;
+    background-color: #E3E3D7;
+    margin: 0 1px;
+    padding: 5px 15px;
+  }
+  .tlist .tlitem:hover {
+    text-decoration: underline;
+
+  }
+  .tlist .current {
+    background-color: #F4F4EE;
+  }
+  .tlist .ttable {
+    clear: both;
+  }
+
+  .voting {
+    overflow: hidden;
+    height: 15px;
+    outline: medium none;
+  }
+  .voting .up,
+  .voting .down {
+    margin-top: 3px;
+    width: 10px;
+    height: 11px;
+    cursor: pointer;
+    float: left;
+  }
+  .voting .res {
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    user-select: none;
+    float: left;
+    margin-left: 2px;
+    color: #AAAAAA;
+  }
+
+  tr.trrow:hover .voting .up {
+    background: url("/modules/botask/images/icons001.png") no-repeat scroll 0px 0 transparent;
+  }
+  tr.trrow:hover .voting .up:hover {
+    background: url("/modules/botask/images/icons001.png") no-repeat scroll -60px 0 transparent;
+  }
+  tr.trrow:hover .voting .down {
+    background: url("/modules/botask/images/icons001.png") no-repeat scroll -10px 0 transparent;
+    margin-left: 2px;
+  }
+  tr.trrow:hover .voting .down:hover {
+    background: url("/modules/botask/images/icons001.png") no-repeat scroll -50px 0 transparent;
+  }
+  .voting-process tr.trrow:hover .voting .up,
+  .voting-process tr.trrow:hover .voting .down,
+  .voting-process .up,
+  .voting-process .up:hover,
+  .voting-process .down,
+  .voting-process .down:hover {
+    background: none;
+    cursor: inherit;
+  }
+
+}

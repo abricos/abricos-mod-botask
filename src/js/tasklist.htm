@@ -1,103 +1,171 @@
-<!--{list}--><div class="tlist" id="{i#id}">
-	<div class="tlmenu">
-		<div id="{i#opened}" class="tlitem current">{#mod.botask.tasklist.list.1}</div>
-		<div id="{i#favorite}" class="tlitem">{#mod.botask.tasklist.list.2}</div>
-		<div id="{i#arhive}" class="tlitem">{#mod.botask.tasklist.list.3}</div>
-		<div id="{i#removed}" class="tlitem">{#mod.botask.tasklist.list.4}</div>
-	</div>
-	<div id="{i#table}" class="ttable"></div>
+<!--{list}-->
+<div class="tlist" id="{i#id}">
+    <div class="tlmenu">
+        <div id="{i#opened}" class="tlitem current">{#mod.botask.tasklist.list.1}</div>
+        <div id="{i#favorite}" class="tlitem">{#mod.botask.tasklist.list.2}</div>
+        <div id="{i#arhive}" class="tlitem">{#mod.botask.tasklist.list.3}</div>
+        <div id="{i#removed}" class="tlitem">{#mod.botask.tasklist.list.4}</div>
+    </div>
+    <div id="{i#table}" class="ttable"></div>
 </div>
-<!--{table}--><table id="{i#id}">
-	<thead><tr>
-		{v#cols}
-	</tr></thead>
-	<tbody>{v#rows}</tbody>
+
+<!--{table}-->
+<table id="{i#id}">
+    <thead>
+    <tr>
+        {v#cols}
+    </tr>
+    </thead>
+    <tbody>{v#rows}</tbody>
 </table>
-<!--{hcolname}--><th class="tname">
-	<ul class="{v#sortname}">
-		<li class="tl"><a id="{i#sortname}" href="#">{#mod.botask.tasklist.hcolname.1}</a></li>
-		<li><div class="sort sortstr-asc"></div></li>
-		<li><div class="sort sortstr-desc"></div></li>
-	</ul>
+
+<!--{hcolname}-->
+<th class="tname">
+    <ul class="{v#sortname}">
+        <li class="tl"><a id="{i#sortname}" href="#">{#mod.botask.tasklist.hcolname.1}</a></li>
+        <li>
+            <div class="sort sortstr-asc"></div>
+        </li>
+        <li>
+            <div class="sort sortstr-desc"></div>
+        </li>
+    </ul>
 </th>
-<!--{hcolddl}--><th class="tddl">
-	<ul class="{v#sortdeadline}">
-		<li class="tl"><a id="{i#sortdeadline}" href="#">{#mod.botask.tasklist.hcolddl.1}</a></li>
-		<li><div class="sort sortdate-asc"></div></li>
-		<li><div class="sort sortdate-desc"></div></li>
-	</ul>
+
+<!--{hcolddl}-->
+<th class="tddl">
+    <ul class="{v#sortdeadline}">
+        <li class="tl"><a id="{i#sortdeadline}" href="#">{#mod.botask.tasklist.hcolddl.1}</a></li>
+        <li>
+            <div class="sort sortdate-asc"></div>
+        </li>
+        <li>
+            <div class="sort sortdate-desc"></div>
+        </li>
+    </ul>
 </th>
-<!--{hcolprt}--><th class="tprt">
-	<ul class="{v#sortpriority}">
-		<li class="tl"><a id="{i#sortpriority}" href="#">{#mod.botask.tasklist.hcolprt.1}</a></li>
-		<li><div class="sort sort-asc"></div></li>
-		<li><div class="sort sort-desc"></div></li>
-	</ul>
+
+<!--{hcolprt}-->
+<th class="tprt">
+    <ul class="{v#sortpriority}">
+        <li class="tl"><a id="{i#sortpriority}" href="#">{#mod.botask.tasklist.hcolprt.1}</a></li>
+        <li>
+            <div class="sort sort-asc"></div>
+        </li>
+        <li>
+            <div class="sort sort-desc"></div>
+        </li>
+    </ul>
 </th>
-<!--{hcolfav}--><th class="tfav">
-	<ul class="{v#sortfavorite}">
-		<li class="tl">
+
+<!--{hcolfav}-->
+<th class="tfav">
+    <ul class="{v#sortfavorite}">
+        <li class="tl">
 			<span class="fav-icon-normal">
 				<img id="{i#sortfavorite}" class="fav-checked" src="/images/empty.gif">
 			</span>
-		</li>
-		<li><div class="sort sort-asc"></div></li>
-		<li><div class="sort sort-desc"></div></li>
-	</ul>
+        </li>
+        <li>
+            <div class="sort sort-asc"></div>
+        </li>
+        <li>
+            <div class="sort sort-desc"></div>
+        </li>
+    </ul>
 </th>
-<!--{hcolvot}--><th class="tvot">
-	<ul class="{v#sortvoting}">
-		<li class="tl"><a id="{i#sortvoting}" href="#" title="{#mod.botask.tasklist.hcolvot.1}">{#mod.botask.tasklist.hcolvot.2}</a></li>
-		<li><div class="sort sort-asc"></div></li>
-		<li><div class="sort sort-desc"></div></li>
-	</ul>
+
+<!--{hcolvot}-->
+<th class="tvot">
+    <ul class="{v#sortvoting}">
+        <li class="tl"><a id="{i#sortvoting}" href="#" title="{#mod.botask.tasklist.hcolvot.1}">{#mod.botask.tasklist.hcolvot.2}</a>
+        </li>
+        <li>
+            <div class="sort sort-asc"></div>
+        </li>
+        <li>
+            <div class="sort sort-desc"></div>
+        </li>
+    </ul>
 </th>
-<!--{hcolwork}--><th class="twork">
-	<ul class="{v#sortwork}">
-		<li class="tl"><a id="{i#sortwork}" href="#" title="{#mod.botask.tasklist.hcolwork.1}">{#mod.botask.tasklist.hcolwork.2}</a></li>
-		<li><div class="sort sort-asc"></div></li>
-		<li><div class="sort sort-desc"></div></li>
-	</ul>
+
+<!--{hcolwork}-->
+<th class="twork">
+    <ul class="{v#sortwork}">
+        <li class="tl"><a id="{i#sortwork}" href="#" title="{#mod.botask.tasklist.hcolwork.1}">{#mod.botask.tasklist.hcolwork.2}</a>
+        </li>
+        <li>
+            <div class="sort sort-asc"></div>
+        </li>
+        <li>
+            <div class="sort sort-desc"></div>
+        </li>
+    </ul>
 </th>
-<!--{hcolexec}--><th class="texec">
-	<ul class="{v#sortexec}">
-		<li class="tl"><a id="{i#sortexec}" href="#" title="{#mod.botask.tasklist.hcolexec.1}">{#mod.botask.tasklist.hcolexec.2}</a></li>
-		<li><div class="sort sort-asc"></div></li>
-		<li><div class="sort sort-desc"></div></li>
-	</ul>
+
+<!--{hcolexec}-->
+<th class="texec">
+    <ul class="{v#sortexec}">
+        <li class="tl"><a id="{i#sortexec}" href="#" title="{#mod.botask.tasklist.hcolexec.1}">{#mod.botask.tasklist.hcolexec.2}</a>
+        </li>
+        <li>
+            <div class="sort sort-asc"></div>
+        </li>
+        <li>
+            <div class="sort sort-desc"></div>
+        </li>
+    </ul>
 </th>
-<!--{row}--><tr id="{i#id}-{v#id}" class="row {v#classch} level{v#level} {v#tnew} {v#tchnew} priority{v#prt} {v#expired} {v#closed} {v#removed}">
-	{v#cols}
+
+<!--{row}-->
+<tr id="{i#id}-{v#id}"
+    class="trrow {v#classch} level{v#level} {v#tnew} {v#tchnew} priority{v#prt} {v#expired} {v#closed} {v#removed}">
+    {v#cols}
 </tr>
-<!--{rcolname}--><td class="tname">
-	<div class="ch-ico">
-		<div class="ch-btn" id="{i#exp}-{v#id}">&nbsp;</div>
-	</div>
-	<div class="ch-tl">
-		<a href="#app=botask/ws/showWorkspacePanel/{v#viewlink}/{v#id}/" 
-			title="{v#tl} (Автор: {v#aunm}; Создан: {v#dl}; Изменен: {v#udl})">{v#tl}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
-		<span id="{i#new}-{v#id}" class="new" title="{#mod.botask.tasklist.rcolname.1}">{#mod.botask.tasklist.rcolname.2}</span>
-		<span id="{i#chnew}-{v#id}" class="chnew" title="{#mod.botask.tasklist.rcolname.3}">{#mod.botask.tasklist.rcolname.4}</span>
-		<div class="shadow"></div>
-	</div>
+
+<!--{rcolname}-->
+<td class="tname">
+    <div class="ch-ico">
+        <div class="ch-btn" id="{i#exp}-{v#id}">&nbsp;</div>
+    </div>
+    <div class="ch-tl">
+        <a href="#app=botask/ws/showWorkspacePanel/{v#viewlink}/{v#id}/"
+           title="{v#tl} (Автор: {v#aunm}; Создан: {v#dl}; Изменен: {v#udl})">{v#tl}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
+        <span id="{i#new}-{v#id}" class="new" title="{#mod.botask.tasklist.rcolname.1}">{#mod.botask.tasklist.rcolname.2}</span>
+        <span id="{i#chnew}-{v#id}" class="chnew" title="{#mod.botask.tasklist.rcolname.3}">{#mod.botask.tasklist.rcolname.4}</span>
+
+        <div class="shadow"></div>
+    </div>
 </td>
-<!--{rcolddl}--><td class="tddl">
-	{v#ddl}
+
+<!--{rcolddl}-->
+<td class="tddl">
+    {v#ddl}
 </td>
-<!--{rcolprt}--><td class="tprt">
-	<div class="prtclr">{v#prts}</div>
+
+<!--{rcolprt}-->
+<td class="tprt">
+    <div class="prtclr">{v#prts}</div>
 </td>
-<!--{rcolfav}--><td class="tfav">
+
+<!--{rcolfav}-->
+<td class="tfav">
 	<span id="{i#fav}-{v#id}" class="fav-icon-normal" title="{#mod.botask.tasklist.rcolfav.1}">
 		<img id="{i#favi}-{v#id}" class="{v#fav}" src="/images/empty.gif">
 	</span>
 </td>
-<!--{rcolvot}--><td class="tvot">
-	<ul id="{i#voting}-{v#id}" class="voting">
-		<li id="{i#up}-{v#id}" class="up" title="{#mod.botask.tasklist.rcolvot.1}"></li>
-		<li id="{i#vot}-{v#id}" class="res">{v#ord}</li>
-		<li id="{i#down}-{v#id}" class="down" title="{#mod.botask.tasklist.rcolvot.2}"></li>
-	</ul>
+
+<!--{rcolvot}-->
+<td class="tvot">
+    <ul id="{i#voting}-{v#id}" class="voting">
+        <li id="{i#up}-{v#id}" class="up" title="{#mod.botask.tasklist.rcolvot.1}"></li>
+        <li id="{i#vot}-{v#id}" class="res">{v#ord}</li>
+        <li id="{i#down}-{v#id}" class="down" title="{#mod.botask.tasklist.rcolvot.2}"></li>
+    </ul>
 </td>
-<!--{rcolwork}--><td class="twork">{v#work}</td>
-<!--{rcolexec}--><td class="texec">{v#exec}</td>
+
+<!--{rcolwork}-->
+<td class="twork">{v#work}</td>
+
+<!--{rcolexec}-->
+<td class="texec">{v#exec}</td>

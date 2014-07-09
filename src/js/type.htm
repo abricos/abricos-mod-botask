@@ -1,25 +1,43 @@
-<!--{widget}--><div id="{i#id}" class="typeselect">
+<!--{widget}-->
+<div id="{i#id}" class="typeselect panel panel-default">
+    <div class="panel-heading">
+        <span>{#mod.botask.type.widget.1}</span>
+    </div>
+    <div class="panel-body">
 
-	<div class="head">
-		<span>{#mod.botask.type.widget.1}</span>
-	</div>
-	<div class="raditems">
-		<p>{#mod.botask.type.widget.2}</p>
-		<p>
-			<input id="{i#tpproject}" checked="checked" name="typesel" type="radio" value="2" /><label for="{i#tpproject}">{#mod.botask.type.widget.3}</label>
-		</p>
-		<p>
-			<input id="{i#tptask}" name="typesel" type="radio" value="3" /><label for="{i#tptask}">{#mod.botask.type.widget.4}</label>
-		</p>
-		<p>
-			<input id="{i#tpfolder}" name="typesel" type="radio" value="1" /><label for="{i#tpfolder}">{#mod.botask.type.widget.5}</label>
-		</p>
-	</div>
-	
-	<div class="buttons center">
-		<input type="button" value="{#mod.botask.type.widget.6}" id="{i#bsave}" class="btn" />
-		<input type="button" value="{#mod.botask.type.widget.7}" id="{i#bcancel}" class="btn" style="display: none" />
-		<img src="/images/loading.gif" id="{i#loadingi}" style="display: none;" />
-	</div>
-	
+        <form role="form">
+
+            <p>{#mod.botask.type.widget.2}</p>
+
+            <div class="radio">
+                <label>
+                    <input id="{i#tpproject}" checked name="typesel" type="radio" value="2"/>
+                    {#mod.botask.type.widget.3}
+                </label>
+            </div>
+            <div class="radio">
+                <label>
+                    <input id="{i#tpfolder}" name="typesel" type="radio" value="1"/>
+                    {#mod.botask.type.widget.4}
+                </label>
+            </div>
+            <div class="radio">
+                <label>
+                    <input id="{i#tptask}" name="typesel" type="radio" value="3"/>
+                    {#mod.botask.type.widget.5}
+                </label>
+            </div>
+
+            <div class="text-center">
+                <button id="{i#bsave}" class="btn btn-default">
+                    {#mod.botask.type.widget.6}
+                </button>
+                <button id="{i#bcancel}" class="btn btn-default" style="display: none">
+                    {#mod.botask.type.widget.7}
+                </button>
+                <img src="/images/loading.gif" id="{i#loadingi}" style="display: none;"/>
+            </div>
+
+        </form>
+    </div>
 </div>
