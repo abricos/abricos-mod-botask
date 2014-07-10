@@ -1,59 +1,77 @@
-<!--{widget}--><div class="cklist" id="{i#id}">
-	<div id="{i#table}"></div>
-	<div id="{i#recycle}" class="recycle">
-		<div class="btntab">
-			<a href="#" id="{i#brecshow}">{#mod.botask.checklist.widget.1} (<span id="{i#reccnt}">0</span>)</a>
-			<a href="#" id="{i#brechide}" style="display: none;">{#mod.botask.checklist.widget.2}</a>
-		</div>
-		<div id="{i#rectable}" class="rectable" style="display: none;"></div>
-		<div class="mgrbot"></div>
-	</div>
-	<a id="{i#badd}" class="badd" title="{#mod.botask.checklist.widget.3}" href="#">{#mod.botask.checklist.widget.4}</a>
+<!--{widget}-->
+<div class="cklist" id="{i#id}">
+    <div id="{i#table}"></div>
+    <div id="{i#recycle}" class="recycle">
+        <div class="btntab">
+            <a href="#" id="{i#brecshow}">{#mod.botask.checklist.widget.1} (<span id="{i#reccnt}">0</span>)</a>
+            <a href="#" id="{i#brechide}" style="display: none;">{#mod.botask.checklist.widget.2}</a>
+        </div>
+        <div id="{i#rectable}" class="rectable" style="display: none;"></div>
+        <div class="mgrbot"></div>
+    </div>
+    <a id="{i#badd}" class="badd" title="{#mod.botask.checklist.widget.3}" href="#">
+        {#mod.botask.checklist.widget.4}
+    </a>
 	<span id="{i#btnlst}" class="btnlst" style="display: none;">
-		<a id="{i#bsave}" class="bsave" href="#" title="{#mod.botask.checklist.widget.5}">{#mod.botask.checklist.widget.6}</a>
+		<a id="{i#bsave}" class="bsave" href="#" title="{#mod.botask.checklist.widget.5}">
+            {#mod.botask.checklist.widget.6}
+        </a>
 		<a id="{i#bcancel}" class="bcancel" href="#" title="{#mod.botask.checklist.widget.7}">{#mod.botask.checklist.widget.8}</a>
 	</span>
 </div>
-<!--{row}--><div id="{i#id}" class="row">
-	<div id="{i#bg}" class="uncheck">
-		<input type="checkbox" id="{i#checkbox}" class="chk" {v#checked} />
-		<div class="chkok"></div>
-		
-		<div class="vt">
-			<div class="view">
-				<div id="{i#text}" class="text"></div>
-				<div class="btns" id="{i#btnsc}">
-					<img src="/modules/botask/images/remove.gif" id="{i#bremove}" class="bremove" title="{#mod.botask.checklist.row.1}"/>
-					<a href="#" id="{i#brestore}" class="brestore">{#mod.botask.checklist.row.2}</a>
-				</div>
-			</div>
-			
-			<div id="{i#action}" class="action" style="display: none">
-				<textarea id="{i#input}"></textarea>
-				<div id="{i#btns}" class="btns">
-					<a href="#" id="{i#bsave}">{#mod.botask.checklist.row.3}</a>
-					<a href="#" id="{i#bcancel}">{#mod.botask.checklist.row.4}</a>
-				</div>
-			</div>
-		</div>
-		{v#info}
-	</div>
+
+<!--{row}-->
+<div id="{i#id}" class="chrow">
+    <div id="{i#bg}" class="uncheck">
+        <input type="checkbox" id="{i#checkbox}" class="chk" {v#checked} />
+        <div class="chkok"></div>
+
+        <div class="vt">
+            <div class="view">
+                <div id="{i#text}" class="text"></div>
+                <div class="btns" id="{i#btnsc}">
+                    <img src="/modules/botask/images/remove.gif" id="{i#bremove}" class="bremove"
+                         title="{#mod.botask.checklist.row.1}"/>
+                    <a href="#" id="{i#brestore}" class="brestore">{#mod.botask.checklist.row.2}</a>
+                </div>
+            </div>
+
+            <div id="{i#action}" class="action" style="display: none">
+                <textarea id="{i#input}" class="form-control input-sm"></textarea>
+
+                <div id="{i#btns}" class="btns">
+                    <a href="#" id="{i#bsave}" class="btn btn-default btn-xs">
+                        {#mod.botask.checklist.row.3}
+                    </a>
+                    <a href="#" id="{i#bcancel}" class="btn btn-default btn-xs">
+                        {#mod.botask.checklist.row.4}
+                    </a>
+                </div>
+            </div>
+        </div>
+        {v#info}
+    </div>
 </div>
-<!--{info}--><div class="info">
-	<p>
-		<span>{#mod.botask.checklist.info.1}:</span><br />
-		{v#inew}
-	</p>
-	<p style="display: {v#diupdate}">
-		<span>{#mod.botask.checklist.info.2}:</span><br />
-		{v#iupdate}
-	</p>
-	<p style="display: {v#dicheck}">
-		<span>{#mod.botask.checklist.info.3}:</span> <br />
-		{v#icheck}
-	</p>
-	<p style="display: {v#diremove}">
-		<span>{#mod.botask.checklist.info.4}:</span> <br />
-		{v#iremove}
-	</p>
+
+<!--{info}-->
+<div class="info">
+    <p>
+        <span>{#mod.botask.checklist.info.1}:</span><br/>
+        {v#inew}
+    </p>
+
+    <p style="display: {v#diupdate}">
+        <span>{#mod.botask.checklist.info.2}:</span><br/>
+        {v#iupdate}
+    </p>
+
+    <p style="display: {v#dicheck}">
+        <span>{#mod.botask.checklist.info.3}:</span> <br/>
+        {v#icheck}
+    </p>
+
+    <p style="display: {v#diremove}">
+        <span>{#mod.botask.checklist.info.4}:</span> <br/>
+        {v#iremove}
+    </p>
 </div>
