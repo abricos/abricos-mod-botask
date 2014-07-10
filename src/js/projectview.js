@@ -1,5 +1,4 @@
 /*
-@version $Id$
 @package Abricos
 @copyright Copyright (C) 2011 Abricos All rights reserved.
 @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
@@ -150,8 +149,9 @@ Component.entryPoint = function(NS){
 				this.attachListWidget = new Brick.mod.filemanager.AttachmentListWidget(TM.getEl('panel.ftable'));
 				
 				var mPT = Brick.mod.pictab;
-				if (mPT && mPT.ImageListWidget){
-					this.drawListWidget = new mPT.ImageListWidget(gel('images'), task.images, true);
+				if (mPT && mPT.ImageListWidget && L.isArray(task.images) && task.images.length > 0){
+                    TM.elShow('panel.imgwidget');
+                    this.drawListWidget = new mPT.ImageListWidget(gel('images'), task.images, true);
 					this.drawListWidget.changedEvent.subscribe(this.onCanvasChanged, this, true);
 				}
 				task.isNewCmt = false;

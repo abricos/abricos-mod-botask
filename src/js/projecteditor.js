@@ -1,5 +1,4 @@
 /*
-@version $Id: taskeditor.js 1629 2012-05-28 11:48:48Z roosit $
 @package Abricos
 @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
 */
