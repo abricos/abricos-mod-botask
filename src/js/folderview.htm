@@ -1,100 +1,130 @@
-<!--{panel}--><div id="{i#id}" class="folderview">
-	<div class="head">
-		<table><tbody><tr>
-			<td class="title">
-				<div>
-					<img src="/modules/botask/images/tfolder.gif" title="{#mod.botask.folderview.panel.1}" /> {v#tl}
-				</div>
-			</td>
-			<td class="fav">
-				<table><tbody><tr>
-					<td>
-						<div id="{i#fav}" class="fav-icon-normal" title="{#mod.botask.folderview.panel.2}">
-							<img id="{i#favi}" class="{v#fav}" src="/images/empty.gif">
-						</div>
-					</td>
-					<td id="{i#vbieditor}">
-						<div class="bc" title="{#mod.botask.folderview.panel.3}">
-							<div id="{i#biedit}" class="bedit-icon b"></div>
-						</div>
-					</td>
-					<td id="{i#vbiadd}">
-						<div class="bc" title="{#mod.botask.folderview.panel.4}">
-							<div id="{i#biadd}" class="badd-icon b"></div>
-						</div>
-					</td>
-				</tr></tbody></table>
-				
-			</td>
-			<td id="{i#status}" class="status"></td>
-		</tr></tbody></table>
-	</div>
+<!--{panel}-->
+<div id="{i#id}" class="folderview panel panel-default">
 
-	<div class="infobox">
-		<table><tbody>
-		<tr>
-			<td>
-				<dl><dt>{#mod.botask.folderview.panel.5}</dt><dd id="{i#taskid}"></dd></dl>
-			</td>
-			<td>
-				<dl><dt>{#mod.botask.folderview.panel.6}</dt><dd id="{i#author}"></dd></dl>
-			</td>
-			<td>
-				<dl><dt>{#mod.botask.folderview.panel.7}</dt><dd id="{i#dl}"></dd></dl>
-			</td>
-			<td>
+    <div class="panel-heading">
+        <div class="row">
+            <div class="col-md-9">
+                <h3 class="panel-title">
+                    <img src="/modules/botask/images/tfolder.gif" title="{#mod.botask.folderview.panel.1}"/>
+                    {v#tl}
+                </h3>
+            </div>
+            <div class="col-md-1">
+                <table class="fav">
+                    <tbody>
+                    <tr>
+                        <td>
+                            <div id="{i#fav}" class="fav-icon-normal" title="{#mod.botask.folderview.panel.2}">
+                                <img id="{i#favi}" class="{v#fav}" src="/images/empty.gif">
+                            </div>
+                        </td>
+                        <td id="{i#vbieditor}">
+                            <div class="bc" title="{#mod.botask.folderview.panel.3}">
+                                <div id="{i#biedit}" class="bedit-icon b"></div>
+                            </div>
+                        </td>
+                        <td id="{i#vbiadd}">
+                            <div class="bc" title="{#mod.botask.folderview.panel.4}">
+                                <div id="{i#biadd}" class="badd-icon b"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-2">
+                <h3 class="panel-title text-center" id="{i#status}"></h3>
+            </div>
+        </div>
+    </div>
 
-				<div class="manbuttons" id="{i#manbuttons}">
-					<span id="{i#buttons}">
-					
-						<a id="{i#bopen}" style="display: none;" class="bsetexec btkbt" href="#" title="{#mod.botask.folderview.panel.8}">{#mod.botask.folderview.panel.9}</a>
-						<a id="{i#barhive}" style="display: none;" class="bsetexec btkbt" href="#" title="{#mod.botask.folderview.panel.10}">{#mod.botask.folderview.panel.11}</a>
-						<a id="{i#brestore}" style="display: none;" class="bsetexec btkbt" href="#" title="{#mod.botask.folderview.panel.12}">{#mod.botask.folderview.panel.13}</a>
-						
-						<a id="{i#beditor}" class="beditor btkbt" href="#">{#mod.botask.folderview.panel.14}</a>
-						<a id="{i#bremove}" class="bremove btkbt" href="#">{#mod.botask.folderview.panel.15}</a>
-					</span>
-					<img id="{i#bloading}" src="/images/loading.gif" style="display: none;"/>
-				</div>
-			
-			</td>
-		</tr></tbody></table>
-		
-	</div>
-	
-	<div class="bodybox">
-		<div id="{i#taskbody}" class="taskbody aw-page-content">
-			<img src="/images/loading.gif" />
-		</div>
-	
-		<ul id="{i#files}" class="dfiles" style="display: none">
-			<li class="tl">{#mod.botask.taskview.panel.26}:</li>
-			<li id="{i#ftable}"></li>
-		</ul>
-		<div class="clear"></div>
-	</div>
-	
-	<div class="tkcomments">
-		<div class="comments" id="{i#comments}"></div>
-	</div>
+    <div class="infobox">
+        <table>
+            <tbody>
+            <tr>
+                <td>
+                    <dl>
+                        <dt>{#mod.botask.folderview.panel.5}</dt>
+                        <dd id="{i#taskid}"></dd>
+                    </dl>
+                </td>
+                <td>
+                    <dl>
+                        <dt>{#mod.botask.folderview.panel.6}</dt>
+                        <dd id="{i#author}"></dd>
+                    </dl>
+                </td>
+                <td>
+                    <dl>
+                        <dt>{#mod.botask.folderview.panel.7}</dt>
+                        <dd id="{i#dl}"></dd>
+                    </dl>
+                </td>
+                <td>
+                    <div class="manbuttons" id="{i#manbuttons}">
+                        <span id="{i#buttons}">
+                            <a id="{i#bopen}" style="display: none;" class="bsetexec btkbt" href="#"
+                               title="{#mod.botask.folderview.panel.8}">{#mod.botask.folderview.panel.9}</a>
+                            <a id="{i#barhive}" style="display: none;" class="bsetexec btkbt" href="#"
+                               title="{#mod.botask.folderview.panel.10}">{#mod.botask.folderview.panel.11}</a>
+                            <a id="{i#brestore}" style="display: none;" class="bsetexec btkbt" href="#"
+                               title="{#mod.botask.folderview.panel.12}">{#mod.botask.folderview.panel.13}</a>
+
+                            <a id="{i#beditor}" class="beditor btkbt" href="#">{#mod.botask.folderview.panel.14}</a>
+                            <a id="{i#bremove}" class="bremove btkbt" href="#">{#mod.botask.folderview.panel.15}</a>
+                        </span>
+                        <img id="{i#bloading}" src="/images/loading.gif" style="display: none;"/>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="panel-body">
+        <div class="bodybox">
+            <div id="{i#taskbody}" class="taskbody aw-page-content">
+                <img src="/images/loading.gif"/>
+            </div>
+
+            <ul id="{i#files}" class="dfiles" style="display: none">
+                <li class="tl">{#mod.botask.taskview.panel.26}:</li>
+                <li id="{i#ftable}"></li>
+            </ul>
+            <div class="clear"></div>
+        </div>
+
+        <div class="tkcomments">
+            <div class="comments" id="{i#comments}"></div>
+        </div>
+    </div>
 </div>
-<!--{empty}--><div class="folderview"><div class="empty">{#mod.botask.folderview.empty.1}</div></div>
+
+<!--{empty}-->
+<div class="folderview">
+    <div class="empty">{#mod.botask.folderview.empty.1}</div>
+</div>
+
 <!--{user}--><a href="#" class="show-user-profile user-{v#uid}">{v#unm}</a>
-<!--{tkremovepanel}--><div class='hd'>Удаление раздела</div>
+
+<!--{tkremovepanel}-->
+<div class='hd'>Удаление раздела</div>
 <div class='bd aw-botask'>
-	<div id="{i#dialogremove}" class="field">
-		<h4>{#mod.botask.folderview.tkremovepanel.1}</h4>
-		<p>
-			{#mod.botask.folderview.tkremovepanel.2}
-		</p>
-		<div class="buttons right">
+    <div id="{i#dialogremove}" class="field">
+        <h4>{#mod.botask.folderview.tkremovepanel.1}</h4>
+
+        <p>
+            {#mod.botask.folderview.tkremovepanel.2}
+        </p>
+
+        <div class="buttons right">
 			<span id="{i#btns}">
-				<input id="{i#bremove}" value="{#mod.botask.folderview.tkremovepanel.3}" type="button" />
-				<input id="{i#bcancel}" value="{#mod.botask.folderview.tkremovepanel.4}" type="button" />
+				<input id="{i#bremove}" value="{#mod.botask.folderview.tkremovepanel.3}" type="button"/>
+				<input id="{i#bcancel}" value="{#mod.botask.folderview.tkremovepanel.4}" type="button"/>
 			</span>
 			<span id="{i#bloading}" style="display: none">
-				<img src="/images/loading.gif" /> {#mod.botask.folderview.tkremovepanel.5}
+				<img src="/images/loading.gif"/> {#mod.botask.folderview.tkremovepanel.5}
 			</span>
-		</div>
-	</div>
+        </div>
+    </div>
 </div>
