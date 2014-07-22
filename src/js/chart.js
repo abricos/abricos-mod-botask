@@ -87,15 +87,7 @@ Component.entryPoint = function(){
 	COLORS[COLORS.length] = {'border': '#A59114', 'body': '#D1BC36'};
 	COLORS[COLORS.length] = {'border': '#871111', 'body': '#AD2D2D'};
 	
-	var initCSS = false,
-		buildTemplate = function(w, ts){
-		if (!initCSS){
-			Brick.util.CSS.update(Brick.util.CSS['botask']['chart']);
-			delete Brick.util.CSS['botask']['chart'];
-			initCSS = true;
-		}
-		w._TM = TMG.build(ts); w._T = w._TM.data; w._TId = w._TM.idManager;
-	};
+    var buildTemplate = this.buildTemplate;
 
 	// линия на графике
 	var TaskBarFeature = function(cfg){
