@@ -104,7 +104,7 @@ class BotaskManager extends Ab_ModuleManager {
         if (!$this->IsAdminRole()) {
             return null;
         }
-        $lng = $this->module->lang;
+        $lng = $this->module->GetI18n();
         return array(
             array(
                 "name" => "botask",

@@ -9,7 +9,7 @@
 class BotaskModule extends Ab_Module {
 	
 	public function __construct(){
-		$this->version = "0.3";
+		$this->version = "0.3.0";
 		$this->name = "botask";
 		$this->permission = new BotaskPermission($this);
 	}
