@@ -1,5 +1,6 @@
 <?php
 return array(
+    "title" => "Проекты и задачи",
     "bosmenu" => array(
         "botask" => "Проекты и задачи"
     ),
