@@ -76,8 +76,6 @@ class BotaskManager extends Ab_ModuleManager {
                 return $this->TaskShowComments($d->taskid, $d->val);
             case 'history':
                 return $this->History($d->socid, $d->firstid);
-            case 'usercfgupdate':
-                return $this->UserConfigUpdate($d->cfg);
             case 'lastcomments':
                 return $this->CommentList();
             case 'towork':
@@ -98,6 +96,15 @@ class BotaskManager extends Ab_ModuleManager {
         $ret->changes = $this->BoardData($d->hlid);
 
         return $ret;
+    }
+
+    public function User_OptionNames() {
+        return array(
+            "tasksort",
+            "tasksortdesc",
+            "taskviewchild",
+            "taskviewcmts"
+        );
     }
 
     public function Bos_MenuData() {
@@ -196,10 +203,6 @@ class BotaskManager extends Ab_ModuleManager {
 
         // авторы
         $autors = array();
-
-        if ($lastHId == 0) {
-            $ret->cfg = $this->UserConfigList();
-        }
 
         $nusers = array();
 
@@ -442,8 +445,7 @@ class BotaskManager extends Ab_ModuleManager {
 
         $task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
 
-        if ($task['st'] != BotaskStatus::TASK_CLOSE &&
-            $task['st'] != BotaskStatus::TASK_REMOVE
+        if ($task['st'] != BotaskStatus::TASK_CLOSE && $task['st'] != BotaskStatus::TASK_REMOVE
         ) {
             return null;
         }
@@ -584,8 +586,7 @@ class BotaskManager extends Ab_ModuleManager {
                 }
             }
 
-            if ($info['st'] == BotaskStatus::TASK_CLOSE ||
-                $info['st'] == BotaskStatus::TASK_REMOVE
+            if ($info['st'] == BotaskStatus::TASK_CLOSE || $info['st'] == BotaskStatus::TASK_REMOVE
             ) {
                 return null;
             }
@@ -857,50 +858,42 @@ class BotaskManager extends Ab_ModuleManager {
         return $hst;
     }
 
-    private function UserConfigCheckVarName($name) {
-        if (!$this->IsViewRole()) {
-            return false;
-        }
-        switch ($name) {
-            case "tasksort":
-                return true;
-            case "tasksortdesc":
-                return true;
-            case "taskviewchild":
-                return true;
-            case "taskviewcmts":
-                return true;
-        }
-        return false;
-    }
-
-    public function UserConfigList() {
+    /*
+    public function UserOptionList() {
         if (!$this->IsViewRole()) {
             return false;
         }
 
-        $ret = new stdClass();
-        $rows = Abricos::$user->GetManager()->UserConfigList($this->userid, 'botask');
-        while (($row = $this->db->fetch_array($rows))) {
-            if ($this->UserConfigCheckVarName($row['nm'])) {
-                $ret->$row['nm'] = $row['vl'];
-            }
-        }
+        $pMan = UserModule::$instance->GetManager()->GetPersonalManager();
+        $list = $pMan->UserOptionList('botask', $this->UserOptionVarNames());
 
-        return $ret;
+        return $list;
     }
 
-    public function UserConfigUpdate($newcfg) {
+    public function UserOptionListToAJAX() {
+        $list = $this->UserOptionList();
+        if (empty($list)) {
+            return null;
+        }
+        return $list->ToAJAX();
+    }
+
+    public function UserOptionUpdate($newcfg) {
         if (!$this->IsViewRole()) {
             return null;
         }
 
         $uman = Abricos::$user->GetManager();
 
-        $rows = $uman->UserConfigList($this->userid, 'botask');
+        $rows = $uman->UserOptionList($this->userid, 'botask');
         $arr = $this->ToArrayById($rows);
 
-        $names = array("tasksort", "tasksortdesc", "taskviewchild", "taskviewcmts");
+        $names = array(
+            "tasksort",
+            "tasksortdesc",
+            "taskviewchild",
+            "taskviewcmts"
+        );
 
         foreach ($names as $name) {
             $find = null;
@@ -911,13 +904,13 @@ class BotaskManager extends Ab_ModuleManager {
                 }
             }
             if (is_null($find)) {
-                $uman->UserConfigAppend($this->userid, 'botask', $name, $newcfg->$name);
+                $uman->UserOptionAppend($this->userid, 'botask', $name, $newcfg->$name);
             } else {
-                $uman->UserConfigUpdate($this->userid, $cfgid, $newcfg->$name);
+                $uman->UserOptionUpdate($this->userid, $cfgid, $newcfg->$name);
             }
         }
-        return $this->UserConfigList();
-    }
+        return $this->UserOptionList();
+    }/**/
 
     public function CommentList() {
         if (!$this->IsViewRole()) {
@@ -998,7 +991,7 @@ class BotaskManager extends Ab_ModuleManager {
         }
 
         $brick = Brick::$builder->LoadBrickS('botask', 'templates', null, null);
-        $v = & $brick->param->var;
+        $v = &$brick->param->var;
         $host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_ENV['HTTP_HOST'];
 
         $tppfx = "";

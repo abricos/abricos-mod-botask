@@ -66,8 +66,8 @@ Component.entryPoint = function(NS){
 				'hideinfo': true
 			});
 			this.checklist.update();
-			
-			if (Brick.Permission.check('filemanager', '30') == 1){
+
+			if (Brick.mod.filemanager.roles.isWrite){
 				this.filesWidget = new Brick.mod.filemanager.AttachmentWidget(gel('files'), task.files);
 			}else{
 				this.filesWidget = null;

@@ -12,7 +12,6 @@ Component.requires = {
 		{name: 'widget', files: ['calendar.js']},
         {name: 'uprofile', files: ['users.js']},
         {name: 'botask', files: ['widgets.js', 'calendar.js', 'checklist.js']},
-        {name: 'filemanager', files: ['attachment.js']},
         {name: 'pictab', files: ['draw.js']}
 	]
 };
@@ -64,7 +63,7 @@ Component.entryPoint = function(NS){
 			});
 			this.checklist.update();
 			
-			if (Brick.Permission.check('filemanager', '30') == 1){
+			if (Brick.mod.filemanager.roles.isWrite){
 				this.filesWidget = new Brick.mod.filemanager.AttachmentWidget(gel('files'), task.files);
 			}else{
 				this.filesWidget = null;
