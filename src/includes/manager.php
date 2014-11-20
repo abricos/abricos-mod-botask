@@ -133,7 +133,7 @@ class BotaskManager extends Ab_ModuleManager {
     public function ToArray($rows, &$ids1 = "", $fnids1 = 'uid', &$ids2 = "", $fnids2 = '', &$ids3 = "", $fnids3 = '') {
         $ret = array();
         while (($row = $this->db->fetch_array($rows))) {
-            array_push($ret, $row);
+            $ret[] = $row;
             if (is_array($ids1)) {
                 $ids1[$row[$fnids1]] = $row[$fnids1];
             }
@@ -214,7 +214,7 @@ class BotaskManager extends Ab_ModuleManager {
                 $lastupdate = $row['dl'];
             }
             $lastupdate = min($lastupdate, $row['dl'] * 1);
-            array_push($ret->hst, $row);
+            $ret->hst[] = $row;
             if ($lastHId > 0 && !empty($row['usad'])) {
                 $urs = explode(",", $row['usad']);
                 foreach ($urs as $ur) {
@@ -239,7 +239,7 @@ class BotaskManager extends Ab_ModuleManager {
 
         $rows = BotaskQuery::BoardTaskUsers($this->db, $this->userid, $lastupdate);
         while (($row = $this->db->fetch_array($rows))) {
-            array_push($ret->board[$row['tid']]['users'], $row['uid']);
+            $ret->board[$row['tid']]['users'][] = $row['uid'];
         }
 
         $rows = BotaskQuery::BoardUsers($this->db, $this->userid, $lastupdate, $autors);
@@ -810,13 +810,13 @@ class BotaskManager extends Ab_ModuleManager {
         $task['users'] = array();
         $users = $this->TaskUserList($taskid, true);
         foreach ($users as $user) {
-            array_push($task['users'], $user['id']);
+            $task['users'][] = $user['id'];
         }
 
         $task['files'] = array();
         $files = $this->TaskFiles($taskid, true);
         foreach ($files as $file) {
-            array_push($task['files'], $file);
+            $task['files'][] = $file;
         }
 
         $task['images'] = $this->ImageList($taskid, true);
@@ -827,7 +827,7 @@ class BotaskManager extends Ab_ModuleManager {
 
         $rows = BotaskQuery::TaskHistory($this->db, $taskid);
         while (($row = $this->db->fetch_array($rows))) {
-            array_push($hst, $row);
+            $hst[] = $row;
         }
         $task['hst'] = $hst;
 
@@ -853,7 +853,7 @@ class BotaskManager extends Ab_ModuleManager {
         }
         $hst = array();
         while (($row = $this->db->fetch_array($rows))) {
-            array_push($hst, $row);
+            $hst[] = $row;
         }
         return $hst;
     }
@@ -1086,7 +1086,7 @@ class BotaskManager extends Ab_ModuleManager {
         $ret = array();
         while (($row = $this->db->fetch_array($rows))) {
             $row['d'] = json_decode($row['d']);
-            array_push($ret, $row);
+            $ret[] = $row;
         }
         return $ret;
     }

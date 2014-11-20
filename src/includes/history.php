@@ -121,13 +121,13 @@ class BotaskHistory {
 	}
 	
 	public function UserAdd($uid){
-		array_push($this->userAddArray, $uid);
+		$this->userAddArray[] = $uid;
 		$this->useradded = implode(",", $this->userAddArray);
 		$this->change = true;
 	}
 	
 	public function UserRemove($uid){
-		array_push($this->userRemoveArray, $uid);
+		$this->userRemoveArray[] = $uid;
 		$this->userremoved = implode(",", $this->userRemoveArray);
 		$this->change = true;
 	}

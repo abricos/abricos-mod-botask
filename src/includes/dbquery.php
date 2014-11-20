@@ -141,8 +141,8 @@ class BotaskQuery {
 			$sa = array();
 			$san = array();
 			foreach($autors as $id => $v){
-				array_push($sa, " u.userid = ".bkint($id));
-				array_push($san, " u.userid <> ".bkint($id));
+				$sa[] = " u.userid = ".bkint($id);
+				$san[] = " u.userid <> ".bkint($id);
 			}
 			$whereu = "WHERE ".implode(" OR ", $sa);
 			$whereun = "WHERE ".implode(" OR ", $san);

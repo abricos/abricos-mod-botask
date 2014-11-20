@@ -7,7 +7,9 @@
  */
 
 class BotaskModule extends Ab_Module {
-	
+
+    private $_manager = null;
+
 	public function __construct(){
 		$this->version = "0.3.0";
 		$this->name = "botask";
