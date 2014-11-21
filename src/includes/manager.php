@@ -116,7 +116,7 @@ class BotaskManager extends Ab_ModuleManager {
             array(
                 "name" => "botask",
                 "title" => $lng['bosmenu']['botask'],
-                "icon" => "/modules/botask/images/logo-96x96.gif",
+                "icon" => "/modules/botask/images/botask-24.gif",
                 "url" => "botask/ws/showWorkspacePanel"
             )
         );
