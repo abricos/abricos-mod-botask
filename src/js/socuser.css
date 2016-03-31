@@ -1,85 +1,97 @@
 .aw-social a {
-	color: #2B587A;
+    color: #2B587A;
     text-decoration: none;
 }
+
 .aw-social a:hover {
-	text-decoration: underline;
-}
-.aw-social .wait {
-	text-align: center; 
-	height: 70px;
+    text-decoration: underline;
 }
 
-.aw-social .profile table.pf { } 
-.aw-social .profile .fotocont {
-	width: 200px;
+.aw-social .wait {
+    text-align: center;
+    height: 70px;
 }
+
+.aw-social .profile table.pf {
+}
+
+.aw-social .profile .fotocont {
+    width: 200px;
+}
+
 .aw-social .profile .fotocont .foto {
-	text-align: center;
-	margin-bottom: 6px;
+    text-align: center;
+    margin-bottom: 6px;
 }
 
 .aw-social .profile .fotocont a {
-	font-size: .95em;
-	line-height: 1.7em;
+    font-size: .95em;
+    line-height: 1.7em;
 }
 
-.aw-social .profile .uinfo  {
-	font-family: Verdana,sans-serif;
+.aw-social .profile .uinfo {
+    font-family: Verdana, sans-serif;
 }
 
 .aw-social .profile .uinfo h2 {
-	font-size: 1.7em;
-	margin-bottom: 1em;
+    font-size: 1.7em;
+    margin-bottom: 1em;
 }
 
 .aw-social .profile .uinfo .fullname {
-	font-size: 2em;
-	display: block;
-	margin-bottom: .5em;
+    font-size: 2em;
+    display: block;
+    margin-bottom: .5em;
 }
+
 .aw-social .profile .uinfo dl {
-	clear: left;
-	margin: 0 0 10px;
+    clear: left;
+    margin: 0 0 10px;
 }
+
 .aw-social .profile .editor .uinfo dl {
-	margin: 0 0 3px;
+    margin: 0 0 3px;
 }
+
 .aw-social .profile .uinfo dt {
-	float: left;
-	font-weight: bold;
-	width: 11em;
-	text-align: right;
-	padding-right: .5em;
-	font-weight: normal;
-	color: #999999;
+    float: left;
+    font-weight: bold;
+    width: 11em;
+    text-align: right;
+    padding-right: .5em;
+    font-weight: normal;
+    color: #999999;
 }
+
 .aw-social .profile .uinfo dd {
     margin: 0 0 0 11em;
     padding: 0 0 7px 12px;
     text-align: left;
 }
+
 .aw-social .profile .uinfo dd input,
 .aw-social .profile .uinfo dd textarea {
-	width: 300px;
+    width: 300px;
 }
+
 .aw-social .profile .uinfo dd unm.input {
-	
+
 }
+
 .aw-social .profile .uinfo dd textarea {
-	height: 100px;
+    height: 100px;
 }
 
 .aw-social .profile .uinfo dd select {
-	margin-right: 1em;
+    margin-right: 1em;
 }
 
 .aw-social .profile .uinfo dd input.btn {
-	width: auto;
+    width: auto;
 }
 
 .aw-social .profile .uinfo .line {
-	border-top: 1px solid #D9D9D9;
-	font-size: 1px;
-	margin: 10px 0 ;
+    border-top: 1px solid #D9D9D9;
+    font-size: 1px;
+    margin: 10px 0;
 }

@@ -1,50 +1,59 @@
 .aw-botask .about table.tabt {
-	width: 100%;
-	margin-top: 20px;
+    width: 100%;
+    margin-top: 20px;
 }
 
 .aw-botask .about table.tabt td.fst {
-	position: relative;
-	text-align: center;
-	width: 200px;
+    position: relative;
+    text-align: center;
+    width: 200px;
 }
+
 .aw-botask .about img.logo {
-	width: 128px;
-	height: 128px;
+    width: 128px;
+    height: 128px;
 }
 
 .aw-botask .about .abtxt {
-	min-height: 250px;
-	padding-left: 20px;
-	border-left: 1px solid #8C8D8E;
+    min-height: 250px;
+    padding-left: 20px;
+    border-left: 1px solid #8C8D8E;
 }
+
 .aw-botask .about .aw-page-content p {
-	line-height: 1.5em;
+    line-height: 1.5em;
 }
 
 .aw-botask .about .aw-page-content p,
 .aw-botask .about dl {
-	margin-bottom: 15px;
+    margin-bottom: 15px;
 }
-.aw-botask .about dl { }
+
+.aw-botask .about dl {
+}
+
 .aw-botask .about dt {
-	float: left;
-	clear: left;
+    float: left;
+    clear: left;
 }
+
 .aw-botask .about dd {
-	float: none;
-	padding-left: 200px;
-	border-bottom: 1px dotted #8C8D8E;
-	width: 400px;
-	text-align: right;
-	
+    float: none;
+    padding-left: 200px;
+    border-bottom: 1px dotted #8C8D8E;
+    width: 400px;
+    text-align: right;
+
 }
+
 .aw-botask .about dd span {
-	/*border-bottom: 1px dotted #8C8D8E; /**/
+    /*border-bottom: 1px dotted #8C8D8E; /**/
 }
+
 .aw-botask .about a {
-	text-decoration: none;
+    text-decoration: none;
 }
+
 .aw-botask .about a:hover {
-	text-decoration: underline;
+    text-decoration: underline;
 }

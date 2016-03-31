@@ -1,32 +1,25 @@
 <?php
 /**
- * Схема таблиц данного модуля.
- * 
- * @version $Id$
  * @package Abricos
  * @subpackage Botask
- * @copyright Copyright (C) 2011 Abricos. All rights reserved.
- * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
- * @author  Alexander Kuzmin (roosit@abricos.org)
+ * @copyright 2012-2016 Alexander Kuzmin
+ * @license http://opensource.org/licenses/mit-license.php MIT License
+ * @author Alexander Kuzmin <roosit@abricos.org>
  */
 
 $charset = "CHARACTER SET 'utf8' COLLATE 'utf8_general_ci'";
-$updateManager = Ab_UpdateManager::$current; 
+$updateManager = Ab_UpdateManager::$current;
 $db = Abricos::$db;
 $pfx = $db->prefix;
 
-$uprofileManager = Abricos::GetModule('uprofile')->GetManager(); 
+$uprofileManager = Abricos::GetModule('uprofile')->GetManager();
 
 if ($updateManager->isInstall()){
 
-	$uprofileManager->FieldAppend('lastname', 'Фамилия', UserFieldType::STRING, 100);
-	$uprofileManager->FieldAppend('firstname', 'Имя', UserFieldType::STRING, 100);
-	$uprofileManager->FieldCacheClear();
-	
-	Abricos::GetModule('botask')->permission->Install();
+    Abricos::GetModule('botask')->permission->Install();
 
-	// Задачи
-	$db->query_write("
+    // Задачи
+    $db->query_write("
 		CREATE TABLE IF NOT EXISTS ".$pfx."btk_task (
 		  `taskid` int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор задачи',
 		  `parenttaskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор родительской задачи',
@@ -54,10 +47,10 @@ if ($updateManager->isInstall()){
 		  
 		  PRIMARY KEY  (`taskid`)
 		)".$charset
-	);
+    );
 
-	// Участие пользователей в задаче
-	$db->query_write("
+    // Участие пользователей в задаче
+    $db->query_write("
 		CREATE TABLE IF NOT EXISTS ".$pfx."btk_userrole (
 		  `userroleid` int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор роли',
 		  `taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор задачи',
@@ -73,10 +66,10 @@ if ($updateManager->isInstall()){
 		  PRIMARY KEY  (`userroleid`), 
 		  UNIQUE KEY `task` (`taskid`,`userid`)
 		)".$charset
-	);
+    );
 
-	// Хранение истории
-	$db->query_write("
+    // Хранение истории
+    $db->query_write("
 		CREATE TABLE IF NOT EXISTS ".$pfx."btk_history (
 		  `historyid` int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор роли',
 		  `taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор задачи',
@@ -115,20 +108,20 @@ if ($updateManager->isInstall()){
 		  
 		  PRIMARY KEY  (`historyid`)
 		)".$charset
-	);
+    );
 }
 
 if ($updateManager->isUpdate('0.1.1')){
 
-	$db->query_write("
+    $db->query_write("
 		ALTER TABLE ".$pfx."btk_history
 			ADD `checklist` TEXT NOT NULL  COMMENT 'Сохраненная версия чеклиста',
 			ADD `checkc` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен'
 	");
-	
-	
-	// добавление чеклиста к задаче. чеклист - нечто подобное микрозадачи. 
-	$db->query_write("
+
+
+    // добавление чеклиста к задаче. чеклист - нечто подобное микрозадачи.
+    $db->query_write("
 		CREATE TABLE IF NOT EXISTS ".$pfx."btk_checklist (
 		  `checklistid` int(10) unsigned NOT NULL auto_increment COMMENT '',
 		  `taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор задачи',
@@ -145,14 +138,14 @@ if ($updateManager->isUpdate('0.1.1')){
 		  `deluserid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя',
 		  PRIMARY KEY  (`checklistid`)
 		)".$charset
-	);
-	
+    );
+
 }
 
 if ($updateManager->isUpdate('0.1.2')){
 
-	// Файлы задачи
-	$db->query_write("
+    // Файлы задачи
+    $db->query_write("
 		CREATE TABLE IF NOT EXISTS ".$pfx."btk_file (
 		  `fileid` int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор',
 		  `taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор задачи',
@@ -161,27 +154,27 @@ if ($updateManager->isUpdate('0.1.2')){
 		  PRIMARY KEY  (`fileid`), 
 		  UNIQUE KEY `file` (`taskid`,`filehash`)
 		)".$charset
-	);
-	
+    );
+
 }
 
 if ($updateManager->isUpdate('0.2.2') && !$updateManager->isInstall()){
-	$db->query_write("
+    $db->query_write("
 		ALTER TABLE ".$pfx."btk_task
 		ADD `tasktype` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Тип записи: 1-раздел, 2-проект, 3-задача'
 	");
-	$db->query_write("UPDATE ".$pfx."btk_task SET tasktype=3");
-	
-	$db->query_write("
+    $db->query_write("UPDATE ".$pfx."btk_task SET tasktype=3");
+
+    $db->query_write("
 		ALTER TABLE ".$pfx."btk_history
 		ADD `imagedata` TEXT NOT NULL  COMMENT 'Сохраненная версия зарисовки',
 		ADD `imagedatac` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен'
 	");
-	
+
 }
 if ($updateManager->isUpdate('0.2.2')){
 
-	$db->query_write("
+    $db->query_write("
 		CREATE TABLE IF NOT EXISTS ".$pfx."btk_image (
 			`imageid` int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор',
 			`taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор',
@@ -189,11 +182,11 @@ if ($updateManager->isUpdate('0.2.2')){
 			`data` TEXT NOT NULL  COMMENT '',
 		PRIMARY KEY  (`imageid`)
 		)".$charset
-	);
+    );
 }
 
 if ($updateManager->isUpdate('0.2.2.1')){
-	$db->query_write("
+    $db->query_write("
 		CREATE TABLE IF NOT EXISTS ".$pfx."btk_custatus (
 			`taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор',
 		  	`userid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор',
@@ -201,7 +194,7 @@ if ($updateManager->isUpdate('0.2.2.1')){
 			`dateline` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время',
 		UNIQUE KEY `custatus` (`taskid`,`userid`)
 		)".$charset
-	);
-	
+    );
+
 }
 ?>

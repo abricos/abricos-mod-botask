@@ -1,9 +1,3 @@
-/*
- @package Abricos
- @copyright Copyright (C) 2008 Abricos All rights reserved.
- @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
- */
-
 var Component = new Brick.Component();
 Component.requires = {
     mod: [
@@ -199,7 +193,7 @@ Component.entryPoint = function(NS){
 
         isInWorked: function(){
             return this.status * 1 == NS.TaskStatus.ACCEPT
-            || this.status * 1 == NS.TaskStatus.ASSIGN;
+                || this.status * 1 == NS.TaskStatus.ASSIGN;
         },
 
         isClosed: function(){
@@ -585,36 +579,36 @@ Component.entryPoint = function(NS){
     });
 
     /*
-    var UserConfig = function(d){
-        this.init(d);
-    };
-    UserConfig.prototype = {
-        init: function(d){
-            this.update(d);
-        },
-        update: function(d){
-            d = L.merge({
-                'tasksort': 'deadline',
-                'tasksortdesc': false,
-                'taskviewchild': true,
-                'taskviewcmts': true
-            }, d || {});
+     var UserConfig = function(d){
+     this.init(d);
+     };
+     UserConfig.prototype = {
+     init: function(d){
+     this.update(d);
+     },
+     update: function(d){
+     d = L.merge({
+     'tasksort': 'deadline',
+     'tasksortdesc': false,
+     'taskviewchild': true,
+     'taskviewcmts': true
+     }, d || {});
 
-            this.tasksort = NS.taskSort[d['tasksort']] ? d['tasksort'] : 'deadline';
-            this.tasksortdesc = d['tasksortdesc'] * 1 > 0;
-            this.taskviewchild = d['taskviewchild'] * 1 > 0;
-            this.taskviewcmts = d['taskviewcmts'] * 1 > 0;
-        },
-        toAjax: function(){
-            return {
-                'tasksort': NS.taskSort[this.tasksort] ? this.tasksort : 'deadline',
-                'tasksortdesc': this.tasksortdesc ? 1 : 0,
-                'taskviewchild': this.taskviewchild ? 1 : 0,
-                'taskviewcmts': this.taskviewcmts ? 1 : 0
-            };
-        }
-    };
-    /**/
+     this.tasksort = NS.taskSort[d['tasksort']] ? d['tasksort'] : 'deadline';
+     this.tasksortdesc = d['tasksortdesc'] * 1 > 0;
+     this.taskviewchild = d['taskviewchild'] * 1 > 0;
+     this.taskviewcmts = d['taskviewcmts'] * 1 > 0;
+     },
+     toAjax: function(){
+     return {
+     'tasksort': NS.taskSort[this.tasksort] ? this.tasksort : 'deadline',
+     'tasksortdesc': this.tasksortdesc ? 1 : 0,
+     'taskviewchild': this.taskviewchild ? 1 : 0,
+     'taskviewcmts': this.taskviewcmts ? 1 : 0
+     };
+     }
+     };
+     /**/
 
     var TaskManager = function(userOptions, initData){
 
@@ -827,7 +821,7 @@ Component.entryPoint = function(NS){
 
         userConfigSave: function(callback){
             callback = callback || function(){
-            };
+                };
             var __self = this;
             this.ajax({'do': 'usercfgupdate', 'cfg': this.userConfig.toAjax()}, function(r){
                 callback();
@@ -841,7 +835,7 @@ Component.entryPoint = function(NS){
 
         loadHistory: function(history, socid, callback){
             callback = callback || function(){
-            };
+                };
             var __self = this;
             this.ajax({
                 'do': 'history',
@@ -862,7 +856,7 @@ Component.entryPoint = function(NS){
         taskFavorite: function(taskid, callback){
             var task = this.list.find(taskid);
             callback = callback || function(){
-            };
+                };
             var __self = this;
             this.ajax({'do': 'taskfavorite', 'taskid': taskid, 'val': (!task.favorite ? '1' : '0')}, function(r){
                 callback();
@@ -877,7 +871,7 @@ Component.entryPoint = function(NS){
         taskShowComments: function(taskid, callback){
             var task = this.list.find(taskid);
             callback = callback || function(){
-            };
+                };
             var __self = this;
             this.ajax({'do': 'taskshowcmt', 'taskid': taskid, 'val': (!task.showcmt ? '1' : '0')}, function(r){
                 callback();
@@ -892,7 +886,7 @@ Component.entryPoint = function(NS){
         taskExpand: function(taskid, callback){
             var task = this.list.find(taskid);
             callback = callback || function(){
-            };
+                };
             var __self = this;
             this.ajax({'do': 'taskexpand', 'taskid': taskid, 'val': (!task.expanded ? '1' : '0')}, function(r){
                 callback();
@@ -906,7 +900,7 @@ Component.entryPoint = function(NS){
 
         taskSetOrder: function(taskid, value, callback){
             callback = callback || function(){
-            };
+                };
             var __self = this;
             this.ajax({'do': 'taskvoting', 'taskid': taskid, 'val': value}, function(r){
                 callback();
@@ -921,7 +915,7 @@ Component.entryPoint = function(NS){
 
         _taskAJAX: function(taskid, cmd, callback){
             callback = callback || function(){
-            };
+                };
             var __self = this;
             this.ajax({'do': cmd, 'taskid': taskid}, function(r){
                 __self._setLoadedTaskData(r);
@@ -983,7 +977,7 @@ Component.entryPoint = function(NS){
         },
         taskLoad: function(taskid, callback){
             callback = callback || function(){
-            };
+                };
             var task = this.list.find(taskid);
 
             if (L.isNull(task) || task.isLoad){
@@ -995,7 +989,7 @@ Component.entryPoint = function(NS){
 
         checkListSave: function(taskid, checkList, callback){
             callback = callback || function(){
-            };
+                };
             var __self = this;
             this.ajax({
                 'do': 'checklistsave',
@@ -1031,7 +1025,7 @@ Component.entryPoint = function(NS){
         // сохранить задачу (task - задача, newdata - новые данных по задаче)
         taskSave: function(task, d, callback){
             callback = callback || function(){
-            };
+                };
             var __self = this;
 
             d = L.merge({

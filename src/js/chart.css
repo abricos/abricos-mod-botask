@@ -1,30 +1,36 @@
 .aw-botask .twuser .twchart {
-	position: relative;
+    position: relative;
 }
+
 .aw-botask .twuser .twtooltip {
-	position: absolute;
-	background-color: #ffffcf;
-	border: 1px dotted;
-	
-	width: 300px;
-	left: 100px;
-	top: 100px;
-	
+    position: absolute;
+    background-color: #ffffcf;
+    border: 1px dotted;
+
+    width: 300px;
+    left: 100px;
+    top: 100px;
+
 }
+
 .aw-botask .twuser .twtooltip .twtext {
-	padding: 10px;
+    padding: 10px;
 }
+
 .aw-botask .twuser .twtooltip .twtext h2 {
-	font-weight: bold;
-	margin-bottom: 7px;
+    font-weight: bold;
+    margin-bottom: 7px;
 }
+
 .aw-botask .twuser .twtooltip .twtext dl {
 }
+
 .aw-botask .twuser .twtooltip .twtext dt {
     clear: left;
     float: left;
     width: 10em;
 }
+
 .aw-botask .twuser .twtooltip .twtext dd {
     float: none;
     margin-left: 10em;

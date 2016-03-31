@@ -1,9 +1,9 @@
 <?php
 /**
- * @version $Id$
  * @package Abricos
  * @subpackage Botask
- * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
+ * @copyright 2012-2016 Alexander Kuzmin
+ * @license http://opensource.org/licenses/mit-license.php MIT License
  * @author Alexander Kuzmin <roosit@abricos.org>
  */
 
@@ -22,26 +22,26 @@ class BotaskManager extends Ab_ModuleManager {
      */
     public static $instance = null;
 
-    public function __construct(BotaskModule $module) {
+    public function __construct(BotaskModule $module){
         parent::__construct($module);
 
         BotaskManager::$instance = $this;
     }
 
-    public function IsAdminRole() {
+    public function IsAdminRole(){
         return $this->IsRoleEnable(BotaskAction::ADMIN);
     }
 
-    public function IsWriteRole() {
+    public function IsWriteRole(){
         return $this->IsRoleEnable(BotaskAction::WRITE);
     }
 
-    public function IsViewRole() {
+    public function IsViewRole(){
         return $this->IsRoleEnable(BotaskAction::VIEW);
     }
 
-    private function _AJAX($d) {
-        switch ($d->do) {
+    private function _AJAX($d){
+        switch ($d->do){
             case 'task':
                 return $this->Task($d->taskid);
             case 'sync':
@@ -86,8 +86,8 @@ class BotaskManager extends Ab_ModuleManager {
         return null;
     }
 
-    public function AJAX($d) {
-        if ($d->do == "init") {
+    public function AJAX($d){
+        if ($d->do == "init"){
             return $this->BoardData(0);
         }
         $ret = new stdClass();
@@ -98,7 +98,7 @@ class BotaskManager extends Ab_ModuleManager {
         return $ret;
     }
 
-    public function User_OptionNames() {
+    public function User_OptionNames(){
         return array(
             "tasksort",
             "tasksortdesc",
@@ -107,8 +107,8 @@ class BotaskManager extends Ab_ModuleManager {
         );
     }
 
-    public function Bos_MenuData() {
-        if (!$this->IsAdminRole()) {
+    public function Bos_MenuData(){
+        if (!$this->IsAdminRole()){
             return null;
         }
         $lng = $this->module->GetI18n();
@@ -122,25 +122,25 @@ class BotaskManager extends Ab_ModuleManager {
         );
     }
 
-    public function ToArrayById($rows, $field = "id") {
+    public function ToArrayById($rows, $field = "id"){
         $ret = array();
-        while (($row = $this->db->fetch_array($rows))) {
+        while (($row = $this->db->fetch_array($rows))){
             $ret[$row[$field]] = $row;
         }
         return $ret;
     }
 
-    public function ToArray($rows, &$ids1 = "", $fnids1 = 'uid', &$ids2 = "", $fnids2 = '', &$ids3 = "", $fnids3 = '') {
+    public function ToArray($rows, &$ids1 = "", $fnids1 = 'uid', &$ids2 = "", $fnids2 = '', &$ids3 = "", $fnids3 = ''){
         $ret = array();
-        while (($row = $this->db->fetch_array($rows))) {
+        while (($row = $this->db->fetch_array($rows))){
             $ret[] = $row;
-            if (is_array($ids1)) {
+            if (is_array($ids1)){
                 $ids1[$row[$fnids1]] = $row[$fnids1];
             }
-            if (is_array($ids2)) {
+            if (is_array($ids2)){
                 $ids2[$row[$fnids2]] = $row[$fnids2];
             }
-            if (is_array($ids3)) {
+            if (is_array($ids3)){
                 $ids3[$row[$fnids3]] = $row[$fnids3];
             }
         }
@@ -148,8 +148,8 @@ class BotaskManager extends Ab_ModuleManager {
     }
 
 
-    public function Bos_OnlineData() {
-        if (!$this->IsViewRole()) {
+    public function Bos_OnlineData(){
+        if (!$this->IsViewRole()){
             return null;
         }
 
@@ -160,15 +160,15 @@ class BotaskManager extends Ab_ModuleManager {
     /**
      * Список знакомых пользователй
      */
-    public function UProfile_UserFriendList() {
-        if (!$this->IsViewRole()) {
+    public function UProfile_UserFriendList(){
+        if (!$this->IsViewRole()){
             return null;
         }
 
         $users = array();
         $rows = BotaskQuery::BoardUsers($this->db, $this->userid);
-        while (($row = $this->db->fetch_array($rows))) {
-            if ($row['id'] * 1 == $this->userid * 1) {
+        while (($row = $this->db->fetch_array($rows))){
+            if ($row['id'] * 1 == $this->userid * 1){
                 continue;
             }
             $users[$row['id']] = $row;
@@ -181,15 +181,15 @@ class BotaskManager extends Ab_ModuleManager {
         return $o;
     }
 
-    public function Sync() {
+    public function Sync(){
         return TIMENOW;
     }
 
     /**
      * Получить структуру доски задач
      */
-    public function BoardData($lastHId = 0) {
-        if (!$this->IsViewRole()) {
+    public function BoardData($lastHId = 0){
+        if (!$this->IsViewRole()){
             return null;
         }
 
@@ -209,52 +209,52 @@ class BotaskManager extends Ab_ModuleManager {
         $lastupdate = 0;
         // история изменений, последнии 15 записей, если не указан $lastHId
         $rows = BotaskQuery::BoardHistory($this->db, $this->userid, $lastHId);
-        while (($row = $this->db->fetch_array($rows))) {
-            if ($lastupdate == 0) {
+        while (($row = $this->db->fetch_array($rows))){
+            if ($lastupdate == 0){
                 $lastupdate = $row['dl'];
             }
             $lastupdate = min($lastupdate, $row['dl'] * 1);
             $ret->hst[] = $row;
-            if ($lastHId > 0 && !empty($row['usad'])) {
+            if ($lastHId > 0 && !empty($row['usad'])){
                 $urs = explode(",", $row['usad']);
-                foreach ($urs as $ur) {
+                foreach ($urs as $ur){
                     $nusers[intval($ur)] = true;
                 }
             }
         }
 
-        if ($lastHId > 0 && count($ret->hst) == 0) { // нет изменений
+        if ($lastHId > 0 && count($ret->hst) == 0){ // нет изменений
             return null;
         }
-        if ($lastHId == 0) {
+        if ($lastHId == 0){
             $lastupdate = 0;
         }
 
         $rows = BotaskQuery::Board($this->db, $this->userid, $lastupdate);
-        while (($row = $this->db->fetch_array($rows))) {
+        while (($row = $this->db->fetch_array($rows))){
             $row['users'] = array();
             $ret->board[$row['id']] = $row;
             $autors[$row['uid']] = true;
         }
 
         $rows = BotaskQuery::BoardTaskUsers($this->db, $this->userid, $lastupdate);
-        while (($row = $this->db->fetch_array($rows))) {
+        while (($row = $this->db->fetch_array($rows))){
             $ret->board[$row['tid']]['users'][] = $row['uid'];
         }
 
         $rows = BotaskQuery::BoardUsers($this->db, $this->userid, $lastupdate, $autors);
-        while (($row = $this->db->fetch_array($rows))) {
+        while (($row = $this->db->fetch_array($rows))){
             $userid = $row['id'];
-            if ($userid == $this->userid && $lastHId > 0) {
+            if ($userid == $this->userid && $lastHId > 0){
                 // нет смыслка каждый раз к списку пользователей добавлять информацию
                 // этого пользователя, лучше это сделать один раз при инициализации данных
                 continue;
             }
-            if ($lastHId == 0 || ($lastHId > 0 && $nusers[intval($userid)])) {
+            if ($lastHId == 0 || ($lastHId > 0 && $nusers[intval($userid)])){
                 $ret->users[$userid] = $row;
             }
         }
-        if ($lastHId == 0 && count($ret->users) == 0) {
+        if ($lastHId == 0 && count($ret->users) == 0){
             // если доска не содержит задач, то и таблица пользователей будет пуста
             // при создании новой задачи, список пользователей в истории придет без информации
             // по текущему пользователю что приведет к ошибкам
@@ -264,20 +264,20 @@ class BotaskManager extends Ab_ModuleManager {
         return $ret;
     }
 
-    public function TaskUserList($taskid, $retarray = false) {
-        if (!$this->IsViewRole()) {
+    public function TaskUserList($taskid, $retarray = false){
+        if (!$this->IsViewRole()){
             return null;
         }
         $rows = BotaskQuery::TaskUserList($this->db, $taskid);
-        if (!$retarray) {
+        if (!$retarray){
             return $rows;
         }
         return $this->ToArrayById($rows);
     }
 
-    private function TaskUserListForNotify($taskid, $retarray = false) {
+    private function TaskUserListForNotify($taskid, $retarray = false){
         $rows = BotaskQuery::TaskUserListForNotify($this->db, $taskid);
-        if (!$retarray) {
+        if (!$retarray){
             return $rows;
         }
         return $this->ToArrayById($rows);
@@ -288,7 +288,7 @@ class BotaskManager extends Ab_ModuleManager {
      *
      * @param unknown_type $taskid
      */
-    public function TaskAccess($taskid) {
+    public function TaskAccess($taskid){
         $row = BotaskQuery::UserRole($this->db, $taskid, $this->userid, true);
         return !empty($row);
     }
@@ -298,14 +298,14 @@ class BotaskManager extends Ab_ModuleManager {
      *
      * @param integer $taskid
      */
-    public function TaskSetExec($taskid) {
-        if (!$this->TaskAccess($taskid)) {
+    public function TaskSetExec($taskid){
+        if (!$this->TaskAccess($taskid)){
             return null;
         }
 
         $task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
 
-        if ($task['st'] != BotaskStatus::TASK_OPEN && $task['st'] != BotaskStatus::TASK_REOPEN) {
+        if ($task['st'] != BotaskStatus::TASK_OPEN && $task['st'] != BotaskStatus::TASK_REOPEN){
             return null;
         }
 
@@ -322,14 +322,14 @@ class BotaskManager extends Ab_ModuleManager {
      *
      * @param integer $taskid
      */
-    public function TaskUnsetExec($taskid) {
-        if (!$this->TaskAccess($taskid)) {
+    public function TaskUnsetExec($taskid){
+        if (!$this->TaskAccess($taskid)){
             return null;
         }
 
         $task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
 
-        if ($task['st'] != BotaskStatus::TASK_ACCEPT) {
+        if ($task['st'] != BotaskStatus::TASK_ACCEPT){
             return null;
         }
 
@@ -347,20 +347,20 @@ class BotaskManager extends Ab_ModuleManager {
      *
      * @param integer $taskid
      */
-    public function TaskClose($taskid) {
-        if (!$this->TaskAccess($taskid)) {
+    public function TaskClose($taskid){
+        if (!$this->TaskAccess($taskid)){
             return null;
         }
 
         // сначало закрыть все подзадачи
         $rows = BotaskQuery::Board($this->db, $this->userid, 0, $taskid);
-        while (($row = $this->db->fetch_array($rows))) {
+        while (($row = $this->db->fetch_array($rows))){
             $this->TaskClose($row['id']);
         }
 
         $task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
 
-        if ($task['st'] == BotaskStatus::TASK_CLOSE) {
+        if ($task['st'] == BotaskStatus::TASK_CLOSE){
             return null;
         }
 
@@ -378,20 +378,20 @@ class BotaskManager extends Ab_ModuleManager {
      *
      * @param integer $taskid
      */
-    public function TaskRemove($taskid) {
-        if (!$this->TaskAccess($taskid)) {
+    public function TaskRemove($taskid){
+        if (!$this->TaskAccess($taskid)){
             return null;
         }
 
         // сначало закрыть все подзадачи
         $rows = BotaskQuery::Board($this->db, $this->userid, 0, $taskid);
-        while (($row = $this->db->fetch_array($rows))) {
+        while (($row = $this->db->fetch_array($rows))){
             $this->TaskRemove($row['id']);
         }
 
         $task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
 
-        if ($task['st'] == BotaskStatus::TASK_REMOVE) {
+        if ($task['st'] == BotaskStatus::TASK_REMOVE){
             return null;
         }
 
@@ -407,13 +407,13 @@ class BotaskManager extends Ab_ModuleManager {
     /**
      * Восстановить удаленную задачу
      */
-    public function TaskRestore($taskid) {
-        if (!$this->TaskAccess($taskid)) {
+    public function TaskRestore($taskid){
+        if (!$this->TaskAccess($taskid)){
             return null;
         }
 
         $task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
-        if ($task['st'] != BotaskStatus::TASK_REMOVE) {
+        if ($task['st'] != BotaskStatus::TASK_REMOVE){
             return null;
         }
 
@@ -421,7 +421,7 @@ class BotaskManager extends Ab_ModuleManager {
 
         $row = BotaskQuery::TaskHistoryPrevStatus($this->db, $taskid, BotaskStatus::TASK_REMOVE);
         $st = BotaskStatus::TASK_OPEN;
-        if (!empty($row)) {
+        if (!empty($row)){
             $st = $row['st'];
         }
         $history = new BotaskHistory($this->userid);
@@ -438,15 +438,15 @@ class BotaskManager extends Ab_ModuleManager {
      *
      * @param integer $taskid
      */
-    public function TaskOpen($taskid) {
-        if (!$this->TaskAccess($taskid)) {
+    public function TaskOpen($taskid){
+        if (!$this->TaskAccess($taskid)){
             return null;
         }
 
         $task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
 
         if ($task['st'] != BotaskStatus::TASK_CLOSE && $task['st'] != BotaskStatus::TASK_REMOVE
-        ) {
+        ){
             return null;
         }
 
@@ -464,14 +464,14 @@ class BotaskManager extends Ab_ModuleManager {
      *
      * @param integer $taskid
      */
-    public function TaskArhive($taskid) {
-        if (!$this->TaskAccess($taskid)) {
+    public function TaskArhive($taskid){
+        if (!$this->TaskAccess($taskid)){
             return null;
         }
 
         $task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
 
-        if ($task['st'] != BotaskStatus::TASK_CLOSE) {
+        if ($task['st'] != BotaskStatus::TASK_CLOSE){
             return null;
         }
 
@@ -484,8 +484,8 @@ class BotaskManager extends Ab_ModuleManager {
         return $this->Task($taskid);
     }
 
-    public function TaskVoting($taskid, $value) {
-        if (!$this->TaskAccess($taskid)) {
+    public function TaskVoting($taskid, $value){
+        if (!$this->TaskAccess($taskid)){
             return null;
         }
 
@@ -494,8 +494,8 @@ class BotaskManager extends Ab_ModuleManager {
         return $value;
     }
 
-    public function TaskFavorite($taskid, $value) {
-        if (!$this->TaskAccess($taskid)) {
+    public function TaskFavorite($taskid, $value){
+        if (!$this->TaskAccess($taskid)){
             return null;
         }
 
@@ -504,16 +504,16 @@ class BotaskManager extends Ab_ModuleManager {
         return $value;
     }
 
-    public function TaskExpand($taskid, $value) {
-        if (!$this->TaskAccess($taskid)) {
+    public function TaskExpand($taskid, $value){
+        if (!$this->TaskAccess($taskid)){
             return null;
         }
         BotaskQuery::TaskExpand($this->db, $taskid, $this->userid, $value);
         return $value;
     }
 
-    public function TaskShowComments($taskid, $value) {
-        if (!$this->TaskAccess($taskid)) {
+    public function TaskShowComments($taskid, $value){
+        if (!$this->TaskAccess($taskid)){
             return null;
         }
         BotaskQuery::TaskShowComments($this->db, $taskid, $this->userid, $value);
@@ -526,13 +526,13 @@ class BotaskManager extends Ab_ModuleManager {
      *
      * @param object $tk
      */
-    public function TaskSave($tk) {
-        if (!$this->IsWriteRole()) {
+    public function TaskSave($tk){
+        if (!$this->IsWriteRole()){
             return null;
         }
 
         $tk->id = intval($tk->id);
-        if (!$this->IsAdminRole()) {
+        if (!$this->IsAdminRole()){
             // порезать теги и прочие гадости
             $utmanager = Abricos::TextParser();
             $tk->tl = $utmanager->Parser($tk->tl);
@@ -546,19 +546,19 @@ class BotaskManager extends Ab_ModuleManager {
         $history = new BotaskHistory($this->userid);
         $sendNewNotify = false;
 
-        if ($tk->type == 'folder') {
+        if ($tk->type == 'folder'){
             $tk->typeid = 1;
-        } else if ($tk->type == 'project') {
+        } else if ($tk->type == 'project'){
             $tk->typeid = 2;
         } else {
             $tk->typeid = 3;
         }
 
         $publish = false;
-        if ($tk->id == 0) {
+        if ($tk->id == 0){
 
-            if ($parentid > 0) {
-                if (!$this->TaskAccess($parentid)) {
+            if ($parentid > 0){
+                if (!$this->TaskAccess($parentid)){
                     // ОПС! попытка добавить подзадачу туда, куда нету доступа
                     return null;
                 }
@@ -573,25 +573,25 @@ class BotaskManager extends Ab_ModuleManager {
         } else {
 
             // является ли пользователь участником этой задача, если да, то он может делать с ней все что хошь
-            if (!$this->TaskAccess($tk->id)) {
+            if (!$this->TaskAccess($tk->id)){
                 return null;
             }
 
             $info = BotaskQuery::Task($this->db, $tk->id, $this->userid, true);
-            if ($info['pid'] * 1 != $parentid) { // попытка сменить раздел каталога
-                if ($info['pid'] * 1 > 0 && !$this->TaskAccess($info['pid'])) { // разрешено ли его забрать из этой надзадачи?
+            if ($info['pid'] * 1 != $parentid){ // попытка сменить раздел каталога
+                if ($info['pid'] * 1 > 0 && !$this->TaskAccess($info['pid'])){ // разрешено ли его забрать из этой надзадачи?
                     $tk->pid = $info['pid']; // не будем менять родителя
-                } else if ($parentid > 0 && !$this->TaskAccess($parentid)) { // разрешено ли поместить его в эту подзадачу
+                } else if ($parentid > 0 && !$this->TaskAccess($parentid)){ // разрешено ли поместить его в эту подзадачу
                     $tk->pid = $info['pid']; // не будем менять родителя
                 }
             }
 
             if ($info['st'] == BotaskStatus::TASK_CLOSE || $info['st'] == BotaskStatus::TASK_REMOVE
-            ) {
+            ){
                 return null;
             }
 
-            if (!$tk->onlyimage) {
+            if (!$tk->onlyimage){
                 BotaskQuery::TaskUpdate($this->db, $tk, $this->userid);
             }
 
@@ -601,7 +601,7 @@ class BotaskManager extends Ab_ModuleManager {
         $users = $this->TaskUserList($tk->id, true);
         $arr = $tk->users;
 
-        if (!$tk->onlyimage) { // производиться полное редактирование
+        if (!$tk->onlyimage){ // производиться полное редактирование
 
             $this->TaskSaveUsersUpdate($tk, $users, $history);
 
@@ -620,13 +620,13 @@ class BotaskManager extends Ab_ModuleManager {
         $task = $this->Task($tk->id);
 
         $tppfx = "";
-        if ($task['tp'] == 2) {
+        if ($task['tp'] == 2){
             $tppfx = "proj";
-        } else if ($task['tp'] == 3) {
+        } else if ($task['tp'] == 3){
             $tppfx = "task";
         }
 
-        if ($sendNewNotify && !empty($tppfx)) {
+        if ($sendNewNotify && !empty($tppfx)){
 
             $brick = Brick::$builder->LoadBrickS('botask', 'templates', null, null);
             $v = $brick->param->var;
@@ -634,10 +634,10 @@ class BotaskManager extends Ab_ModuleManager {
             $plnk = "http://".$host."/bos/#app=botask/taskview/showTaskViewPanel/".$task['id']."/";
 
             $tppfx = "";
-            if ($task['tp'] == 2) {
+            if ($task['tp'] == 2){
                 $tppfx = "proj";
                 $plnk = "http://".$host."/bos/#app=botask/ws/showWorkspacePanel/projectview/".$task['id']."/";
-            } else if ($task['tp'] == 3) {
+            } else if ($task['tp'] == 3){
                 $tppfx = "task";
                 $plnk = "http://".$host."/bos/#app=botask/ws/showWorkspacePanel/taskview/".$task['id']."/";
             } else {
@@ -645,13 +645,13 @@ class BotaskManager extends Ab_ModuleManager {
             }
 
             $users = $this->TaskUserListForNotify($taskid, true);
-            foreach ($users as $user) {
-                if ($user['id'] == $this->userid) {
+            foreach ($users as $user){
+                if ($user['id'] == $this->userid){
                     continue;
                 }
 
                 $email = $user['email'];
-                if (empty($email)) {
+                if (empty($email)){
                     continue;
                 }
 
@@ -672,36 +672,36 @@ class BotaskManager extends Ab_ModuleManager {
         return $task;
     }
 
-    private function TaskSaveUsersUpdate($tk, $users, $history) {
+    private function TaskSaveUsersUpdate($tk, $users, $history){
 
         $arr = $tk->users;
 
         // обновить информацию по правам пользователей
-        foreach ($users as $rUserId => $cuser) {
+        foreach ($users as $rUserId => $cuser){
             $find = false;
-            foreach ($arr as $uid) {
-                if ($uid == $rUserId) {
+            foreach ($arr as $uid){
+                if ($uid == $rUserId){
                     $find = true;
                     break;
                 }
             }
-            if (!$find) {
+            if (!$find){
                 BotaskQuery::UserRoleRemove($this->db, $tk->id, $rUserId);
                 $history->UserRemove($rUserId);
             }
         }
-        foreach ($arr as $uid) {
+        foreach ($arr as $uid){
             $find = false;
-            foreach ($users as $rUserId => $cuser) {
-                if ($uid == $rUserId) {
+            foreach ($users as $rUserId => $cuser){
+                if ($uid == $rUserId){
                     $find = true;
                     break;
                 }
             }
-            if (!$find) { // добавление нового пользователя
+            if (!$find){ // добавление нового пользователя
                 // проверить, а вдруг пользователь не хочет чтоб его добавляли
                 $uprofileManager = Abricos::GetModule('uprofile')->GetManager();
-                if ($uprofileManager->UserPublicityCheck($uid)) {
+                if ($uprofileManager->UserPublicityCheck($uid)){
                     BotaskQuery::UserRoleAppend($this->db, $tk->id, $uid);
                     $history->UserAdd($uid);
                 }
@@ -709,98 +709,98 @@ class BotaskManager extends Ab_ModuleManager {
         }
     }
 
-    private function TaskSaveFilesUpdate($tk, $history) {
+    private function TaskSaveFilesUpdate($tk, $history){
         $mod = Abricos::GetModule('filemanager');
-        if (empty($mod) || !FileManagerModule::$instance->GetManager()->IsFileUploadRole()) {
+        if (empty($mod) || !FileManagerModule::$instance->GetManager()->IsFileUploadRole()){
             return;
         }
         $files = $this->TaskFiles($tk->id, true);
         $arr = $tk->files;
 
-        foreach ($files as $rFileId => $cfile) {
+        foreach ($files as $rFileId => $cfile){
             $find = false;
-            foreach ($arr as $file) {
-                if ($file->id == $rFileId) {
+            foreach ($arr as $file){
+                if ($file->id == $rFileId){
                     $find = true;
                     break;
                 }
             }
-            if (!$find) {
+            if (!$find){
                 BotaskQuery::TaskFileRemove($this->db, $tk->id, $rFileId);
                 // $history->FileRemove($rFileId);
             }
         }
-        foreach ($arr as $file) {
+        foreach ($arr as $file){
             $find = false;
-            foreach ($files as $rFileId => $cfile) {
-                if ($file->id == $rFileId) {
+            foreach ($files as $rFileId => $cfile){
+                if ($file->id == $rFileId){
                     $find = true;
                     break;
                 }
             }
-            if (!$find) {
+            if (!$find){
                 BotaskQuery::TaskFileAppend($this->db, $tk->id, $file->id, $this->userid);
                 // $history->FileAdd($uid);
             }
         }
     }
 
-    private function TaskSaveImagesUpdate($tk, BotaskHistory $history) {
+    private function TaskSaveImagesUpdate($tk, BotaskHistory $history){
         // TODO: необходимо осуществить проверку в текстовых записях картинки $tk->img дабы исключить проникновения javascript
         // $tk->img = json_encode_ext($tk->img);
 
         $imgchanges = false;
-        if (!is_array($tk->images)) {
+        if (!is_array($tk->images)){
             $tk->images = array();
         }
 
         $cImgs = $this->ImageList($tk->id);
-        foreach ($tk->images as $img) {
+        foreach ($tk->images as $img){
             $img->d = json_encode_ext($img->d);
 
-            if ($img->id == 0) { // новое изображение
+            if ($img->id == 0){ // новое изображение
                 BotaskQuery::ImageAppend($this->db, $tk->id, $img->tl, $img->d);
                 $imgchanges = true;
             } else {
                 $cfimg = null;
-                foreach ($cImgs as $cimg) {
-                    if ($cimg['id'] == $img->id) {
+                foreach ($cImgs as $cimg){
+                    if ($cimg['id'] == $img->id){
                         $cfimg = $cimg;
                         break;
                     }
                 }
-                if (!is_null($cfimg) && ($img->tl != $cimg['tl'] || $img->d != $cimg['d'])) {
+                if (!is_null($cfimg) && ($img->tl != $cimg['tl'] || $img->d != $cimg['d'])){
                     BotaskQuery::ImageUpdate($this->db, $img->id, $img->tl, $img->d);
                     $imgchanges = true;
                 }
             }
         }
         // удаленные изображения
-        foreach ($cImgs as $cimg) {
+        foreach ($cImgs as $cimg){
             $find = false;
-            foreach ($tk->images as $img) {
-                if ($cimg['id'] == $img->id) {
+            foreach ($tk->images as $img){
+                if ($cimg['id'] == $img->id){
                     $find = true;
                     break;
                 }
             }
-            if (!$find) {
+            if (!$find){
                 $this->TaskImageRemove($tk->id, $cimg);
                 // BotaskQuery::ImageRemove($this->db, $cimg['id']);
                 $imgchanges = true;
             }
         }
-        if ($imgchanges) {
+        if ($imgchanges){
             $history->ImagesChange($cImgs);
         }
     }
 
-    public function Task($taskid) {
-        if (!$this->IsViewRole()) {
+    public function Task($taskid){
+        if (!$this->IsViewRole()){
             return null;
         }
 
-        if (!$this->TaskAccess($taskid)) {
+        if (!$this->TaskAccess($taskid)){
             return null;
         }
 
@@ -809,13 +809,13 @@ class BotaskManager extends Ab_ModuleManager {
         $task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
         $task['users'] = array();
         $users = $this->TaskUserList($taskid, true);
-        foreach ($users as $user) {
+        foreach ($users as $user){
             $task['users'][] = $user['id'];
         }
 
         $task['files'] = array();
         $files = $this->TaskFiles($taskid, true);
-        foreach ($files as $file) {
+        foreach ($files as $file){
             $task['files'][] = $file;
         }
 
@@ -826,7 +826,7 @@ class BotaskManager extends Ab_ModuleManager {
         $hst = array();
 
         $rows = BotaskQuery::TaskHistory($this->db, $taskid);
-        while (($row = $this->db->fetch_array($rows))) {
+        while (($row = $this->db->fetch_array($rows))){
             $hst[] = $row;
         }
         $task['hst'] = $hst;
@@ -837,14 +837,14 @@ class BotaskManager extends Ab_ModuleManager {
         return $task;
     }
 
-    public function History($taskid, $firstHId) {
-        if (!$this->IsViewRole()) {
+    public function History($taskid, $firstHId){
+        if (!$this->IsViewRole()){
             return null;
         }
 
         $taskid = intval($taskid);
-        if ($taskid > 0) {
-            if (!$this->TaskAccess($taskid)) {
+        if ($taskid > 0){
+            if (!$this->TaskAccess($taskid)){
                 return null;
             }
             $rows = BotaskQuery::TaskHistory($this->db, $taskid, $firstHId);
@@ -852,7 +852,7 @@ class BotaskManager extends Ab_ModuleManager {
             $rows = BotaskQuery::BoardHistory($this->db, $this->userid, 0, $firstHId);
         }
         $hst = array();
-        while (($row = $this->db->fetch_array($rows))) {
+        while (($row = $this->db->fetch_array($rows))){
             $hst[] = $row;
         }
         return $hst;
@@ -912,8 +912,8 @@ class BotaskManager extends Ab_ModuleManager {
         return $this->UserOptionList();
     }/**/
 
-    public function CommentList() {
-        if (!$this->IsViewRole()) {
+    public function CommentList(){
+        if (!$this->IsViewRole()){
             return null;
         }
 
@@ -924,8 +924,8 @@ class BotaskManager extends Ab_ModuleManager {
     /**
      * Отчет по участникам
      */
-    public function ToWork() {
-        if (!$this->IsViewRole()) {
+    public function ToWork(){
+        if (!$this->IsViewRole()){
             return null;
         }
 
@@ -937,30 +937,30 @@ class BotaskManager extends Ab_ModuleManager {
 
     ////////////////////////////// комментарии /////////////////////////////
 
-    public function IsCommentList($contentid) {
-        if (!$this->IsViewRole()) {
+    public function IsCommentList($contentid){
+        if (!$this->IsViewRole()){
             return null;
         }
         $task = BotaskQuery::TaskByContentId($this->db, $this->userid, $contentid, true);
-        if (!$this->TaskAccess($task['id'])) {
+        if (!$this->TaskAccess($task['id'])){
             return false;
         }
         return true;
     }
 
-    public function IsCommentAppend($contentid) {
-        if (!$this->IsViewRole()) {
+    public function IsCommentAppend($contentid){
+        if (!$this->IsViewRole()){
             return null;
         }
 
         $task = BotaskQuery::TaskByContentId($this->db, $this->userid, $contentid, true);
-        if (!$this->TaskAccess($task['id'])) {
+        if (!$this->TaskAccess($task['id'])){
             return false;
         }
         return true;
     }
 
-    private function UserNameBuild($user) {
+    private function UserNameBuild($user){
         $firstname = !empty($user['fnm']) ? $user['fnm'] : $user['firstname'];
         $lastname = !empty($user['lnm']) ? $user['lnm'] : $user['lastname'];
         $username = !empty($user['unm']) ? $user['unm'] : $user['username'];
@@ -973,8 +973,8 @@ class BotaskManager extends Ab_ModuleManager {
      *
      * @param object $data
      */
-    public function CommentSendNotify($data) {
-        if (!$this->IsViewRole()) {
+    public function CommentSendNotify($data){
+        if (!$this->IsViewRole()){
             return;
         }
 
@@ -986,7 +986,7 @@ class BotaskManager extends Ab_ModuleManager {
         // $data->cid	- идентификатор контента
 
         $task = BotaskQuery::TaskByContentId($this->db, $this->userid, $data->cid, true);
-        if (empty ($task) || !$this->TaskAccess($task['id'])) {
+        if (empty ($task) || !$this->TaskAccess($task['id'])){
             return;
         }
 
@@ -995,10 +995,10 @@ class BotaskManager extends Ab_ModuleManager {
         $host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_ENV['HTTP_HOST'];
 
         $tppfx = "";
-        if ($task['tp'] == 2) {
+        if ($task['tp'] == 2){
             $tppfx = "proj";
             $plnk = "http://".$host."/bos/#app=botask/ws/showWorkspacePanel/projectview/".$task['id']."/";
-        } else if ($task['tp'] == 3) {
+        } else if ($task['tp'] == 3){
             $tppfx = "task";
             $plnk = "http://".$host."/bos/#app=botask/ws/showWorkspacePanel/taskview/".$task['id']."/";
         } else {
@@ -1010,12 +1010,12 @@ class BotaskManager extends Ab_ModuleManager {
         $users = $this->TaskUserListForNotify($task['id'], true);
 
         // уведомление "комментарий на комментарий"
-        if ($data->pid > 0) {
+        if ($data->pid > 0){
             $parent = CommentQuery::Comment($this->db, $data->pid, $data->cid, true);
-            if (!empty($parent) && $parent['uid'] != $this->userid) {
+            if (!empty($parent) && $parent['uid'] != $this->userid){
                 $user = UserQuery::User($this->db, $parent['uid']);
                 $email = $user['email'];
-                if (!empty($email)) {
+                if (!empty($email)){
                     $emails[$email] = true;
                     $subject = Brick::ReplaceVarByData($v[$tppfx.'cmtemlanssubject'], array(
                         "tl" => $task['tl']
@@ -1035,10 +1035,10 @@ class BotaskManager extends Ab_ModuleManager {
         }
 
         // уведомление автору
-        if ($task['uid'] != $this->userid) {
+        if ($task['uid'] != $this->userid){
             $autor = UserQuery::User($this->db, $task['uid']);
             $email = $autor['email'];
-            if (!empty($email) && !$emails[$email]) {
+            if (!empty($email) && !$emails[$email]){
                 $emails[$email] = true;
                 $subject = Brick::ReplaceVarByData($v[$tppfx.'cmtemlautorsubject'], array(
                     "tl" => $task['tl']
@@ -1056,10 +1056,10 @@ class BotaskManager extends Ab_ModuleManager {
         }
 
         // уведомление подписчикам
-        foreach ($users as $user) {
+        foreach ($users as $user){
             $email = $user['email'];
 
-            if (empty($email) || $emails[$email] || $user['id'] == $this->userid) {
+            if (empty($email) || $emails[$email] || $user['id'] == $this->userid){
                 continue;
             }
             $emails[$email] = true;
@@ -1078,21 +1078,21 @@ class BotaskManager extends Ab_ModuleManager {
         }
     }
 
-    public function ImageList($taskid) {
-        if (!$this->TaskAccess($taskid)) {
+    public function ImageList($taskid){
+        if (!$this->TaskAccess($taskid)){
             return null;
         }
         $rows = BotaskQuery::ImageList($this->db, $taskid);
         $ret = array();
-        while (($row = $this->db->fetch_array($rows))) {
+        while (($row = $this->db->fetch_array($rows))){
             $row['d'] = json_decode($row['d']);
             $ret[] = $row;
         }
         return $ret;
     }
 
-    public function CustatusList($taskid) {
-        if (!$this->TaskAccess($taskid)) {
+    public function CustatusList($taskid){
+        if (!$this->TaskAccess($taskid)){
             return null;
         }
         $ret = new stdClass();
@@ -1102,8 +1102,8 @@ class BotaskManager extends Ab_ModuleManager {
         return $ret;
     }
 
-    public function CustatusSave($sd) {
-        if (!$this->TaskAccess($sd->taskid)) {
+    public function CustatusSave($sd){
+        if (!$this->TaskAccess($sd->taskid)){
             return null;
         }
 
@@ -1117,8 +1117,8 @@ class BotaskManager extends Ab_ModuleManager {
     /**
      * Список статусов всех пользователей общих проектов
      */
-    public function CustatusFullList() {
-        if (!$this->IsViewRole()) {
+    public function CustatusFullList(){
+        if (!$this->IsViewRole()){
             return null;
         }
 
@@ -1127,12 +1127,12 @@ class BotaskManager extends Ab_ModuleManager {
         return $this->ToArray($rows);
     }
 
-    public function CheckList($taskid, $retarray = false, $notCheckTaskAccess = false) {
-        if (!$this->IsViewRole()) {
+    public function CheckList($taskid, $retarray = false, $notCheckTaskAccess = false){
+        if (!$this->IsViewRole()){
             return null;
         }
-        if (!$notCheckTaskAccess) {
-            if (!$this->TaskAccess($taskid)) {
+        if (!$notCheckTaskAccess){
+            if (!$this->TaskAccess($taskid)){
                 return null;
             }
         }
@@ -1140,12 +1140,12 @@ class BotaskManager extends Ab_ModuleManager {
         return $retarray ? $this->ToArrayById($rows) : $rows;
     }
 
-    public function CheckListSave($taskid, $checkList, $history = null) {
+    public function CheckListSave($taskid, $checkList, $history = null){
 
-        if (!$this->IsWriteRole()) {
+        if (!$this->IsWriteRole()){
             return null;
         }
-        if (!$this->TaskAccess($taskid)) {
+        if (!$this->TaskAccess($taskid)){
             return null;
         }
 
@@ -1157,49 +1157,49 @@ class BotaskManager extends Ab_ModuleManager {
 
         $hstChange = false;
         // новые
-        foreach ($checkList as $ch) {
+        foreach ($checkList as $ch){
 
             $title = $isAdmin ? $ch->tl : $utmanager->Parser($ch->tl);
             $isNew = false;
-            if ($ch->id == 0) { // новый
+            if ($ch->id == 0){ // новый
                 $ch->id = BotaskQuery::CheckListAppend($this->db, $taskid, $userid, $title);
                 $hstChange = true;
                 $isNew = true;
             } else {
                 $fch = null;
-                foreach ($chListDb as $id => $row) {
-                    if ($ch->id == $id) {
+                foreach ($chListDb as $id => $row){
+                    if ($ch->id == $id){
                         $fch = $row;
                         break;
                     }
                 }
 
-                if (is_null($fch) || ($ch->duid > 0 && $fch['duid'] == 0)) { // удален
+                if (is_null($fch) || ($ch->duid > 0 && $fch['duid'] == 0)){ // удален
                     BotaskQuery::CheckListRemove($this->db, $userid, $ch->id);
                     $hstChange = true;
-                    if (is_null($fch)) {
+                    if (is_null($fch)){
                         continue;
                     }
                 }
 
-                if ($ch->duid == 0 && $fch['duid'] > 0) { // восстановлен
+                if ($ch->duid == 0 && $fch['duid'] > 0){ // восстановлен
                     BotaskQuery::CheckListRestore($this->db, $userid, $ch->id);
                     $hstChange = true;
                 }
 
-                if ($fch['tl'] != $title) {
+                if ($fch['tl'] != $title){
                     BotaskQuery::CheckListUpdate($this->db, $userid, $ch->id, $title);
                     $hstChange = true;
                 }
             }
 
-            if (($isNew && !empty($ch->ch)) || $ch->ch != $fch['ch']) {
+            if (($isNew && !empty($ch->ch)) || $ch->ch != $fch['ch']){
                 BotaskQuery::CheckListCheck($this->db, $userid, $ch->id, $ch->ch);
                 $hstChange = true;
             }
         }
-        if ($hstChange) {
-            if (is_null($history)) {
+        if ($hstChange){
+            if (is_null($history)){
                 $history = new BotaskHistory($this->userid);
                 $history->SaveCheckList($taskid, json_encode($chListDb));
                 $history->Save();
@@ -1211,12 +1211,12 @@ class BotaskManager extends Ab_ModuleManager {
         return $this->Task($taskid);
     }
 
-    public function TaskFiles($taskid, $retarray = false) {
-        if (!$this->IsViewRole()) {
+    public function TaskFiles($taskid, $retarray = false){
+        if (!$this->IsViewRole()){
             return null;
         }
         $rows = BotaskQuery::TaskFiles($this->db, $taskid);
-        if (!$retarray) {
+        if (!$retarray){
             return $rows;
         }
         return $this->ToArrayById($rows);
@@ -1225,11 +1225,11 @@ class BotaskManager extends Ab_ModuleManager {
     /**
      * Очистить удаленные задачи из системы
      */
-    public function RecycleClear() {
+    public function RecycleClear(){
         // return;
         $rows = BotaskQuery::TaskRemovedClearList($this->db, 10);
 
-        while (($row = $this->db->fetch_array($rows))) {
+        while (($row = $this->db->fetch_array($rows))){
             $this->TaskRemovedClear($row);
         }
     }
@@ -1237,7 +1237,7 @@ class BotaskManager extends Ab_ModuleManager {
     /**
      * Удалить файл из преокта
      */
-    public function TaskFileRemove($taskid, $fileid) {
+    public function TaskFileRemove($taskid, $fileid){
         Abricos::GetModule('filemanager');
         $fmanager = FileManagerModule::$instance->GetManager();
         $fmanager->RolesDisable();
@@ -1245,26 +1245,26 @@ class BotaskManager extends Ab_ModuleManager {
         $finfo = $fmanager->GetFileInfo($fileid);
         $rows = BotaskQuery::TaskUserList($this->db, $taskid);
         $find = false;
-        while (($row = $this->db->fetch_array($rows))) {
-            if ($row['id'] == $finfo['uid']) {
+        while (($row = $this->db->fetch_array($rows))){
+            if ($row['id'] == $finfo['uid']){
                 $find = true;
                 break;
             }
         }
-        if ($find) {
+        if ($find){
             $fmanager->FileRemove($fileid);
             BotaskQuery::TaskFileRemove($this->db, $taskid, $fileid);
         }
         $fmanager->RolesEnable();
     }
 
-    public function TaskImageRemove($taskid, $image) {
+    public function TaskImageRemove($taskid, $image){
         $d = json_decode($image['d']);
-        foreach ($d->canvas->ls as $lr) {
-            foreach ($lr->fs as $fe) {
-                if ($fe->tp == 'image') {
+        foreach ($d->canvas->ls as $lr){
+            foreach ($lr->fs as $fe){
+                if ($fe->tp == 'image'){
                     $arr = explode("filemanager/i/", $fe->src);
-                    if (count($arr) == 2) {
+                    if (count($arr) == 2){
                         $fileid = explode("/", $arr[1]);
                         $this->TaskFileRemove($taskid, $fileid[0]);
                     }
@@ -1279,26 +1279,26 @@ class BotaskManager extends Ab_ModuleManager {
      *
      * @param array $task
      */
-    private function TaskRemovedClear($task) {
+    private function TaskRemovedClear($task){
 
         $taskid = $task['taskid'];
 
         // сначало зачистка всех дочерних проектов по рекурсии
         $rows = BotaskQuery::TaskRemovedChildList($this->db, $task['taskid']);
-        while (($row = $this->db->fetch_array($rows))) {
+        while (($row = $this->db->fetch_array($rows))){
             $this->TaskRemovedClear($row);
         }
 
         // теперь удаление всего что связано с проектом
         // прикрепленные файлы
         $rows = BotaskQuery::TaskFiles($this->db, $taskid);
-        while (($file = $this->db->fetch_array($rows))) {
+        while (($file = $this->db->fetch_array($rows))){
             $this->TaskFileRemove($taskid, $file['id']);
         }
 
         // удалить изобрежения во вкладках
         $rows = BotaskQuery::ImageList($this->db, $taskid);
-        while (($row = $this->db->fetch_array($rows))) {
+        while (($row = $this->db->fetch_array($rows))){
             $this->TaskImageRemove($taskid, $row);
         }
 
