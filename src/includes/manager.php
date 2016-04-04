@@ -111,11 +111,12 @@ class BotaskManager extends Ab_ModuleManager {
         if (!$this->IsAdminRole()){
             return null;
         }
-        $lng = $this->module->GetI18n();
+        $i18n = $this->module->I18n();
         return array(
             array(
                 "name" => "botask",
-                "title" => $lng['bosmenu']['botask'],
+                "group" => "personal",
+                "title" => $i18n->Translate('bosmenu.botask'),
                 "icon" => "/modules/botask/images/botask-24.png",
                 "url" => "botask/ws/showWorkspacePanel"
             )
