@@ -624,7 +624,7 @@ Component.entryPoint = function(NS){
         this.init(userOptions, initData);
     };
     TaskManager.prototype = {
-        init: function(userOptions, inda){
+        init: function(userOptions, initData){
 
             this.userOptions = userOptions;
 
@@ -636,17 +636,15 @@ Component.entryPoint = function(NS){
 
             this.taskListChangedEvent = new YAHOO.util.CustomEvent('taskListChangedEvent');
 
-            // this.userConfig = this.initUserConfig(inda['cfg']);
+            // this.userConfig = this.initUserConfig(initData['cfg']);
             this.userConfigChangedEvent = new YAHOO.util.CustomEvent("userConfigChangedEvent");
 
-            this.users = this.initUserList(inda['users']);
-
             this.list = new TaskList();
-            this.socialUpdate(inda['board']);
+            this.socialUpdate(initData['board']);
 
             // глобальная коллекция истории
             this.history = new History();
-            this.historyUpdate(inda['hst'], 0);
+            this.historyUpdate(initData['hst'], 0);
             this.historyChangedEvent = new YAHOO.util.CustomEvent("historyChangedEvent");
 
             this.lastUpdateTime = new Date();
@@ -670,20 +668,6 @@ Component.entryPoint = function(NS){
             this.ajax({'do': 'sync'}, function(r){
             });
         },
-
-        initUserList: function(d){
-            if (!L.isArray(d)){
-                var arr = [];
-                for (var n in d){
-                    arr[arr.length] = d[n];
-                }
-                d = arr;
-            }
-
-            UP.viewer.users.update(d);
-            return UP.viewer.users;
-        },
-
 
         _ajaxBeforeResult: function(r){
             if (L.isNull(r)){
@@ -1068,7 +1052,9 @@ Component.entryPoint = function(NS){
             });
         }
     };
+    NS.TaskManager = TaskManager;
     NS.taskManager = null;
+
 
     NS.buildTaskManager = function(callback){
         if (!L.isNull(NS.taskManager)){

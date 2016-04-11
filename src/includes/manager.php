@@ -7,26 +7,9 @@
  * @author Alexander Kuzmin <roosit@abricos.org>
  */
 
-require_once 'dbquery.php';
 require_once 'history.php';
 
 class BotaskManager extends Ab_ModuleManager {
-
-    /**
-     * @var BotaskModule
-     */
-    public $module = null;
-
-    /**
-     * @var BotaskManager
-     */
-    public static $instance = null;
-
-    public function __construct(BotaskModule $module){
-        parent::__construct($module);
-
-        BotaskManager::$instance = $this;
-    }
 
     public function IsAdminRole(){
         return $this->IsRoleEnable(BotaskAction::ADMIN);
@@ -38,6 +21,10 @@ class BotaskManager extends Ab_ModuleManager {
 
     public function IsViewRole(){
         return $this->IsRoleEnable(BotaskAction::VIEW);
+    }
+
+    public function AJAX($d){
+        return $this->GetApp()->AJAX($d);
     }
 
     private function _AJAX($d){
@@ -86,12 +73,12 @@ class BotaskManager extends Ab_ModuleManager {
         return null;
     }
 
-    public function AJAX($d){
-        if ($d->do == "init"){
+    public function old_AJAX($d){
+        if ($d->do == "boardData"){
             return $this->BoardData(0);
         }
         $ret = new stdClass();
-        $ret->u = $this->userid;
+        $ret->u = Abricos::$user->id;
         $ret->r = $this->_AJAX($d);
         $ret->changes = $this->BoardData($d->hlid);
 
@@ -138,7 +125,7 @@ class BotaskManager extends Ab_ModuleManager {
             return null;
         }
 
-        $rows = BotaskQuery::BoardOnline($this->db, $this->userid);
+        $rows = BotaskQuery::BoardOnline($this->db, Abricos::$user->id);
         return $this->ToArray($rows);
     }
 
@@ -151,9 +138,9 @@ class BotaskManager extends Ab_ModuleManager {
         }
 
         $users = array();
-        $rows = BotaskQuery::BoardUsers($this->db, $this->userid);
+        $rows = BotaskQuery::BoardUsers($this->db, Abricos::$user->id);
         while (($row = $this->db->fetch_array($rows))){
-            if ($row['id'] * 1 == $this->userid * 1){
+            if ($row['id'] * 1 == Abricos::$user->id * 1){
                 continue;
             }
             $users[$row['id']] = $row;
@@ -170,84 +157,6 @@ class BotaskManager extends Ab_ModuleManager {
         return TIMENOW;
     }
 
-    /**
-     * Получить структуру доски задач
-     */
-    public function BoardData($lastHId = 0){
-        if (!$this->IsViewRole()){
-            return null;
-        }
-
-        // очистить корзину
-        $this->RecycleClear();
-
-        $ret = new stdClass();
-        $ret->hst = array();
-        $ret->board = array();
-        $ret->users = array();
-
-        // авторы
-        $autors = array();
-
-        $nusers = array();
-
-        $lastupdate = 0;
-        // история изменений, последнии 15 записей, если не указан $lastHId
-        $rows = BotaskQuery::BoardHistory($this->db, $this->userid, $lastHId);
-        while (($row = $this->db->fetch_array($rows))){
-            if ($lastupdate == 0){
-                $lastupdate = $row['dl'];
-            }
-            $lastupdate = min($lastupdate, $row['dl'] * 1);
-            $ret->hst[] = $row;
-            if ($lastHId > 0 && !empty($row['usad'])){
-                $urs = explode(",", $row['usad']);
-                foreach ($urs as $ur){
-                    $nusers[intval($ur)] = true;
-                }
-            }
-        }
-
-        if ($lastHId > 0 && count($ret->hst) == 0){ // нет изменений
-            return null;
-        }
-        if ($lastHId == 0){
-            $lastupdate = 0;
-        }
-
-        $rows = BotaskQuery::Board($this->db, $this->userid, $lastupdate);
-        while (($row = $this->db->fetch_array($rows))){
-            $row['users'] = array();
-            $ret->board[$row['id']] = $row;
-            $autors[$row['uid']] = true;
-        }
-
-        $rows = BotaskQuery::BoardTaskUsers($this->db, $this->userid, $lastupdate);
-        while (($row = $this->db->fetch_array($rows))){
-            $ret->board[$row['tid']]['users'][] = $row['uid'];
-        }
-
-        $rows = BotaskQuery::BoardUsers($this->db, $this->userid, $lastupdate, $autors);
-        while (($row = $this->db->fetch_array($rows))){
-            $userid = $row['id'];
-            if ($userid == $this->userid && $lastHId > 0){
-                // нет смыслка каждый раз к списку пользователей добавлять информацию
-                // этого пользователя, лучше это сделать один раз при инициализации данных
-                continue;
-            }
-            if ($lastHId == 0 || ($lastHId > 0 && $nusers[intval($userid)])){
-                $ret->users[$userid] = $row;
-            }
-        }
-        if ($lastHId == 0 && count($ret->users) == 0){
-            // если доска не содержит задач, то и таблица пользователей будет пуста
-            // при создании новой задачи, список пользователей в истории придет без информации
-            // по текущему пользователю что приведет к ошибкам
-            // этот запрос исключает эти ошибки
-            $ret->users[$this->userid] = BotaskQuery::MyUserData($this->db, $this->userid, true);
-        }
-        return $ret;
-    }
 
     public function TaskUserList($taskid, $retarray = false){
         if (!$this->IsViewRole()){
@@ -274,7 +183,7 @@ class BotaskManager extends Ab_ModuleManager {
      * @param unknown_type $taskid
      */
     public function TaskAccess($taskid){
-        $row = BotaskQuery::UserRole($this->db, $taskid, $this->userid, true);
+        $row = BotaskQuery::UserRole($this->db, $taskid, Abricos::$user->id, true);
         return !empty($row);
     }
 
@@ -288,16 +197,16 @@ class BotaskManager extends Ab_ModuleManager {
             return null;
         }
 
-        $task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
+        $task = BotaskQuery::Task($this->db, $taskid, Abricos::$user->id, true);
 
         if ($task['st'] != BotaskStatus::TASK_OPEN && $task['st'] != BotaskStatus::TASK_REOPEN){
             return null;
         }
 
-        $history = new BotaskHistory($this->userid);
-        $history->SetStatus($task, BotaskStatus::TASK_ACCEPT, $this->userid);
+        $history = new BotaskHistory(Abricos::$user->id);
+        $history->SetStatus($task, BotaskStatus::TASK_ACCEPT, Abricos::$user->id);
         $history->Save();
-        BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_ACCEPT, $this->userid);
+        BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_ACCEPT, Abricos::$user->id);
 
         return $this->Task($taskid);
     }
@@ -312,14 +221,14 @@ class BotaskManager extends Ab_ModuleManager {
             return null;
         }
 
-        $task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
+        $task = BotaskQuery::Task($this->db, $taskid, Abricos::$user->id, true);
 
         if ($task['st'] != BotaskStatus::TASK_ACCEPT){
             return null;
         }
 
-        $history = new BotaskHistory($this->userid);
-        $history->SetStatus($task, BotaskStatus::TASK_OPEN, $this->userid);
+        $history = new BotaskHistory(Abricos::$user->id);
+        $history->SetStatus($task, BotaskStatus::TASK_OPEN, Abricos::$user->id);
         $history->Save();
 
         BotaskQuery::TaskUnsetStatus($this->db, $taskid);
@@ -338,22 +247,22 @@ class BotaskManager extends Ab_ModuleManager {
         }
 
         // сначало закрыть все подзадачи
-        $rows = BotaskQuery::Board($this->db, $this->userid, 0, $taskid);
+        $rows = BotaskQuery::Board($this->db, Abricos::$user->id, 0, $taskid);
         while (($row = $this->db->fetch_array($rows))){
             $this->TaskClose($row['id']);
         }
 
-        $task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
+        $task = BotaskQuery::Task($this->db, $taskid, Abricos::$user->id, true);
 
         if ($task['st'] == BotaskStatus::TASK_CLOSE){
             return null;
         }
 
-        $history = new BotaskHistory($this->userid);
-        $history->SetStatus($task, BotaskStatus::TASK_CLOSE, $this->userid);
+        $history = new BotaskHistory(Abricos::$user->id);
+        $history->SetStatus($task, BotaskStatus::TASK_CLOSE, Abricos::$user->id);
         $history->Save();
 
-        BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_CLOSE, $this->userid);
+        BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_CLOSE, Abricos::$user->id);
 
         return $this->Task($taskid);
     }
@@ -369,22 +278,22 @@ class BotaskManager extends Ab_ModuleManager {
         }
 
         // сначало закрыть все подзадачи
-        $rows = BotaskQuery::Board($this->db, $this->userid, 0, $taskid);
+        $rows = BotaskQuery::Board($this->db, Abricos::$user->id, 0, $taskid);
         while (($row = $this->db->fetch_array($rows))){
             $this->TaskRemove($row['id']);
         }
 
-        $task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
+        $task = BotaskQuery::Task($this->db, $taskid, Abricos::$user->id, true);
 
         if ($task['st'] == BotaskStatus::TASK_REMOVE){
             return null;
         }
 
-        $history = new BotaskHistory($this->userid);
-        $history->SetStatus($task, BotaskStatus::TASK_REMOVE, $this->userid);
+        $history = new BotaskHistory(Abricos::$user->id);
+        $history->SetStatus($task, BotaskStatus::TASK_REMOVE, Abricos::$user->id);
         $history->Save();
 
-        BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_REMOVE, $this->userid);
+        BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_REMOVE, Abricos::$user->id);
 
         return $this->Task($taskid);
     }
@@ -397,7 +306,7 @@ class BotaskManager extends Ab_ModuleManager {
             return null;
         }
 
-        $task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
+        $task = BotaskQuery::Task($this->db, $taskid, Abricos::$user->id, true);
         if ($task['st'] != BotaskStatus::TASK_REMOVE){
             return null;
         }
@@ -409,11 +318,11 @@ class BotaskManager extends Ab_ModuleManager {
         if (!empty($row)){
             $st = $row['st'];
         }
-        $history = new BotaskHistory($this->userid);
-        $history->SetStatus($task, $st, $this->userid);
+        $history = new BotaskHistory(Abricos::$user->id);
+        $history->SetStatus($task, $st, Abricos::$user->id);
         $history->Save();
 
-        BotaskQuery::TaskSetStatus($this->db, $taskid, $st, $this->userid);
+        BotaskQuery::TaskSetStatus($this->db, $taskid, $st, Abricos::$user->id);
 
         return $this->Task($taskid);
     }
@@ -428,18 +337,18 @@ class BotaskManager extends Ab_ModuleManager {
             return null;
         }
 
-        $task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
+        $task = BotaskQuery::Task($this->db, $taskid, Abricos::$user->id, true);
 
         if ($task['st'] != BotaskStatus::TASK_CLOSE && $task['st'] != BotaskStatus::TASK_REMOVE
         ){
             return null;
         }
 
-        $history = new BotaskHistory($this->userid);
-        $history->SetStatus($task, BotaskStatus::TASK_REOPEN, $this->userid);
+        $history = new BotaskHistory(Abricos::$user->id);
+        $history->SetStatus($task, BotaskStatus::TASK_REOPEN, Abricos::$user->id);
         $history->Save();
 
-        BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_REOPEN, $this->userid);
+        BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_REOPEN, Abricos::$user->id);
 
         return $this->Task($taskid);
     }
@@ -454,17 +363,17 @@ class BotaskManager extends Ab_ModuleManager {
             return null;
         }
 
-        $task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
+        $task = BotaskQuery::Task($this->db, $taskid, Abricos::$user->id, true);
 
         if ($task['st'] != BotaskStatus::TASK_CLOSE){
             return null;
         }
 
-        $history = new BotaskHistory($this->userid);
-        $history->SetStatus($task, BotaskStatus::TASK_ARHIVE, $this->userid);
+        $history = new BotaskHistory(Abricos::$user->id);
+        $history->SetStatus($task, BotaskStatus::TASK_ARHIVE, Abricos::$user->id);
         $history->Save();
 
-        BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_ARHIVE, $this->userid);
+        BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_ARHIVE, Abricos::$user->id);
 
         return $this->Task($taskid);
     }
@@ -474,7 +383,7 @@ class BotaskManager extends Ab_ModuleManager {
             return null;
         }
 
-        BotaskQuery::TaskVoting($this->db, $taskid, $this->userid, $value);
+        BotaskQuery::TaskVoting($this->db, $taskid, Abricos::$user->id, $value);
 
         return $value;
     }
@@ -484,7 +393,7 @@ class BotaskManager extends Ab_ModuleManager {
             return null;
         }
 
-        BotaskQuery::TaskFavorite($this->db, $taskid, $this->userid, $value);
+        BotaskQuery::TaskFavorite($this->db, $taskid, Abricos::$user->id, $value);
 
         return $value;
     }
@@ -493,7 +402,7 @@ class BotaskManager extends Ab_ModuleManager {
         if (!$this->TaskAccess($taskid)){
             return null;
         }
-        BotaskQuery::TaskExpand($this->db, $taskid, $this->userid, $value);
+        BotaskQuery::TaskExpand($this->db, $taskid, Abricos::$user->id, $value);
         return $value;
     }
 
@@ -501,7 +410,7 @@ class BotaskManager extends Ab_ModuleManager {
         if (!$this->TaskAccess($taskid)){
             return null;
         }
-        BotaskQuery::TaskShowComments($this->db, $taskid, $this->userid, $value);
+        BotaskQuery::TaskShowComments($this->db, $taskid, Abricos::$user->id, $value);
         return $value;
     }
 
@@ -528,7 +437,7 @@ class BotaskManager extends Ab_ModuleManager {
         // родительская задача, есть ли доступ сохранения в нее
         $parentid = $tk->pid * 1;
 
-        $history = new BotaskHistory($this->userid);
+        $history = new BotaskHistory(Abricos::$user->id);
         $sendNewNotify = false;
 
         if ($tk->type == 'folder'){
@@ -549,8 +458,8 @@ class BotaskManager extends Ab_ModuleManager {
                 }
             }
 
-            $tk->uid = $this->userid;
-            $pubkey = md5(time().$this->userid);
+            $tk->uid = Abricos::$user->id;
+            $pubkey = md5(time().Abricos::$user->id);
             $tk->id = BotaskQuery::TaskAppend($this->db, $tk, $pubkey);
 
             $history->SetNewStatus($tk->id);
@@ -562,7 +471,7 @@ class BotaskManager extends Ab_ModuleManager {
                 return null;
             }
 
-            $info = BotaskQuery::Task($this->db, $tk->id, $this->userid, true);
+            $info = BotaskQuery::Task($this->db, $tk->id, Abricos::$user->id, true);
             if ($info['pid'] * 1 != $parentid){ // попытка сменить раздел каталога
                 if ($info['pid'] * 1 > 0 && !$this->TaskAccess($info['pid'])){ // разрешено ли его забрать из этой надзадачи?
                     $tk->pid = $info['pid']; // не будем менять родителя
@@ -577,7 +486,7 @@ class BotaskManager extends Ab_ModuleManager {
             }
 
             if (!$tk->onlyimage){
-                BotaskQuery::TaskUpdate($this->db, $tk, $this->userid);
+                BotaskQuery::TaskUpdate($this->db, $tk, Abricos::$user->id);
             }
 
             $history->CompareTask($tk, $info);
@@ -631,7 +540,7 @@ class BotaskManager extends Ab_ModuleManager {
 
             $users = $this->TaskUserListForNotify($taskid, true);
             foreach ($users as $user){
-                if ($user['id'] == $this->userid){
+                if ($user['id'] == Abricos::$user->id){
                     continue;
                 }
 
@@ -724,7 +633,7 @@ class BotaskManager extends Ab_ModuleManager {
                 }
             }
             if (!$find){
-                BotaskQuery::TaskFileAppend($this->db, $tk->id, $file->id, $this->userid);
+                BotaskQuery::TaskFileAppend($this->db, $tk->id, $file->id, Abricos::$user->id);
                 // $history->FileAdd($uid);
             }
         }
@@ -789,9 +698,9 @@ class BotaskManager extends Ab_ModuleManager {
             return null;
         }
 
-        BotaskQuery::TaskUpdateLastView($this->db, $taskid, $this->userid);
+        BotaskQuery::TaskUpdateLastView($this->db, $taskid, Abricos::$user->id);
 
-        $task = BotaskQuery::Task($this->db, $taskid, $this->userid, true);
+        $task = BotaskQuery::Task($this->db, $taskid, Abricos::$user->id, true);
         $task['users'] = array();
         $users = $this->TaskUserList($taskid, true);
         foreach ($users as $user){
@@ -834,7 +743,7 @@ class BotaskManager extends Ab_ModuleManager {
             }
             $rows = BotaskQuery::TaskHistory($this->db, $taskid, $firstHId);
         } else {
-            $rows = BotaskQuery::BoardHistory($this->db, $this->userid, 0, $firstHId);
+            $rows = BotaskQuery::BoardHistory($this->db, Abricos::$user->id, 0, $firstHId);
         }
         $hst = array();
         while (($row = $this->db->fetch_array($rows))){
@@ -870,7 +779,7 @@ class BotaskManager extends Ab_ModuleManager {
 
         $uman = Abricos::$user->GetManager();
 
-        $rows = $uman->UserOptionList($this->userid, 'botask');
+        $rows = $uman->UserOptionList(Abricos::$user->id, 'botask');
         $arr = $this->ToArrayById($rows);
 
         $names = array(
@@ -889,9 +798,9 @@ class BotaskManager extends Ab_ModuleManager {
                 }
             }
             if (is_null($find)) {
-                $uman->UserOptionAppend($this->userid, 'botask', $name, $newcfg->$name);
+                $uman->UserOptionAppend(Abricos::$user->id, 'botask', $name, $newcfg->$name);
             } else {
-                $uman->UserOptionUpdate($this->userid, $cfgid, $newcfg->$name);
+                $uman->UserOptionUpdate(Abricos::$user->id, $cfgid, $newcfg->$name);
             }
         }
         return $this->UserOptionList();
@@ -902,7 +811,7 @@ class BotaskManager extends Ab_ModuleManager {
             return null;
         }
 
-        $rows = BotaskQuery::CommentList($this->db, $this->userid);
+        $rows = BotaskQuery::CommentList($this->db, Abricos::$user->id);
         return $this->ToArrayById($rows);
     }
 
@@ -916,7 +825,7 @@ class BotaskManager extends Ab_ModuleManager {
 
         $fromtime = TIMENOW - 60 * 60 * 24 * 31;
 
-        $rows = BotaskQuery::ToWork($this->db, $this->userid, $fromtime);
+        $rows = BotaskQuery::ToWork($this->db, Abricos::$user->id, $fromtime);
         return $this->ToArrayById($rows);
     }
 
@@ -926,7 +835,7 @@ class BotaskManager extends Ab_ModuleManager {
         if (!$this->IsViewRole()){
             return null;
         }
-        $task = BotaskQuery::TaskByContentId($this->db, $this->userid, $contentid, true);
+        $task = BotaskQuery::TaskByContentId($this->db, Abricos::$user->id, $contentid, true);
         if (!$this->TaskAccess($task['id'])){
             return false;
         }
@@ -938,7 +847,7 @@ class BotaskManager extends Ab_ModuleManager {
             return null;
         }
 
-        $task = BotaskQuery::TaskByContentId($this->db, $this->userid, $contentid, true);
+        $task = BotaskQuery::TaskByContentId($this->db, Abricos::$user->id, $contentid, true);
         if (!$this->TaskAccess($task['id'])){
             return false;
         }
@@ -970,7 +879,7 @@ class BotaskManager extends Ab_ModuleManager {
         // $data->bd	- текст комментария
         // $data->cid	- идентификатор контента
 
-        $task = BotaskQuery::TaskByContentId($this->db, $this->userid, $data->cid, true);
+        $task = BotaskQuery::TaskByContentId($this->db, Abricos::$user->id, $data->cid, true);
         if (empty ($task) || !$this->TaskAccess($task['id'])){
             return;
         }
@@ -997,7 +906,7 @@ class BotaskManager extends Ab_ModuleManager {
         // уведомление "комментарий на комментарий"
         if ($data->pid > 0){
             $parent = CommentQuery::Comment($this->db, $data->pid, $data->cid, true);
-            if (!empty($parent) && $parent['uid'] != $this->userid){
+            if (!empty($parent) && $parent['uid'] != Abricos::$user->id){
                 $user = UserQuery::User($this->db, $parent['uid']);
                 $email = $user['email'];
                 if (!empty($email)){
@@ -1020,7 +929,7 @@ class BotaskManager extends Ab_ModuleManager {
         }
 
         // уведомление автору
-        if ($task['uid'] != $this->userid){
+        if ($task['uid'] != Abricos::$user->id){
             $autor = UserQuery::User($this->db, $task['uid']);
             $email = $autor['email'];
             if (!empty($email) && !$emails[$email]){
@@ -1044,7 +953,7 @@ class BotaskManager extends Ab_ModuleManager {
         foreach ($users as $user){
             $email = $user['email'];
 
-            if (empty($email) || $emails[$email] || $user['id'] == $this->userid){
+            if (empty($email) || $emails[$email] || $user['id'] == Abricos::$user->id){
                 continue;
             }
             $emails[$email] = true;
@@ -1082,7 +991,7 @@ class BotaskManager extends Ab_ModuleManager {
         }
         $ret = new stdClass();
         $ret->list = $this->ToArrayById(BotaskQuery::CustatusList($this->db, $taskid));
-        $ret->my = $this->ToArray(BotaskQuery::CustatusListByUser($this->db, $this->userid));
+        $ret->my = $this->ToArray(BotaskQuery::CustatusListByUser($this->db, Abricos::$user->id));
 
         return $ret;
     }
@@ -1094,7 +1003,7 @@ class BotaskManager extends Ab_ModuleManager {
 
         $parser = Abricos::TextParser(true);
         $sd->title = $parser->Parser($sd->title);
-        BotaskQuery::CustatusSave($this->db, $sd->taskid, $this->userid, $sd->title);
+        BotaskQuery::CustatusSave($this->db, $sd->taskid, Abricos::$user->id, $sd->title);
 
         return $this->CustatusList($sd->taskid);
     }
@@ -1108,7 +1017,7 @@ class BotaskManager extends Ab_ModuleManager {
         }
 
 
-        $rows = BotaskQuery::CustatusFullList($this->db, $this->userid);
+        $rows = BotaskQuery::CustatusFullList($this->db, Abricos::$user->id);
         return $this->ToArray($rows);
     }
 
@@ -1138,7 +1047,7 @@ class BotaskManager extends Ab_ModuleManager {
 
         $utmanager = Abricos::TextParser();
         $isAdmin = $this->IsAdminRole();
-        $userid = $this->userid;
+        $userid = Abricos::$user->id;
 
         $hstChange = false;
         // новые
@@ -1185,7 +1094,7 @@ class BotaskManager extends Ab_ModuleManager {
         }
         if ($hstChange){
             if (is_null($history)){
-                $history = new BotaskHistory($this->userid);
+                $history = new BotaskHistory(Abricos::$user->id);
                 $history->SaveCheckList($taskid, json_encode($chListDb));
                 $history->Save();
             } else {
@@ -1205,18 +1114,6 @@ class BotaskManager extends Ab_ModuleManager {
             return $rows;
         }
         return $this->ToArrayById($rows);
-    }
-
-    /**
-     * Очистить удаленные задачи из системы
-     */
-    public function RecycleClear(){
-        // return;
-        $rows = BotaskQuery::TaskRemovedClearList($this->db, 10);
-
-        while (($row = $this->db->fetch_array($rows))){
-            $this->TaskRemovedClear($row);
-        }
     }
 
     /**

@@ -61,15 +61,16 @@ class BotaskQuery {
 				".BotaskQuery::TASK_FIELDS.",
 				cmtl.commentid as cmtv,
 				(
-					SELECT commentid as cmtid
-					FROM ".$db->prefix."cmt_comment cmt
-					WHERE p.contentid=cmt.contentid
-					ORDER BY commentid DESC
+					SELECT lastCommentid as cmtid
+					FROM ".$db->prefix."comment_ownerstat cmt
+					WHERE p.taskid=cmt.ownerid AND cmt.ownerModule='botask' AND cmt.ownerType='task'
 					LIMIT 1
 				) as cmt
 			FROM ".$db->prefix."btk_userrole ur
 			INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
-			LEFT JOIN ".$db->prefix."cmt_lastview cmtl ON p.contentid=cmtl.contentid AND cmtl.userid=".bkint($userid)." 
+			LEFT JOIN ".$db->prefix."comment_userview cmtl
+			    ON p.taskid=cmtl.ownerid AND cmtl.ownerModule='botask' AND cmtl.ownerType='task'
+			        AND cmtl.userid=".bkint($userid)."
 			WHERE ur.userid=".bkint($userid)." AND p.deldate=0 ".$where."
 		";
         return $db->query_read($sql);

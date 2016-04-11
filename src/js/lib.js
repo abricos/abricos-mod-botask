@@ -18,12 +18,33 @@ Component.entryPoint = function(NS){
 
     SYS.Application.build(COMPONENT, {}, {
         initializer: function(){
+            var instance = this;
             NS.roles.load(function(){
-                this.initCallbackFire();
-            }, this);
+                Brick.mod.filemanager.roles.load(function(){
+                    instance.initCallbackFire();
+                });
+            });
         }
     }, [], {
-        REQS: {},
+        APPS: {
+            uprofile: {},
+            comment: {},
+        },
+        REQS: {
+            boardData: {
+                args: ['hlid'],
+                attribute: false,
+                onResponse: function(data){
+
+                    return function(callback, context){
+                        this.getApp('uprofile').userListByIds(data.users, function(err, result){
+
+                            callback.call(context || null);
+                        }, context);
+                    };
+                }
+            }
+        },
         ATTRS: {
             isLoadAppStructure: {value: false},
         },
@@ -33,16 +54,10 @@ Component.entryPoint = function(NS){
                 create: function(){
                 },
                 edit: function(id){
-
                 },
                 view: function(id){
                 }
             },
-            /*
-             config: function(){
-             return this.getURL('ws') + 'config/ConfigWidget/';
-             }
-             /**/
         }
     });
 };
