@@ -13,8 +13,11 @@ Component.entryPoint = function(NS){
 
     var TST = NS.TaskStatus;
 
-    var LNG = Brick.util.Language.geta(['mod', '{C#MODNAME}']),
-        buildTemplate = this.buildTemplate;
+    var buildTemplate = this.buildTemplate;
+
+    // var LNG = Brick.util.Language.geta(['mod', '{C#MODNAME}'])
+    var LNG = this.language;
+
 
     var TaskTableWidget = function(container, taskList, config){
         this.init(container, taskList, config);

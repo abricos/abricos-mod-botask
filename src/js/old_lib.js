@@ -36,37 +36,37 @@ Component.entryPoint = function(NS){
 
     // дополнить эксперементальными функциями менеджер шаблонов
     /*
-    var TMP = Brick.Template.Manager.prototype;
-    TMP.elHide = function(els){
-        this.elShowHide(els, false);
-    };
-    TMP.elShow = function(els){
-        this.elShowHide(els, true);
-    };
-    TMP.elShowHide = function(els, show){
-        if (L.isString(els)){
-            var arr = els.split(','), tname = '';
-            els = [];
+     var TMP = Brick.Template.Manager.prototype;
+     TMP.elHide = function(els){
+     this.elShowHide(els, false);
+     };
+     TMP.elShow = function(els){
+     this.elShowHide(els, true);
+     };
+     TMP.elShowHide = function(els, show){
+     if (L.isString(els)){
+     var arr = els.split(','), tname = '';
+     els = [];
 
-            for (var i = 0; i < arr.length; i++){
-                var arr1 = arr[i].split('.');
-                if (arr1.length == 2){
-                    tname = L.trim(arr1[0]);
-                    els[els.length] = L.trim(arr[i]);
-                } else {
-                    els[els.length] = tname + '.' + L.trim(arr[i]);
-                }
-            }
-        }
-        if (!L.isArray(els)){
-            return;
-        }
-        for (var i = 0; i < els.length; i++){
-            var el = this.getEl(els[i]);
-            Dom.setStyle(el, 'display', show ? '' : 'none');
-        }
-    };
-    /**/
+     for (var i = 0; i < arr.length; i++){
+     var arr1 = arr[i].split('.');
+     if (arr1.length == 2){
+     tname = L.trim(arr1[0]);
+     els[els.length] = L.trim(arr[i]);
+     } else {
+     els[els.length] = tname + '.' + L.trim(arr[i]);
+     }
+     }
+     }
+     if (!L.isArray(els)){
+     return;
+     }
+     for (var i = 0; i < els.length; i++){
+     var el = this.getEl(els[i]);
+     Dom.setStyle(el, 'display', show ? '' : 'none');
+     }
+     };
+     /**/
 
     var TaskStatus = {
         'OPEN': 1,	// открыта
@@ -515,7 +515,7 @@ Component.entryPoint = function(NS){
                     if (f(task)){
                         break;
                     }
-                    ;
+
                     if (!nochild){
                         task.childs.foreach(f);
                     }

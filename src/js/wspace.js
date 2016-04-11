@@ -18,8 +18,8 @@ Component.entryPoint = function(NS){
             templateBlockName: {value: 'widget'},
             defaultPage: {
                 value: {
-                    component: 'upload',
-                    widget: 'UploadWidget'
+                    component: 'board',
+                    widget: 'BoardWidget'
                 }
             }
         }

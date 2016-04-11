@@ -10,7 +10,8 @@ Component.entryPoint = function(NS){
         E = YAHOO.util.Event,
         L = YAHOO.lang;
 
-    var LNG = Brick.util.Language.geta(['mod', '{C#MODNAME}', '{C#COMNAME}']);
+    // var LNG = Brick.util.Language.geta(['mod', '{C#MODNAME}', '{C#COMNAME}']);
+    var LNG = this.language['{C#COMNAME}'];
 
     var buildTemplate = this.buildTemplate;
 

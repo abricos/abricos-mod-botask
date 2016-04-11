@@ -8,17 +8,11 @@ Component.requires = {
 Component.entryPoint = function(NS){
 
     var Dom = YAHOO.util.Dom,
-        E = YAHOO.util.Event,
         L = YAHOO.lang;
 
     var buildTemplate = this.buildTemplate;
 
     var WorkspacePanel = function(gConfig){
-        this.gConfig = gConfig || {};
-
-        WorkspacePanel.superclass.constructor.call(this, {
-            fixedcenter: true, width: '790px', height: '400px'
-        });
     };
     YAHOO.extend(WorkspacePanel, Brick.widget.Panel, {
         initTemplate: function(){

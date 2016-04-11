@@ -1,50 +1,29 @@
 <!--{panel}-->
-<div class='hd'>{#mod.botask.board.panel.1}</div>
-<div class='bd aw-botask'>
-
-    <div id="{i#gmenu}"></div>
-
-    <div class="board">
-
-        <div class="row">
-
-            <div class="col-md-4">
-
-                <div id="{i#explore}"></div>
-
-                <div style="display: none">
-                    <span style="font-weight: bold; line-height: 1.5em">История</span>
-
-                    <div id="{i#history}"></div>
-                </div>
-
-            </div>
-            <div class="col-md-8">
-
-                <a class="baddtask" href="#app=botask/ws/showWorkspacePanel/taskadd/0/">{#mod.botask.board.panel.2}</a>
-
-                <div id="{i#list}" class="list">
-                    {#mod.botask.board.panel.3}
-                </div>
-
-
-            </div>
-        </div>
-
-        <table class="maintable">
-            <tbody>
-            <tr>
-                <td>
-                </td>
-                <td>
-                    <div class="colbody">
-
-                    </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-
+<div>
+    <div data-wait="show">
+        <img src="/images/loading.gif"/> Загрузка...
     </div>
 
+    <div data-wait="hide">
+
+        <div class="col-md-3 sidebar tasklist-min">
+            <div id="{i#explore}"></div>
+            <div id="{i#teamusers}"></div>
+            <div id="{i#boxfav}"></div>
+            <div id="{i#easylistcol}"></div>
+        </div>
+
+        <div class="col-md-9">
+
+            <div id="{i#wspageloading}" class="ws-loading" style="display: none">
+                <img src="/images/loading.gif"/> {#mod.botask.ws.panel.4}
+            </div>
+
+            <div id="{i#wspagemain}" class="wspagemain">
+                <div id="{i#easylist}"></div>
+            </div>
+
+            <div id="{i#wspage}"></div>
+        </div>
+    </div>
 </div>

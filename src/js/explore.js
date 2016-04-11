@@ -1,70 +1,50 @@
 var Component = new Brick.Component();
 Component.requires = {
     mod: [
+        {name: 'sys', files: ['panel.js']},
         {name: '{C#MODNAME}', files: ['lib.js']}
     ]
 };
 Component.entryPoint = function(NS){
 
-    var Dom = YAHOO.util.Dom,
-        E = YAHOO.util.Event,
-        L = YAHOO.lang;
+    var Y = Brick.YUI,
+        COMPONENT = this,
+        SYS = Brick.mod.sys;
 
-    var UID = Brick.env.user.id;
+    NS.ExploreWidget = Y.Base.create('ExploreWidget', SYS.AppWidget, [], {
+        onInitAppWidget: function(err, appInstance, options){
+            var tp = this.template,
+                cfg = this.get('config');
 
-    var buildTemplate = this.buildTemplate;
-
-    var ExploreWidget = function(container, config){
-        config = L.merge({
-            'showArhive': false,
-            'showRemoved': false,
-            'shUsers': {}
-        }, config || {});
-        this.init(container, config);
-    };
-    ExploreWidget.prototype = {
-        init: function(container, cfg){
-
-            this.config = cfg;
-
-            var TM = buildTemplate(this, 'widget,table,row,rowuser');
-            container.innerHTML = TM.replace('widget');
-
-            TM.getEl('widget.showarch').checked = cfg['showArhive'];
-            TM.getEl('widget.showrem').checked = cfg['showRemoved'];
+            tp.setValue({
+                showarch: cfg.showArhive,
+                showrem: cfg.showRemoved
+            });
 
             this.selectedTask = null;
             this.selectedUserId = null;
 
-            var __self = this;
-            E.on(container, 'click', function(e){
-                if (__self.onClick(E.getTarget(e))){
-                    E.preventDefault(e);
-                }
-            });
             this.render();
 
             NS.taskManager.taskListChangedEvent.subscribe(this.onTaskListChanged, this, true);
-        },
 
-        destroy: function(){
+        },
+        destructor: function(){
             NS.taskManager.taskListChangedEvent.unsubscribe(this.onTaskListChanged);
         },
-
         onTaskListChanged: function(){
-            this.render();
+            this.renderWidget();
         },
-
         buildRow: function(tk, level, first, islast){
             this._taskRender[tk.id] = true;
 
-            var cfg = this.config;
-
-            var sChild = tk.childs.count() > 0 ? this.buildRows(tk, tk.childs, level + 1) : '';
+            var tp = this.template,
+                cfg = this.get('config'),
+                sChild = tk.childs.count() > 0 ? this.buildRows(tk, tk.childs, level + 1) : '';
 
             if (tk.isUserRow){
                 var user = NS.taskManager.users.get(tk.userid);
-                return this._TM.replace('rowuser', {
+                return tp.replace('rowuser', {
                     'id': tk.id,
                     'avatar': user.avatar24(true),
                     'tl': user.getUserName(),
@@ -75,7 +55,7 @@ Component.entryPoint = function(NS){
                     'chdicon': cfg['shUsers'][tk.userid] ? 'chdcls' : 'chdexpd'
                 });
             } else {
-                return this._TM.replace('row', {
+                return tp.replace('row', {
                     'id': tk.id,
                     'tl': tk.title,
                     'linkview': NS.navigator.taskViewLink(tk),
@@ -89,14 +69,15 @@ Component.entryPoint = function(NS){
                 });
             }
         },
-
         buildRows: function(ptk, list, level){
 
-            var cfg = this.config, a = [], anp = null;
+            var cfg = this.get('config'),
+                a = [],
+                anp = null;
 
             list.foreach(function(tk){
-                if ((tk.isArhive() && !cfg['showArhive'])
-                    || (tk.isRemoved() && !cfg['showRemoved'])){
+                if ((tk.isArhive() && !cfg.showArhive)
+                    || (tk.isRemoved() && !cfg.showRemoved)){
                     return;
                 }
 
@@ -170,17 +151,19 @@ Component.entryPoint = function(NS){
             return this._TM.replace('table', sRow);
         },
 
-        render: function(){
+
+        renderWidget: function(){
             this.urows = null;
-
             this._firstRenderRows = true;
-            var TM = this._TM;
-            Dom.setStyle(TM.getEl('widget.empty'), 'display', '');
-            Dom.setStyle(TM.getEl('widget.table'), 'display', 'none');
-
             this._taskRender = {};
-            this._TM.getEl('widget.table').innerHTML =
-                this.buildRows(null, NS.taskManager.list, 0);
+
+            var tp = this.template;
+            tp.show('empty');
+            tp.hide('table');
+            tp.setHTML({
+                table: this.buildRows(null, NS.taskManager.list, 0)
+            });
+
             this.selectPath(this.selectedTask);
         },
 
@@ -192,13 +175,40 @@ Component.entryPoint = function(NS){
 
             NS.taskManager.taskExpand(taskid);
             task.expanded = !task.expanded;
-            this.render();
+            this.renderWidget();
         },
 
         shChildsUser: function(taskid){
-            this.config['shUsers'][taskid] = !this.config['shUsers'][taskid];
-            this.render();
+            this.get('config')['shUsers'][taskid] = !this.get('config')['shUsers'][taskid];
+            this.renderWidget();
         },
+
+
+    }, {
+        ATTRS: {
+            component: {value: COMPONENT},
+            templateBlockName: {value: 'widget,table,row,rowuser'},
+            config: {
+                value: {
+                    showArhive: false,
+                    showRemoved: false,
+                    shUsers: {}
+                }
+            }
+        },
+        CLICKS: {}
+    });
+
+    return; // TODO: old functions
+
+    var Dom = YAHOO.util.Dom,
+        E = YAHOO.util.Event,
+        L = YAHOO.lang;
+
+    var UID = Brick.env.user.id;
+
+    ExploreWidget.prototype = {
+
 
         onClick: function(el){
             var TId = this._TId,
@@ -279,15 +289,15 @@ Component.entryPoint = function(NS){
             var TM = this._TM, gel = function(n){
                 return TM.getEl('widget.' + n);
             };
-            this.config['showArhive'] = gel('showarch').checked;
-            this.render();
+            this.get('config')['showArhive'] = gel('showarch').checked;
+            this.renderWidget();
         },
         shRemoved: function(){
             var TM = this._TM, gel = function(n){
                 return TM.getEl('widget.' + n);
             };
-            this.config['showRemoved'] = gel('showrem').checked;
-            this.render();
+            this.get('config')['showRemoved'] = gel('showrem').checked;
+            this.renderWidget();
         },
 
         selectPathMethod: function(task){
@@ -364,15 +374,11 @@ Component.entryPoint = function(NS){
     };
     NS.ExploreWidget = ExploreWidget;
 
-
-    var GoByIdPanel = function(callback){
-        this.callback = L.isFunction(callback) ? callback : function(){
-        };
-        GoByIdPanel.superclass.constructor.call(this, {fixedcenter: true});
-    };
-    YAHOO.extend(GoByIdPanel, Brick.widget.Dialog, {
-        initTemplate: function(){
-            return buildTemplate(this, 'gopanel').replace('gopanel');
+    NS.GoByIdPanel = Y.Base.create('GoByIdPanel', SYS.Dialog, [], {
+        initializer: function(){
+            Y.after(this._syncUIGroupEditorDialog, this, 'syncUI');
+        },
+        _syncUIGroupEditorDialog: function(){
         },
         onClick: function(el){
             var tp = this._TId['gopanel'];
@@ -405,8 +411,12 @@ Component.entryPoint = function(NS){
             this.close();
             this.callback(task);
         }
+    }, {
+        ATTRS: {
+            component: {value: COMPONENT},
+            templateBlockName: {value: 'gopanel'},
+            callback: {value: null},
+        }
     });
-    NS.GoByIdPanel = GoByIdPanel;
-
 
 };

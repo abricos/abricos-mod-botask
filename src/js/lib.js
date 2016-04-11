@@ -29,6 +29,15 @@ Component.entryPoint = function(NS){
         },
         URLS: {
             ws: "#app={C#MODNAMEURI}/wspace/ws/",
+            folder: {
+                create: function(){
+                },
+                edit: function(id){
+
+                },
+                view: function(id){
+                }
+            },
             /*
              config: function(){
              return this.getURL('ws') + 'config/ConfigWidget/';

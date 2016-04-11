@@ -107,22 +107,6 @@ class BotaskManager extends Ab_ModuleManager {
         );
     }
 
-    public function Bos_MenuData(){
-        if (!$this->IsAdminRole()){
-            return null;
-        }
-        $i18n = $this->module->I18n();
-        return array(
-            array(
-                "name" => "botask",
-                "group" => "personal",
-                "title" => $i18n->Translate('bosmenu.botask'),
-                "icon" => "/modules/botask/images/botask-24.png",
-                "url" => "botask/ws/showWorkspacePanel"
-            )
-        );
-    }
-
     public function ToArrayById($rows, $field = "id"){
         $ret = array();
         while (($row = $this->db->fetch_array($rows))){
@@ -1310,6 +1294,23 @@ class BotaskManager extends Ab_ModuleManager {
 
         // удалить сам проект
         BotaskQuery::TaskRemovedClear($this->db, $taskid);
+    }
+
+
+    public function Bos_MenuData(){
+        if (!$this->IsAdminRole()){
+            return null;
+        }
+        $i18n = $this->module->I18n();
+        return array(
+            array(
+                "name" => "botask",
+                "group" => "personal",
+                "title" => $i18n->Translate('bosmenu.botask'),
+                "icon" => "/modules/botask/images/botask-24.png",
+                "url" => "botask/wspace/ws"
+            )
+        );
     }
 
 }

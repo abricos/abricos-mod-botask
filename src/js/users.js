@@ -6,11 +6,18 @@ Component.requires = {
 };
 Component.entryPoint = function(NS){
 
+    var Y = Brick.YUI,
+        COMPONENT = this,
+        SYS = Brick.mod.sys;
+
+
+
     var Dom = YAHOO.util.Dom,
         E = YAHOO.util.Event,
         L = YAHOO.lang;
 
-    var LNG = Brick.util.Language.geta(['mod', '{C#MODNAME}', '{C#COMNAME}']);
+    // var LNG = Brick.util.Language.geta(['mod', '{C#MODNAME}', '{C#COMNAME}']);
+    var LNG = this.language['{C#COMNAME}'];
 
     var buildTemplate = this.buildTemplate;
 
