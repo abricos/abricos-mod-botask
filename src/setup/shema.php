@@ -12,8 +12,6 @@ $updateManager = Ab_UpdateManager::$current;
 $db = Abricos::$db;
 $pfx = $db->prefix;
 
-$uprofileManager = Abricos::GetModule('uprofile')->GetManager();
-
 if ($updateManager->isInstall()){
 
     Abricos::GetModule('botask')->permission->Install();
@@ -21,92 +19,95 @@ if ($updateManager->isInstall()){
     // Задачи
     $db->query_write("
 		CREATE TABLE IF NOT EXISTS ".$pfx."btk_task (
-		  `taskid` int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор задачи',
-		  `parenttaskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор родительской задачи',
-		  `tasktype` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Тип записи: 1-раздел, 2-проект, 3-задача',
-		  `userid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор автора',
-		  `title` varchar(250) NOT NULL DEFAULT '' COMMENT 'Название',
-		  `contentid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор контента',
-		  `pubkey` varchar(32) NOT NULL DEFAULT '' COMMENT 'Уникальный ключ задачи',
-		  `dateline` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата создания',
-		  `deldate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата удаления',
-		  `updatedate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата обновления',
-		  
-		  `priority` tinyint(1) unsigned NOT NULL DEFAULT 3 COMMENT 'Приоритет: 1-срочно, 2-важно, 3-нормально, 4-не срочно, 5-не важно',
-		  
-		  `isstartdate` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Использовать дату старта',
-		  `startdate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата старта',
-		  `startdatebytime` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата старта - уточнение времени',
+		  taskid int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор задачи',
+		  parenttaskid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор родительской задачи',
+		  tasktype int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Тип записи: 1-раздел, 2-проект, 3-задача',
+		  userid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор автора',
 
-		  `deadline` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Срок выполнения',
-		  `deadlinebytime` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Срок выполнения - уточнение времени',
+		  title varchar(250) NOT NULL DEFAULT '' COMMENT 'Название',
+          body text NOT NULL COMMENT 'Запись',
+
+		  pubkey varchar(32) NOT NULL DEFAULT '' COMMENT 'Уникальный ключ задачи',
+
+		  dateline int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата создания',
+		  deldate int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата удаления',
+		  updatedate int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата обновления',
 		  
-		  `status` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Текущий статус задачи - значения BotaskStatus',
-		  `statuserid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Пользователь текущего статуса',
-		  `statdate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/Время текущего статуса',
+		  priority tinyint(1) unsigned NOT NULL DEFAULT 3 COMMENT 'Приоритет: 1-срочно, 2-важно, 3-нормально, 4-не срочно, 5-не важно',
 		  
-		  PRIMARY KEY  (`taskid`)
+		  isstartdate tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Использовать дату старта',
+		  startdate int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата старта',
+		  startdatebytime tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата старта - уточнение времени',
+
+		  deadline int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Срок выполнения',
+		  deadlinebytime tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Срок выполнения - уточнение времени',
+		  
+		  status int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Текущий статус задачи - значения BotaskStatus',
+		  statuserid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Пользователь текущего статуса',
+		  statdate int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/Время текущего статуса',
+		  
+		  PRIMARY KEY  (taskid)
 		)".$charset
     );
 
     // Участие пользователей в задаче
     $db->query_write("
 		CREATE TABLE IF NOT EXISTS ".$pfx."btk_userrole (
-		  `userroleid` int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор роли',
-		  `taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор задачи',
-		  `userid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя',
-		  `viewdate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата последнего просмотра',
-		  `ord` int(5) NOT NULL DEFAULT 0 COMMENT 'Вес этой задачи по мнению пользователя',
-		  `favorite` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Избранное',
-		  `expanded` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Развернуты подзадачи',
-		  `showcomments` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Показать комментарии',
-		  `meilhistory` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Уведомлять о всех изменениях',
-		  `meilcomment` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Уведомлять о всех комментариях',
-		  `deldate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата удаления',
-		  PRIMARY KEY  (`userroleid`), 
-		  UNIQUE KEY `task` (`taskid`,`userid`)
+		  userroleid int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор роли',
+		  taskid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор задачи',
+		  userid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя',
+		  viewdate int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата последнего просмотра',
+		  ord int(5) NOT NULL DEFAULT 0 COMMENT 'Вес этой задачи по мнению пользователя',
+		  favorite tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Избранное',
+		  expanded tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Развернуты подзадачи',
+		  showcomments tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Показать комментарии',
+		  meilhistory tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Уведомлять о всех изменениях',
+		  meilcomment tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Уведомлять о всех комментариях',
+		  deldate int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата удаления',
+		  PRIMARY KEY  (userroleid), 
+		  UNIQUE KEY task (taskid,userid)
 		)".$charset
     );
 
     // Хранение истории
     $db->query_write("
 		CREATE TABLE IF NOT EXISTS ".$pfx."btk_history (
-		  `historyid` int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор роли',
-		  `taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор задачи',
-		  `userid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя',
-		  `dateline` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время',
+		  historyid int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор роли',
+		  taskid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор задачи',
+		  userid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя',
+		  dateline int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время',
 		  
-		  `parenttaskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор родительской задачи',
-		  `parenttaskidc` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
+		  parenttaskid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор родительской задачи',
+		  parenttaskidc tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
 
-		  `status` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Новый/текущий статус задачи',
-		  `prevstatus` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Предыдущий статус задачи',
-		  `statuserid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Пользователь для статуса',
+		  status int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Новый/текущий статус задачи',
+		  prevstatus int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Предыдущий статус задачи',
+		  statuserid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Пользователь для статуса',
 		  
-		  `priority` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Сохраненный приоритет',
-		  `priorityc` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
+		  priority tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Сохраненный приоритет',
+		  priorityc tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
 		  
-		  `title` varchar(250) NOT NULL DEFAULT '' COMMENT 'Сохраненная версия названия',
-		  `titlec` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
+		  title varchar(250) NOT NULL DEFAULT '' COMMENT 'Сохраненная версия названия',
+		  titlec tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
 		  
-		  `body` TEXT NOT NULL  COMMENT 'Сохраненная версия контента',
-		  `bodyc` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
+		  body TEXT NOT NULL  COMMENT 'Сохраненная версия контента',
+		  bodyc tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
 		  
-		  `imagedata` TEXT NOT NULL  COMMENT 'Сохраненная версия зарисовки',
-		  `imagedatac` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
+		  imagedata TEXT NOT NULL  COMMENT 'Сохраненная версия зарисовки',
+		  imagedatac tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
 		  
-		  `deadline` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Сохраненный срок выполнения',
-		  `deadlinec` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
+		  deadline int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Сохраненный срок выполнения',
+		  deadlinec tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
 		  
-		  `deadlinebytime` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Сохраненный срок выполнения - уточнение времени',
-		  `deadlinebytimec` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
+		  deadlinebytime tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Сохраненный срок выполнения - уточнение времени',
+		  deadlinebytimec tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен',
 		  
-		  `useradded` varchar(250) NOT NULL DEFAULT '' COMMENT 'Добавленные пользователи',
-		  `userremoved` varchar(250) NOT NULL DEFAULT '' COMMENT 'Удаленные пользователи',
+		  useradded varchar(250) NOT NULL DEFAULT '' COMMENT 'Добавленные пользователи',
+		  userremoved varchar(250) NOT NULL DEFAULT '' COMMENT 'Удаленные пользователи',
 
-		  `hicomment` TEXT NOT NULL  COMMENT 'Комментарий к этому изменению',
+		  hicomment TEXT NOT NULL  COMMENT 'Комментарий к этому изменению',
 		  
-		  PRIMARY KEY  (`historyid`)
+		  PRIMARY KEY  (historyid)
 		)".$charset
     );
 }
@@ -115,28 +116,28 @@ if ($updateManager->isUpdate('0.1.1')){
 
     $db->query_write("
 		ALTER TABLE ".$pfx."btk_history
-			ADD `checklist` TEXT NOT NULL  COMMENT 'Сохраненная версия чеклиста',
-			ADD `checkc` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен'
+			ADD checklist TEXT NOT NULL  COMMENT 'Сохраненная версия чеклиста',
+			ADD checkc tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен'
 	");
 
 
     // добавление чеклиста к задаче. чеклист - нечто подобное микрозадачи.
     $db->query_write("
 		CREATE TABLE IF NOT EXISTS ".$pfx."btk_checklist (
-		  `checklistid` int(10) unsigned NOT NULL auto_increment COMMENT '',
-		  `taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор задачи',
-		  `userid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя ',
-		  `dateline` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время',
-		  `checked` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Выполнена',
-		  `checkuserid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя ',
-		  `checkdate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время выполнения',
-		  `title` TEXT NOT NULL COMMENT 'Название группы',
-		  `ord` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Сортировка',
-		  `upddate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время обновления',
-		  `upduserid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя ',
-		  `deldate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время удаления',
-		  `deluserid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя',
-		  PRIMARY KEY  (`checklistid`)
+		  checklistid int(10) unsigned NOT NULL auto_increment COMMENT '',
+		  taskid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор задачи',
+		  userid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя ',
+		  dateline int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время',
+		  checked tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Выполнена',
+		  checkuserid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя ',
+		  checkdate int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время выполнения',
+		  title TEXT NOT NULL COMMENT 'Название группы',
+		  ord int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Сортировка',
+		  upddate int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время обновления',
+		  upduserid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя ',
+		  deldate int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время удаления',
+		  deluserid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя',
+		  PRIMARY KEY  (checklistid)
 		)".$charset
     );
 
@@ -147,12 +148,12 @@ if ($updateManager->isUpdate('0.1.2')){
     // Файлы задачи
     $db->query_write("
 		CREATE TABLE IF NOT EXISTS ".$pfx."btk_file (
-		  `fileid` int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор',
-		  `taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор задачи',
-		  `userid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя',
-		  `filehash` varchar(8) NOT NULL DEFAULT '' COMMENT 'Идентификатор файла таблицы fm_file',
-		  PRIMARY KEY  (`fileid`), 
-		  UNIQUE KEY `file` (`taskid`,`filehash`)
+		  fileid int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор',
+		  taskid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор задачи',
+		  userid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор пользователя',
+		  filehash varchar(8) NOT NULL DEFAULT '' COMMENT 'Идентификатор файла таблицы fm_file',
+		  PRIMARY KEY  (fileid), 
+		  UNIQUE KEY file (taskid,filehash)
 		)".$charset
     );
 
@@ -161,14 +162,14 @@ if ($updateManager->isUpdate('0.1.2')){
 if ($updateManager->isUpdate('0.2.2') && !$updateManager->isInstall()){
     $db->query_write("
 		ALTER TABLE ".$pfx."btk_task
-		ADD `tasktype` int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Тип записи: 1-раздел, 2-проект, 3-задача'
+		ADD tasktype int(2) unsigned NOT NULL DEFAULT 0 COMMENT 'Тип записи: 1-раздел, 2-проект, 3-задача'
 	");
     $db->query_write("UPDATE ".$pfx."btk_task SET tasktype=3");
 
     $db->query_write("
 		ALTER TABLE ".$pfx."btk_history
-		ADD `imagedata` TEXT NOT NULL  COMMENT 'Сохраненная версия зарисовки',
-		ADD `imagedatac` tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен'
+		ADD imagedata TEXT NOT NULL  COMMENT 'Сохраненная версия зарисовки',
+		ADD imagedatac tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Параметр изменен'
 	");
 
 }
@@ -176,11 +177,11 @@ if ($updateManager->isUpdate('0.2.2')){
 
     $db->query_write("
 		CREATE TABLE IF NOT EXISTS ".$pfx."btk_image (
-			`imageid` int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор',
-			`taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор',
-			`title` varchar(250) NOT NULL DEFAULT '' COMMENT 'Название',
-			`data` TEXT NOT NULL  COMMENT '',
-		PRIMARY KEY  (`imageid`)
+			imageid int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор',
+			taskid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор',
+			title varchar(250) NOT NULL DEFAULT '' COMMENT 'Название',
+			data TEXT NOT NULL  COMMENT '',
+		PRIMARY KEY  (imageid)
 		)".$charset
     );
 }
@@ -188,13 +189,55 @@ if ($updateManager->isUpdate('0.2.2')){
 if ($updateManager->isUpdate('0.2.2.1')){
     $db->query_write("
 		CREATE TABLE IF NOT EXISTS ".$pfx."btk_custatus (
-			`taskid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор',
-		  	`userid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор',
-		  	`title` varchar(250) NOT NULL DEFAULT '' COMMENT '',
-			`dateline` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время',
-		UNIQUE KEY `custatus` (`taskid`,`userid`)
+			taskid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор',
+		  	userid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор',
+		  	title varchar(250) NOT NULL DEFAULT '' COMMENT '',
+			dateline int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время',
+		UNIQUE KEY custatus (taskid,userid)
 		)".$charset
     );
+}
+
+if ($updateManager->isUpdate('0.3.1') && !$updateManager->isInstall()){
+
+    Abricos::GetModule('comment');
+
+    $db->query_write("
+		ALTER TABLE ".$pfx."btk_task
+		ADD body text NOT NULL COMMENT 'Запись'
+	");
+
+    $db->query_write("
+		UPDATE ".$pfx."btk_task t
+		INNER JOIN ".$pfx."content c ON c.contentid=t.contentid
+		SET t.body=c.body
+	");
+
+    $db->query_write("
+		UPDATE ".$pfx."comment_owner o
+		INNER JOIN ".$pfx."btk_task t ON t.contentid=o.ownerid
+		    AND o.ownerModule='botask' AND o.ownerType='content'
+		SET
+		    o.ownerid=t.taskid,
+		    o.ownerType='task'
+	");
+
+    $db->query_write("
+		UPDATE ".$pfx."comment_ownerstat o
+		INNER JOIN ".$pfx."btk_task t ON t.contentid=o.ownerid
+		    AND o.ownerModule='botask' AND o.ownerType='content'
+		SET
+		    o.ownerid=t.taskid,
+		    o.ownerType='task'
+	");
+
+    $db->query_write("DELETE FROM ".$pfx."content WHERE modman='botask'");
+
+    $db->query_write("
+		ALTER TABLE ".$pfx."btk_task
+		DROP contentid
+	");
 
 }
+
 ?>
