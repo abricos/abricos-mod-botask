@@ -6,6 +6,10 @@ Component.requires = {
 };
 Component.entryPoint = function(NS){
 
+    var Y = Brick.YUI,
+        COMPONENT = this,
+        SYS = Brick.mod.sys;
+
     var Dom = YAHOO.util.Dom,
         E = YAHOO.util.Event,
         L = YAHOO.lang;
@@ -129,22 +133,14 @@ Component.entryPoint = function(NS){
     });
     NS.TaskListBoxWidget = TaskListBoxWidget;
 
-    var EasyListWidget = function(container, contFavorite){
-        this.init(container, contFavorite);
-    };
-    EasyListWidget.prototype = {
-        init: function(container, contFavorite){
 
-            buildTemplate(this, 'widget');
-            var TM = this._TM,
-                gel = function(name){
-                    return TM.getEl('widget.' + name);
-                };
-            container.innerHTML = TM.replace('widget');
+    NS.EasyListWidget = Y.Base.create('EasyListWidget', SYS.AppWidget, [], {
+        onInitAppWidget: function(err, appInstance, options){
+            var tp = this.template;
 
             this.widgets = [];
 
-            this.widgets['work'] = new NS.TaskListBoxWidget(gel('boxwork'), NS.taskManager.list, {
+            this.widgets['work'] = new NS.TaskListBoxWidget(tp.gel('boxwork'), NS.taskManager.list, {
                 'sortclick': false,
                 'columns': 'name,deadline,priority,favorite,executant',
                 'childs': false,
@@ -156,7 +152,7 @@ Component.entryPoint = function(NS){
                 }
             });
 
-            this.widgets['tasknew'] = new NS.TaskListBoxWidget(gel('boxnew'), NS.taskManager.list, {
+            this.widgets['tasknew'] = new NS.TaskListBoxWidget(tp.gel('boxnew'), NS.taskManager.list, {
                 'columns': 'name,deadline,priority,favorite',
                 'globalsort': true,
                 'tasksort': 'date',
@@ -168,7 +164,7 @@ Component.entryPoint = function(NS){
                 }
             });
 
-            this.widgets['cmtnew'] = new NS.TaskListBoxWidget(gel('boxcmt'), NS.taskManager.list, {
+            this.widgets['cmtnew'] = new NS.TaskListBoxWidget(tp.gel('boxcmt'), NS.taskManager.list, {
                 'columns': 'name,deadline,priority,favorite',
                 'childs': false,
                 'showflagnew': false,
@@ -178,21 +174,27 @@ Component.entryPoint = function(NS){
                 }
             });
 
-            this.widgets['journal'] = NS.API.taskJournalBoxWidget(contFavorite);
+            this.widgets['journal'] = NS.API.taskJournalBoxWidget(this.get('srcFavorite'));
+        },
+        destructor: function(){
+            var ws = this.widgets;
+            for (var n in ws){
+                ws[n].destroy();
+            }
         },
         changeContainer: function(container){
             var el = this._TM.getEl('widget.id');
             el.parentNode.removeChild(el);
             container.appendChild(el);
         },
-        destroy: function(){
-            var ws = this.widgets;
-            for (var n in ws){
-                ws[n].destroy();
-            }
-        }
-    };
-    NS.EasyListWidget = EasyListWidget;
+    }, {
+        ATTRS: {
+            component: {value: COMPONENT},
+            templateBlockName: {value: 'widget'},
+            srcFavorite: {}
+        },
+        CLICKS: {}
+    });
 
     NS.API.taskCommentsBoxWidget = function(container){
         return new NS.TaskListBoxWidget(container, NS.taskManager.list, {

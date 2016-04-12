@@ -133,7 +133,7 @@ Component.entryPoint = function(NS){
                 sCols += TM.replace('rcolname', {
                     'id': tk.id,
                     'viewlink': sViewLink,
-                    'aunm': L.isNull(author) ? 'null' : author.getUserName(),
+                    'aunm': L.isNull(author) ? 'null' : author.get('viewName'),
                     'tl': tk.title == "" ? LNG['nottitle'] : tk.title,
                     'dl': Brick.dateExt.convert(tk.date.getTime() / 1000),
                     'udl': Brick.dateExt.convert(tk.uDate.getTime() / 1000)
@@ -159,7 +159,7 @@ Component.entryPoint = function(NS){
                     var exec = NS.taskManager.users.get(tk.stUserId);
                     sExec = exec.getUserName();
                 }
-                // 'aunm': author.getUserName(),
+                // 'aunm': author.get('viewName'),
                 // 'auid': author.id,
 
                 sCols += TM.replace('rcolexec', {
@@ -232,7 +232,7 @@ Component.entryPoint = function(NS){
                 'level': level,
                 'classch': chcls,
                 'tl': tk.title == "" ? LNG['nottitle'] : tk.title,
-                'aunm': L.isNull(author) ? 'null' : author.getUserName(),
+                'aunm': L.isNull(author) ? 'null' : author.get('viewName'),
                 'auid': L.isNull(author) ? 'null' : author.id,
                 'cols': sCols
             });

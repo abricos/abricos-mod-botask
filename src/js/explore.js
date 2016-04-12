@@ -313,9 +313,8 @@ Component.entryPoint = function(NS){
         // выделить все задачи, где участвует этот пользователь
         selectUser: function(userid){
             this.selectedUserId = userid;
-            var TId = this._TId, gel = function(id){
-                return Dom.get(TId['row']['title'] + '-' + id);
-            };
+            var tp = this.template;
+
             NS.taskManager.list.foreach(function(tk){
                 var find = false;
                 for (var i = 0; i < tk.users.length; i++){
@@ -327,9 +326,9 @@ Component.entryPoint = function(NS){
                 }
 
                 if (find){
-                    Dom.addClass(gel(tk.id), 'seluser');
+                    tp.addClass('row.title-'+tk.id, 'seluser');
                 } else {
-                    Dom.removeClass(gel(tk.id), 'seluser');
+                    tp.removeClass('row.title-'+tk.id, 'seluser');
                 }
             }, false);
         },
@@ -350,7 +349,6 @@ Component.entryPoint = function(NS){
 
             });
         }
-
     }, {
         ATTRS: {
             component: {value: COMPONENT},

@@ -74,12 +74,7 @@ Component.entryPoint = function(NS){
             this.wsw['easyList'] = new NS.EasyListWidget(TM.getEl('panel.easylist'), TM.getEl('panel.boxfav'));
             this.wsw['teamUsers'] = new NS.TeamUserListWidget(TM.getEl('panel.teamusers'));
 
-            this.wsw['teamUsers'].userSelectChangedEvent.subscribe(this.onTeamUserSelectChanged, this, true);
             this._renderByGConfig();
-        },
-        onTeamUserSelectChanged: function(){
-            var userid = this.wsw['teamUsers'].selectedUserId;
-            this.wsw['explore'].selectUser(userid);
         },
         setGlobalConfig: function(gConfig){
             this.gConfig = gConfig;

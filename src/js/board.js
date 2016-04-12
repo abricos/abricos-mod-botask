@@ -44,13 +44,19 @@ Component.entryPoint = function(NS){
                     srcNode: tp.gel('teamusers')
                 }),
 
-                // easyList: new NS.EasyListWidget(tp.gel('easylist'), tp.gel('boxfav'))
+                easyList: new NS.EasyListWidget({
+                    srcNode: tp.gel('easylist'),
+                    srcFavorite: tp.gel('boxfav')
+                })
             };
 
-            /*
-             this.wsw['teamUsers'].userSelectChangedEvent.subscribe(this.onTeamUserSelectChanged, this, true);
-             /**/
-        }
+            this._widgets.teamUsers.on('userSelectChangedEvent', this.onTeamUserSelectChanged, this);
+        },
+        onTeamUserSelectChanged: function(){
+            var ws = this._widgets,
+                userid = ws.teamUsers.selectedUserId;
+            ws.explore.selectUser(userid);
+        },
     }, {
         ATTRS: {
             component: {value: COMPONENT},
