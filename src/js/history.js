@@ -2,7 +2,7 @@ var Component = new Brick.Component();
 Component.requires = {
     mod: [
         {name: 'uprofile', files: ['viewer.js']},
-        {name: 'botask', files: ['lib.js']}
+        {name: '{C#MODNAME}', files: ['lib.js']}
     ]
 };
 Component.entryPoint = function(NS){
@@ -143,8 +143,8 @@ Component.entryPoint = function(NS){
                 'tid': hst.taskid,
                 'hd': shead,
                 'dl': Brick.dateExt.convert(hst.date.getTime() / 1000),
-                'uid': user.id,
-                'unm': user.getUserName(true)
+                uid: user.get('id'),
+                unm: user.getUserName(true)
             });
         },
         render: function(){

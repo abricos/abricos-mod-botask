@@ -179,7 +179,7 @@ Component.entryPoint = function(NS){
     var CheckrowWidget = function(owner, d){
         d = L.merge({
             'id': 0,
-            'uid': Brick.env.user.id,
+            uid: Brick.env.user.id,
             'dl': Math.round((new Date()).getTime() / 1000),
             'ch': 0,
             'cuid': 0,

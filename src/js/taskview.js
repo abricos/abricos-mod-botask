@@ -4,7 +4,7 @@ Component.requires = {
         {name: 'sys', files: ['container.js']},
         {name: 'filemanager', files: ['attachment.js']},
         {name: 'uprofile', files: ['users.js']},
-        {name: 'botask', files: ['tasklist.js', 'checklist.js']},
+        {name: '{C#MODNAME}', files: ['tasklist.js', 'checklist.js']},
         {name: 'pictab', files: ['draw.js']}
     ]
 };
@@ -171,7 +171,7 @@ Component.entryPoint = function(NS){
             // Автор
             var user = NS.taskManager.users.get(task.userid);
             gel('author').innerHTML = TM.replace('user', {
-                'uid': user.id, 'unm': user.getUserName()
+                uid: user.get('id'), unm: user.get('viewName')
             });
             // Создана
             gel('dl').innerHTML = Brick.dateExt.convert(task.date, 3, true);
@@ -182,7 +182,7 @@ Component.entryPoint = function(NS){
             if (task.stUserId * 1 > 0){
                 user = NS.taskManager.users.get(task.stUserId);
                 s = TM.replace('user', {
-                    'uid': user.id, 'unm': user.getUserName()
+                    uid: user.get('id'), unm: user.get('viewName')
                 });
             }
             gel('exec').innerHTML = s;

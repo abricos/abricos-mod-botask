@@ -3,7 +3,7 @@ Component.requires = {
     mod: [
         {name: 'sys', files: ['editor.js']},
         {name: 'uprofile', files: ['users.js']},
-        {name: 'botask', files: ['widgets.js']}
+        {name: '{C#MODNAME}', files: ['widgets.js']}
     ]
 };
 Component.entryPoint = function(NS){

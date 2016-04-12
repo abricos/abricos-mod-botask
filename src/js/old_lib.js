@@ -90,7 +90,7 @@ Component.entryPoint = function(NS){
                 'tp': 3,
                 'tl': '',
                 'dl': 0,
-                'uid': Brick.env.user.id,
+                uid: Brick.env.user.id,
                 'users': [Brick.env.user.id],
                 'ddl': 0,
                 'ddlt': 0,
@@ -625,6 +625,13 @@ Component.entryPoint = function(NS){
     };
     TaskManager.prototype = {
         init: function(userOptions, initData){
+
+            this.users = {
+                get: function(userid){
+                    var userList = NS.appInstance.getApp('uprofile').get('userList');
+                    return userList.getById(userid);
+                }
+            };
 
             this.userOptions = userOptions;
 

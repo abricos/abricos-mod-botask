@@ -116,6 +116,7 @@ class BotaskApp extends AbricosApplication {
         $rows = BotaskQuery::BoardTaskUsers($this->db, Abricos::$user->id, $lastupdate);
         while (($row = $this->db->fetch_array($rows))){
             $ret->board[$row['tid']]['users'][] = $row['uid'];
+            $autors[$row['uid']] = true;
         }
 
         foreach($autors as $uid => $v){

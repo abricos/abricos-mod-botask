@@ -79,8 +79,8 @@ Component.entryPoint = function(NS){
             for (var uid in stats){
                 var user = NS.taskManager.users.get(uid);
                 lst += TM.replace('opt', {
-                    'v': user.getUserName(),
-                    'id': user.id
+                    'v': user.get('viewName'),
+                    'id': user.get('id')
                 });
             }
 

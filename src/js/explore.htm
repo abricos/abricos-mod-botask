@@ -26,8 +26,6 @@
                     <div id="{i#baddc}" class="badd bc"></div>
                 </div>
             </div>
-
-
         </div>
         <div class="panel-body">
 
@@ -50,7 +48,7 @@
 <tr class="trrow">
     <td class="{v#clst}">
         <div class="staticon">
-            <div id="{i#bclsexpd}-{v#id}" class="chd {v#chdicon} {v#chdicoview}"></div>
+            <div data-click="shChilds" data-id="{v#id}" class="chd {v#chdicon} {v#chdicoview}"></div>
         </div>
     </td>
     <td>
@@ -75,10 +73,10 @@
 </tr>
 
 <!--{rowuser}-->
-<tr class="trrow rowuser">
+<tr class="trrow rowuser" data-click="shChildsUser" data-id="{v#id}">
     <td class="{v#clst}">
         <div class="staticon">
-            <div id="{i#bclsexpd}-{v#id}" class="chd {v#chdicon} {v#chdicoview}"></div>
+            <div class="chd {v#chdicon} {v#chdicoview}"></div>
         </div>
     </td>
     <td>

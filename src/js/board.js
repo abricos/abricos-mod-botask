@@ -13,24 +13,14 @@ Component.entryPoint = function(NS){
     NS.BoardWidget = Y.Base.create('BoardWidget', SYS.AppWidget, [], {
         onInitAppWidget: function(err, appInstance, options){
 
+            this.set('waiting', true);
+
             Brick.appFunc('user', 'userOptionList', '{C#MODNAME}', function(uErr, uRes){
                 appInstance.boardData(0, function(err, res){
-
-
                     NS.taskManager = new NS.TaskManager(res.userOptionList, res.boardData);
-
+                    this.onBuildTaskManager();
                 }, this);
             }, this);
-
-
-            /*
-             this.set('waiting', true);
-
-             var instance = this;
-             NS.buildTaskManager(function(){
-             instance.onBuildTaskManager();
-             });
-             /**/
         },
         destructor: function(){
             var widgets = this._widgets;
@@ -47,12 +37,17 @@ Component.entryPoint = function(NS){
             var tp = this.template;
 
             this._widgets = {
-                explore: this.wsw['explore'] = new NS.ExploreWidget(tp.gel('explore')),
+                explore: new NS.ExploreWidget({
+                    srcNode: tp.gel('explore')
+                }),
+                teamUsers: new NS.TeamUserListWidget({
+                    srcNode: tp.gel('teamusers')
+                }),
+
                 // easyList: new NS.EasyListWidget(tp.gel('easylist'), tp.gel('boxfav'))
             };
 
             /*
-             this.wsw['teamUsers'] = new NS.TeamUserListWidget(tp.gel('teamusers'));
              this.wsw['teamUsers'].userSelectChangedEvent.subscribe(this.onTeamUserSelectChanged, this, true);
              /**/
         }

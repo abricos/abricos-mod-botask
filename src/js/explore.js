@@ -24,7 +24,7 @@ Component.entryPoint = function(NS){
             this.selectedTask = null;
             this.selectedUserId = null;
 
-            this.render();
+            this.renderWidget();
 
             NS.taskManager.taskListChangedEvent.subscribe(this.onTaskListChanged, this, true);
 
@@ -46,8 +46,8 @@ Component.entryPoint = function(NS){
                 var user = NS.taskManager.users.get(tk.userid);
                 return tp.replace('rowuser', {
                     'id': tk.id,
-                    'avatar': user.avatar24(true),
-                    'tl': user.getUserName(),
+                    avatar: user.get('avatarSrc24'),
+                    'tl': user.get('viewName'),
                     'linkview': '#',
                     'child': sChild,
                     'clst': islast ? 'ln' : 'tn',
@@ -70,8 +70,9 @@ Component.entryPoint = function(NS){
             }
         },
         buildRows: function(ptk, list, level){
-
-            var cfg = this.get('config'),
+            var appInstance = this.get('appInstance'),
+                tp = this.template,
+                cfg = this.get('config'),
                 a = [],
                 anp = null;
 
@@ -81,16 +82,16 @@ Component.entryPoint = function(NS){
                     return;
                 }
 
-                if (level == 0 && ((L.isNull(tk.parent) && tk.parentTaskId > 0) || tk.userid != UID)){
+                if (level == 0 && ((Y.Lang.isNull(tk.parent) && tk.parentTaskId > 0) || tk.userid != UID)){
 
-                    if (L.isNull(anp)){
+                    if (Y.Lang.isNull(anp)){
                         anp = {};
                     }
                     if (!anp[tk.userid]){
                         var user = NS.taskManager.users.get(tk.userid);
                         anp[tk.userid] = {
                             'id': tk.userid,
-                            'title': user.getUserName(),
+                            'title': user.get('viewName'),
                             'userid': tk.userid,
                             'isUserRow': true,
                             'childs': new NS.TaskList(),
@@ -103,7 +104,7 @@ Component.entryPoint = function(NS){
                 }
             }, true, 'name');
 
-            if (!L.isNull(anp)){
+            if (!Y.Lang.isNull(anp)){
                 var at = [];
                 for (var n in anp){
                     at[at.length] = anp[n];
@@ -134,8 +135,9 @@ Component.entryPoint = function(NS){
 
             if (this._firstRenderRows){
                 this._firstRenderRows = false;
-                Dom.setStyle(this._TM.getEl('widget.empty'), 'display', 'none');
-                Dom.setStyle(this._TM.getEl('widget.table'), 'display', '');
+
+                tp.hide('empty');
+                tp.show('table');
             }
 
             var sRow = {
@@ -143,14 +145,13 @@ Component.entryPoint = function(NS){
                 'clshide': '',
                 'rows': lst
             };
-            if (!L.isNull(ptk)){
+            if (!Y.Lang.isNull(ptk)){
                 sRow['pid'] = ptk.id;
                 sRow['clshide'] = ptk.expanded ? '' : 'hide';
             }
 
-            return this._TM.replace('table', sRow);
+            return tp.replace('table', sRow);
         },
-
 
         renderWidget: function(){
             this.urows = null;
@@ -169,7 +170,7 @@ Component.entryPoint = function(NS){
 
         shChilds: function(taskid){
             var task = NS.taskManager.getTask(taskid);
-            if (L.isNull(task)){
+            if (Y.Lang.isNull(task)){
                 return;
             }
 
@@ -179,42 +180,29 @@ Component.entryPoint = function(NS){
         },
 
         shChildsUser: function(taskid){
-            this.get('config')['shUsers'][taskid] = !this.get('config')['shUsers'][taskid];
+            var shUsers = this.get('config')['shUsers'];
+            shUsers[taskid] = !shUsers[taskid];
+
             this.renderWidget();
         },
 
+        onClick: function(e){
 
-    }, {
-        ATTRS: {
-            component: {value: COMPONENT},
-            templateBlockName: {value: 'widget,table,row,rowuser'},
-            config: {
-                value: {
-                    showArhive: false,
-                    showRemoved: false,
-                    shUsers: {}
-                }
+            var node = e.defineTarget ? e.defineTarget : e.target,
+                id = node.getData('id');
+
+            switch (e.dataClick) {
+                case 'shChilds':
+                    this.shChilds(id);
+                    return true;
+                case 'shChildsUser':
+                    this.shChildsUser(id);
+                    return true;
+
             }
-        },
-        CLICKS: {}
-    });
-
-    return; // TODO: old functions
-
-    var Dom = YAHOO.util.Dom,
-        E = YAHOO.util.Event,
-        L = YAHOO.lang;
-
-    var UID = Brick.env.user.id;
-
-    ExploreWidget.prototype = {
 
 
-        onClick: function(el){
-            var TId = this._TId,
-                tp = TId['widget'],
-                prefix = el.id.replace(/([0-9]+$)/, ''),
-                numid = el.id.replace(prefix, "");
+            return;
 
             switch (el.id) {
                 case tp['showrem']:
@@ -250,25 +238,15 @@ Component.entryPoint = function(NS){
                     this.editById(numid);
                     return true;
 
-                case (tp['bclsexpd'] + '-'):
-                    this.shChilds(numid);
-                    return true;
             }
 
-            tp = TId['rowuser'];
-            switch (prefix) {
-                case (tp['bclsexpd'] + '-'):
-                case (tp['btitle'] + '-'):
-                    this.shChildsUser(numid);
-                    return true;
-            }
 
             return false;
         },
 
         editById: function(id){
             var task = NS.taskManager.list.get(id);
-            if (L.isNull(task)){
+            if (Y.Lang.isNull(task)){
                 return;
             }
 
@@ -301,7 +279,7 @@ Component.entryPoint = function(NS){
         },
 
         selectPathMethod: function(task){
-            if (L.isNull(task)){
+            if (Y.Lang.isNull(task)){
                 return;
             }
             var TId = this._TId, gel = function(n, id){
@@ -309,7 +287,7 @@ Component.entryPoint = function(NS){
             };
             Dom.addClass(gel('row', task.id), 'select');
 
-            if ((L.isNull(task.parent) && task.parentTaskId > 0) || (task.parentTaskId == 0 && task.userid != UID)){
+            if ((Y.Lang.isNull(task.parent) && task.parentTaskId > 0) || (task.parentTaskId == 0 && task.userid != UID)){
                 Dom.addClass(gel('rowuser', task.userid), 'select');
             }
 
@@ -318,15 +296,16 @@ Component.entryPoint = function(NS){
 
         selectPath: function(task){
             this.selectedTask = task;
-            var TId = this._TId, gel = function(n, id){
-                return Dom.get(TId[n]['title'] + '-' + id);
-            };
+
+            var tp = this.template;
+
             NS.taskManager.list.foreach(function(tk){
-                Dom.removeClass(gel('row', tk.id), 'select');
+                tp.removeClass('row.title-' + tk.id, 'select');
             }, false);
+
             for (var uid in this.urows){
                 var utk = this.urows[uid];
-                Dom.removeClass(gel('rowuser', utk.id), 'select');
+                tp.removeClass('rowuser.title-' + utk.id, 'select');
             }
             this.selectPathMethod(task);
         },
@@ -371,7 +350,31 @@ Component.entryPoint = function(NS){
 
             });
         }
-    };
+
+    }, {
+        ATTRS: {
+            component: {value: COMPONENT},
+            templateBlockName: {value: 'widget,table,row,rowuser'},
+            config: {
+                value: {
+                    showArhive: false,
+                    showRemoved: false,
+                    shUsers: {}
+                }
+            }
+        },
+        CLICKS: {}
+    });
+
+    return; // TODO: old functions
+
+    var Dom = YAHOO.util.Dom,
+        E = YAHOO.util.Event,
+        L = YAHOO.lang;
+
+    var UID = Brick.env.user.id;
+
+    ExploreWidget.prototype = {};
     NS.ExploreWidget = ExploreWidget;
 
     NS.GoByIdPanel = Y.Base.create('GoByIdPanel', SYS.Dialog, [], {
@@ -402,7 +405,7 @@ Component.entryPoint = function(NS){
 
             var task = NS.taskManager.getTask(numid);
 
-            if (L.isNull(task)){
+            if (Y.Lang.isNull(task)){
                 gel('num').innerHTML = numid;
                 Dom.setStyle(gel('err'), 'display', '');
                 return;

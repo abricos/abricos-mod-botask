@@ -4,7 +4,7 @@ Component.requires = {
         {name: 'sys', files: ['container.js']},
         {name: 'uprofile', files: ['users.js']},
         {name: 'comment', files: ['comment.js']},
-        {name: 'botask', files: ['lib.js']}
+        {name: '{C#MODNAME}', files: ['lib.js']}
     ]
 };
 Component.entryPoint = function(NS){

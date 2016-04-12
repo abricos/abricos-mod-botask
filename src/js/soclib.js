@@ -113,7 +113,7 @@ Component.entryPoint = function(){
         getData: function(){
             return {
                 'id': this.id,
-                'unm': this.userName,
+                unm: this.userName,
                 'fnm': this.firstName,
                 'lnm': this.lastName,
                 'avt': this.avatar

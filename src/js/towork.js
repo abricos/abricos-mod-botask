@@ -3,7 +3,7 @@ Component.requires = {
     mod: [
         {name: 'sys', files: ['container.js']},
         {name: 'uprofile', files: ['users.js']},
-        {name: 'botask', files: ['tasklist.js', 'chart.js']}
+        {name: '{C#MODNAME}', files: ['tasklist.js', 'chart.js']}
     ]
 };
 Component.entryPoint = function(NS){
@@ -173,9 +173,9 @@ Component.entryPoint = function(NS){
             var TM = this._TM, user = this.user = NS.taskManager.users.get(config['workuserid']);
 
             wtlContainer.innerHTML = TM.replace('user', {
-                'uid': user.id,
-                'avatar': user.avatar45(),
-                'unm': user.getUserName()
+                uid: user.get('id'),
+                avatar: user.get('avatarSrc45'),
+                unm: user.get('viewName')
             });
 
             WorkTaskListWidget.superclass.init.call(this, TM.getEl('user.table'), list, config);
@@ -232,18 +232,18 @@ Component.entryPoint = function(NS){
             WorkTaskListWidget.superclass.render.call(this);
 
             if (!L.isNull(this._taskListForChart)){
-                new NS.WorkChartWidget(this._TM.getEl('user.chart'), this._taskListForChart, this.user.id);
+                new NS.WorkChartWidget(this._TM.getEl('user.chart'), this._taskListForChart, this.user.get('id'));
             }
             this._taskListForChart = null;
         },
         isRenderTask: function(tk){
             var selTPage = this.selectedTabPage['name'], user = this.user;
 
-            var forwork = user.id * 1 == tk.stUserId * 1 && tk.status == NS.TaskStatus.ACCEPT;
+            var forwork = user.get('id') * 1 == tk.stUserId * 1 && tk.status == NS.TaskStatus.ACCEPT;
 
             var formonth = false;
             if (!L.isNull(tk.work)){
-                formonth = tk.work.secondsByUser(user.id) > 0;
+                formonth = tk.work.secondsByUser(user.get('id')) > 0;
             }
             if (forwork || formonth){
                 this.taskViewCounter++;
@@ -281,7 +281,7 @@ Component.entryPoint = function(NS){
     });
 
     WorkTaskListWidget.sort = function(w1, w2){
-        if (w1.user.id * 1 == Brick.env.user.id * 1){
+        if (w1.user.get('id') * 1 == Brick.env.user.id * 1){
             return -1;
         }
         return 0;
@@ -324,7 +324,7 @@ Component.entryPoint = function(NS){
         },
         find: function(userid){
             return this.foreach(function(w){
-                if (w.user.id == userid){
+                if (w.user.get('id') == userid){
                     return true;
                 }
             });
@@ -352,7 +352,7 @@ Component.entryPoint = function(NS){
             }
 
             var div = document.createElement('div');
-            div.innerHTML = TM.replace('row', {'uid': userid});
+            div.innerHTML = TM.replace('row', {uid: userid});
 
             var el = div.childNodes[0];
             TM.getEl('panel.users').appendChild(el);
@@ -369,7 +369,7 @@ Component.entryPoint = function(NS){
 
             var ws = this.widgets, __self = this;
             NS.taskManager.users.foreach(function(user){
-                __self.buildWidget(user.id);
+                __self.buildWidget(user.get('id'));
             });
             this.foreach(function(w){
                 w.render();

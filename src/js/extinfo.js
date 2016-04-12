@@ -113,9 +113,9 @@ Component.entryPoint = function(NS){
 
             var buildRow = function(user){
                 return TM.replace('user', {
-                    'avatar': user.avatar24(true),
-                    'uid': user.id, 'unm': user.getUserName(),
-                    'status': user.id == UID ? TM.replace('editor') : __self.getSt(user.id)['tl']
+                    avatar: user.get('avatarSrc24'),
+                    uid: user.get('id'), unm: user.get('viewName'),
+                    'status': user.get('id') == UID ? TM.replace('editor') : __self.getSt(user.get('id'))['tl']
                 });
             };
 
@@ -123,7 +123,7 @@ Component.entryPoint = function(NS){
 
             for (var i = 0; i < tk.users.length; i++){
                 var user = users.get(tk.users[i]);
-                if (user.id != UID){
+                if (user.get('id') != UID){
                     lst += buildRow(user);
                 }
             }

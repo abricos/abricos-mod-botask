@@ -3,7 +3,7 @@ Component.requires = {
     mod: [
         {name: 'sys', files: ['container.js']},
         {name: 'uprofile', files: ['users.js']},
-        {name: 'botask', files: ['widgets.js']}
+        {name: '{C#MODNAME}', files: ['widgets.js']}
     ]
 };
 Component.entryPoint = function(NS){
@@ -122,7 +122,7 @@ Component.entryPoint = function(NS){
             // Автор
             var user = NS.taskManager.users.get(task.userid);
             gel('author').innerHTML = TM.replace('user', {
-                'uid': user.id, 'unm': user.getUserName()
+                uid: user.get('id'), unm: user.get('viewName')
             });
             // Создана
             gel('dl').innerHTML = Brick.dateExt.convert(task.date, 3, true);

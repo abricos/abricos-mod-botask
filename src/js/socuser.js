@@ -29,7 +29,7 @@ Component.entryPoint = function(){
         initTemplate: function(){
             buildTemplate(this, 'panel,runm,rbirthday,rdescript,rlv,rdl');
             return this._TM.replace('panel', {
-                'uid': this.userid
+                uid: this.userid
             });
         },
         onLoad: function(){
@@ -50,21 +50,21 @@ Component.entryPoint = function(){
         },
         onUserChanged: function(type, args){
             var upuser = args[0];
-            if (upuser.id != this.userid){
+            if (upuser.get('id') != this.userid){
                 return;
             }
             this.renderUserInfo();
         },
         onAvatarUpload: function(fileid){
             UP.viewer.updateUserInfo(this.userid, {
-                'avatar': fileid
+                avatar: fileid
             });
         },
         renderUserInfo: function(user){
             if (!user){
                 user = this.user;
             }
-            var isMyProfile = Brick.env.user.id * 1 == user.id * 1;
+            var isMyProfile = Brick.env.user.id * 1 == user.get('id') * 1;
 
             var TM = this._TM, gel = function(nm){
                 return TM.getEl('panel.' + nm);
@@ -134,7 +134,7 @@ Component.entryPoint = function(){
             }
 
             return this._TM.replace('editor', {
-                'uid': this.userid,
+                uid: this.userid,
                 'byears': yLst,
                 'bdays': dLst
             });
@@ -158,14 +158,14 @@ Component.entryPoint = function(){
         },
         onUserChanged: function(type, args){
             var upuser = args[0];
-            if (upuser.id != this.userid){
+            if (upuser.get('id') != this.userid){
                 return;
             }
             this.renderUserInfo();
         },
         onAvatarUpload: function(fileid){
             UP.viewer.updateUserInfo(this.userid, {
-                'avatar': fileid
+                avatar: fileid
             });
         },
         renderUserInfo: function(user){
