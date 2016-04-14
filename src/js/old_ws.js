@@ -15,7 +15,7 @@ Component.entryPoint = function(NS){
     var WorkspacePanel = function(gConfig){
     };
     YAHOO.extend(WorkspacePanel, Brick.widget.Panel, {
-        initTemplate: function(){
+        initeTemplate: function(){
             return buildTemplate(this, 'panel').replace('panel');
         },
         onLoad: function(){
@@ -58,7 +58,7 @@ Component.entryPoint = function(NS){
                         return;
                     }
                 }
-                if (!L.isNull(w) && L.isFunction(w['destroy'])){
+                if (!Y.Lang.isNull(w) && L.isFunction(w['destroy'])){
                     w['destroy']();
                     wsw[n] = null;
                 }
@@ -78,7 +78,7 @@ Component.entryPoint = function(NS){
         },
         setGlobalConfig: function(gConfig){
             this.gConfig = gConfig;
-            if (!L.isNull(this.wsw['explore'])){
+            if (!Y.Lang.isNull(this.wsw['explore'])){
                 this._renderByGConfig();
             }
         },
@@ -167,7 +167,7 @@ Component.entryPoint = function(NS){
                         var task = null;
 
                         var showEditor = function(){
-                            task = L.isNull(task) ? new NS.Task() : task;
+                            task = Y.Lang.isNull(task) ? new NS.Task() : task;
                             hidewait();
                             wExplore.selectPath(task.parent);
 
@@ -192,7 +192,7 @@ Component.entryPoint = function(NS){
                             showEditor();
                         } else {
                             task = NS.taskManager.getTask(gcfg['p1'] * 1);
-                            if (L.isNull(task)){
+                            if (Y.Lang.isNull(task)){
                                 showEditor();
                             } else {
                                 // запросить дополнительные данные по задаче (описание, история)
@@ -236,7 +236,7 @@ Component.entryPoint = function(NS){
             'p1': p1,
             'p2': p2
         };
-        if (L.isNull(activeWSPanel) || activeWSPanel.isDestroy()){
+        if (Y.Lang.isNull(activeWSPanel) || activeWSPanel.isDestroy()){
             activeWSPanel = new WorkspacePanel(gConfig);
         } else {
             activeWSPanel.setGlobalConfig(gConfig);

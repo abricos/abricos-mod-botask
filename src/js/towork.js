@@ -231,7 +231,7 @@ Component.entryPoint = function(NS){
             this.taskViewCounter = 0;
             WorkTaskListWidget.superclass.render.call(this);
 
-            if (!L.isNull(this._taskListForChart)){
+            if (!Y.Lang.isNull(this._taskListForChart)){
                 new NS.WorkChartWidget(this._TM.getEl('user.chart'), this._taskListForChart, this.user.get('id'));
             }
             this._taskListForChart = null;
@@ -242,7 +242,7 @@ Component.entryPoint = function(NS){
             var forwork = user.get('id') * 1 == tk.stUserId * 1 && tk.status == NS.TaskStatus.ACCEPT;
 
             var formonth = false;
-            if (!L.isNull(tk.work)){
+            if (!Y.Lang.isNull(tk.work)){
                 formonth = tk.work.secondsByUser(user.get('id')) > 0;
             }
             if (forwork || formonth){
@@ -254,7 +254,7 @@ Component.entryPoint = function(NS){
             }
 
             if (selTPage == 'monthchart' && formonth){
-                if (L.isNull(this._taskListForChart)){
+                if (Y.Lang.isNull(this._taskListForChart)){
                     this._taskListForChart = new NS.TaskList();
                 }
                 this._taskListForChart.add(tk);
@@ -341,7 +341,7 @@ Component.entryPoint = function(NS){
             return null;
         },
         buildWidget: function(userid){
-            if (!L.isNull(this.find(userid))){
+            if (!Y.Lang.isNull(this.find(userid))){
                 return;
             }
 
@@ -361,7 +361,7 @@ Component.entryPoint = function(NS){
             ws[ws.length] = w;
         },
         renderWidgets: function(r){
-            if (L.isNull(r)){
+            if (Y.Lang.isNull(r)){
                 return;
             }
 
@@ -404,7 +404,7 @@ Component.entryPoint = function(NS){
                     return true;
                 }
             });
-            return !L.isNull(w);
+            return !Y.Lang.isNull(w);
         }
 
     });
@@ -412,7 +412,7 @@ Component.entryPoint = function(NS){
 
     var _activeToWorkPanel = null;
     NS.API.showToWorkPanel = function(){
-        if (L.isNull(_activeToWorkPanel) || _activeToWorkPanel.isDestroy()){
+        if (Y.Lang.isNull(_activeToWorkPanel) || _activeToWorkPanel.isDestroy()){
             _activeToWorkPanel = new ToWorkPanel();
         }
         return _activeToWorkPanel;

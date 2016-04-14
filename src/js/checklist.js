@@ -218,14 +218,14 @@ Component.entryPoint = function(NS){
             container.innerHTML += TM.replace('row', {
                 'info': cfg['hideinfo'] ? '' : TM.replace('info', {
                     'inew': de.convert(d['dl']) + ', ' + nUser.getUserName(),
-                    'diupdate': L.isNull(uUser) ? 'none' : 'block',
-                    'iupdate': L.isNull(uUser) ? '' : (de.convert(d['udl']) + ', ' + uUser.getUserName()),
+                    'diupdate': Y.Lang.isNull(uUser) ? 'none' : 'block',
+                    'iupdate': Y.Lang.isNull(uUser) ? '' : (de.convert(d['udl']) + ', ' + uUser.getUserName()),
 
-                    'dicheck': L.isNull(cUser) ? 'none' : 'block',
-                    'icheck': L.isNull(cUser) ? '' : (de.convert(d['cdl']) + ', ' + cUser.getUserName()),
+                    'dicheck': Y.Lang.isNull(cUser) ? 'none' : 'block',
+                    'icheck': Y.Lang.isNull(cUser) ? '' : (de.convert(d['cdl']) + ', ' + cUser.getUserName()),
 
-                    'diremove': L.isNull(dUser) ? 'none' : 'block',
-                    'iremove': L.isNull(dUser) ? '' : (de.convert(d['ddl']) + ', ' + dUser.getUserName())
+                    'diremove': Y.Lang.isNull(dUser) ? 'none' : 'block',
+                    'iremove': Y.Lang.isNull(dUser) ? '' : (de.convert(d['ddl']) + ', ' + dUser.getUserName())
                 }),
 
                 'checked': this.data['ch'] > 0 ? 'checked="checked"' : ''
@@ -252,7 +252,7 @@ Component.entryPoint = function(NS){
                 return;
             }
             var el = this._TM.getEl('row.id');
-            if (!L.isNull(el)){
+            if (!Y.Lang.isNull(el)){
                 el.parentNode.removeChild(el);
             }
             this._destroyed = true;

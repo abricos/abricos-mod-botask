@@ -22,7 +22,7 @@ Component.entryPoint = function(NS){
             // путь
             var getPT = function(tk){
                 var tl = tk.title;
-                if (!L.isNull(tk.parent)){
+                if (!Y.Lang.isNull(tk.parent)){
                     tl = getPT(tk.parent) + " / " + tl;
                 }
                 return tl;
@@ -31,7 +31,7 @@ Component.entryPoint = function(NS){
                 if (tk.id == taskid){
                     return true;
                 }
-                if (!L.isNull(tk.parent)){
+                if (!Y.Lang.isNull(tk.parent)){
                     return isChild(tk.parent);
                 }
                 return false;
@@ -39,7 +39,7 @@ Component.entryPoint = function(NS){
 
             var lst = "";
             NS.taskManager.list.foreach(function(tk){
-                if (L.isNull(tk.parent) && tk.parentTaskId > 0){
+                if (Y.Lang.isNull(tk.parent) && tk.parentTaskId > 0){
                     return;
                 }
                 if (tk.isClosed() || tk.isRemoved() || tk.isArhive()){

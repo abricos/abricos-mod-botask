@@ -123,8 +123,8 @@ Component.entryPoint = function(){
                 tkColMan.calculate(day, function(tk, pd, index, count){
                     var wobar = wbar / count;
 
-                    var m1 = L.isNull(pd[0]) ? cfg['worker']['minTime'] : pd[0],
-                        m2 = L.isNull(pd[1]) ? cfg['worker']['maxTime'] : pd[1];
+                    var m1 = Y.Lang.isNull(pd[0]) ? cfg['worker']['minTime'] : pd[0],
+                        m2 = Y.Lang.isNull(pd[1]) ? cfg['worker']['maxTime'] : pd[1];
 
                     var px = hScale.transform(rday),
                         py1 = vScale.transform(m1),
@@ -245,10 +245,10 @@ Component.entryPoint = function(){
             for (var i = 0; i < ts.length; i++){
                 var cpd = ts[i]['pd'];
 
-                var p0 = L.isNull(pd[0]) ? 0 : pd[0],
-                    p1 = L.isNull(pd[1]) ? 1440 : pd[1],
-                    c0 = L.isNull(cpd[0]) ? 0 : cpd[0],
-                    c1 = L.isNull(cpd[1]) ? 1440 : cpd[1];
+                var p0 = Y.Lang.isNull(pd[0]) ? 0 : pd[0],
+                    p1 = Y.Lang.isNull(pd[1]) ? 1440 : pd[1],
+                    c0 = Y.Lang.isNull(cpd[0]) ? 0 : cpd[0],
+                    c1 = Y.Lang.isNull(cpd[1]) ? 1440 : cpd[1];
 
                 if (!(p1 < c0 || p0 > c1) || (p0 >= c0 && p1 <= c1) || (c0 >= p0 && c1 <= p1)){
                     // в эту колонку не влезает
@@ -461,9 +461,9 @@ Component.entryPoint = function(){
             el.innerHTML = this._TM.replace('tooltip', {
                 'tl': task.title,
                 'dl': Brick.dateExt.convert(rday, 2),
-                'tfrom': L.isNull(pd[0]) ? '...' : toTime(pd[0]),
-                'tto': L.isNull(pd[1]) ? '...' : toTime(pd[1]),
-                'hm': (L.isNull(pd[0]) || L.isNull(pd[1])) ? '...' : NS.timeToSSumma((pd[1] * 1 - pd[0] * 1) * 60)
+                'tfrom': Y.Lang.isNull(pd[0]) ? '...' : toTime(pd[0]),
+                'tto': Y.Lang.isNull(pd[1]) ? '...' : toTime(pd[1]),
+                'hm': (Y.Lang.isNull(pd[0]) || Y.Lang.isNull(pd[1])) ? '...' : NS.timeToSSumma((pd[1] * 1 - pd[0] * 1) * 60)
             });
 
             Dom.setStyle(el, 'display', '');

@@ -146,8 +146,8 @@ Component.entryPoint = function(NS){
             this.stUserId = d['stuid'];
             this.stDate = NS.dateToClient(d['stdl']);
 
-            d['cmt'] = L.isNull(d['cmt']) ? 0 : d['cmt'];
-            d['cmtv'] = L.isNull(d['cmtv']) ? 0 : d['cmtv'];
+            d['cmt'] = Y.Lang.isNull(d['cmt']) ? 0 : d['cmt'];
+            d['cmtv'] = Y.Lang.isNull(d['cmtv']) ? 0 : d['cmtv'];
 
             this.isNewCmt = d['cmt'] > d['cmtv'];
 
@@ -179,7 +179,7 @@ Component.entryPoint = function(NS){
             }
         },
         addHItem: function(hst){
-            if (L.isNull(this.history)){
+            if (Y.Lang.isNull(this.history)){
                 this.history = new History();
             }
             this.history.add(hst);
@@ -187,7 +187,7 @@ Component.entryPoint = function(NS){
 
         isExpired: function(){
             var ddl = this.deadline;
-            if (L.isNull(ddl)){
+            if (Y.Lang.isNull(ddl)){
                 return false;
             }
             return ddl.getTime() < (new Date()).getTime();
@@ -265,8 +265,8 @@ Component.entryPoint = function(NS){
     };
 
     var sortDeadline = function(tk1, tk2){
-        var t1 = L.isNull(tk1.deadline) || tk1.isClosed() ? 9999999999999 : tk1.deadline.getTime();
-        var t2 = L.isNull(tk2.deadline) || tk2.isClosed() ? 9999999999999 : tk2.deadline.getTime();
+        var t1 = Y.Lang.isNull(tk1.deadline) || tk1.isClosed() ? 9999999999999 : tk1.deadline.getTime();
+        var t2 = Y.Lang.isNull(tk2.deadline) || tk2.isClosed() ? 9999999999999 : tk2.deadline.getTime();
 
         if (t1 < t2){
             return -1;
@@ -278,8 +278,8 @@ Component.entryPoint = function(NS){
     };
 
     var sortVDate = function(tk1, tk2){
-        var t1 = L.isNull(tk1.vDate) ? 0 : tk1.vDate.getTime();
-        var t2 = L.isNull(tk2.vDate) ? 0 : tk2.vDate.getTime();
+        var t1 = Y.Lang.isNull(tk1.vDate) ? 0 : tk1.vDate.getTime();
+        var t2 = Y.Lang.isNull(tk2.vDate) ? 0 : tk2.vDate.getTime();
 
         if (t1 < t2){
             return -1;
@@ -536,7 +536,7 @@ Component.entryPoint = function(NS){
         },
 
         exist: function(taskid){
-            return !L.isNull(this.find(taskid, true));
+            return !Y.Lang.isNull(this.find(taskid, true));
         }
     });
     NS.TaskList = TaskList;
@@ -644,6 +644,7 @@ Component.entryPoint = function(NS){
             this.taskListChangedEvent = new YAHOO.util.CustomEvent('taskListChangedEvent');
 
             // this.userConfig = this.initUserConfig(initData['cfg']);
+            this.userConfig = {};
             this.userConfigChangedEvent = new YAHOO.util.CustomEvent("userConfigChangedEvent");
 
             this.list = new TaskList();
@@ -659,7 +660,7 @@ Component.entryPoint = function(NS){
             // система автоматического обновления
             // проверяет по движению мыши в документе, срабатывает по задержке обновления
             // более 5 минут
-            E.on(document.body, 'mousemove', this.onMouseMove, this, true);
+            // E.on(document.body, 'mousemove', this.onMouseMove, this, true);
         },
 
         onMouseMove: function(evt){
@@ -677,14 +678,14 @@ Component.entryPoint = function(NS){
         },
 
         _ajaxBeforeResult: function(r){
-            if (L.isNull(r)){
+            if (Y.Lang.isNull(r)){
                 return false;
             }
             if (r.u * 1 != Brick.env.user.id){ // пользователь разлогинился
                 Brick.Page.reload();
                 return false;
             }
-            if (L.isNull(r['changes'])){
+            if (Y.Lang.isNull(r['changes'])){
                 return false;
             } // изменения не зафиксированы
 
@@ -718,7 +719,7 @@ Component.entryPoint = function(NS){
             Brick.ajax('botask', {
                 'data': d,
                 'event': function(request){
-                    if (L.isNull(request.data)){
+                    if (Y.Lang.isNull(request.data)){
                         return;
                     }
                     var isChanges = __self._ajaxBeforeResult(request.data);
@@ -739,7 +740,7 @@ Component.entryPoint = function(NS){
             for (var id in data){
                 var di = data[id];
                 var task = this.list.find(id);
-                if (L.isNull(task)){ // новая задача
+                if (Y.Lang.isNull(task)){ // новая задача
                     task = new Task(di);
                 } else {
                     task.update(di);
@@ -774,7 +775,7 @@ Component.entryPoint = function(NS){
             // все те, что не содержат родителя поместить в корень списка
             this.list.clear();
             for (var id in objs){
-                if (L.isNull(objs[id].parent)){
+                if (Y.Lang.isNull(objs[id].parent)){
                     this.list.add(objs[id]);
                 }
             }
@@ -790,7 +791,7 @@ Component.entryPoint = function(NS){
                 var di = data[id];
 
                 var item = history.get(di['id']);
-                if (L.isNull(item)){
+                if (Y.Lang.isNull(item)){
                     item = history.itemInstance(di);
                     history.add(item);
                     if (socid == 0){
@@ -800,8 +801,8 @@ Component.entryPoint = function(NS){
 
                 var socitem = this.list.get(item.socid);
 
-                if (!L.isNull(socitem)){
-                    if (L.isNull(socitem.history)){
+                if (!Y.Lang.isNull(socitem)){
+                    if (Y.Lang.isNull(socitem.history)){
                         socitem.history = new History();
                     }
                     socitem.history.add(item);
@@ -813,17 +814,22 @@ Component.entryPoint = function(NS){
         },
 
         userConfigSave: function(callback){
+
             callback = callback || function(){
                 };
+            callback();
+
+            /*
             var __self = this;
             this.ajax({'do': 'usercfgupdate', 'cfg': this.userConfig.toAjax()}, function(r){
                 callback();
-                if (L.isNull(r)){
+                if (Y.Lang.isNull(r)){
                     return;
                 }
                 __self.userConfig.update(r);
                 __self.userConfigChangedEvent.fire(__self.userConfig);
             });
+            /**/
         },
 
         loadHistory: function(history, socid, callback){
@@ -853,7 +859,7 @@ Component.entryPoint = function(NS){
             var __self = this;
             this.ajax({'do': 'taskfavorite', 'taskid': taskid, 'val': (!task.favorite ? '1' : '0')}, function(r){
                 callback();
-                if (L.isNull(r)){
+                if (Y.Lang.isNull(r)){
                     return;
                 }
                 task.favorite = r * 1 > 0;
@@ -868,7 +874,7 @@ Component.entryPoint = function(NS){
             var __self = this;
             this.ajax({'do': 'taskshowcmt', 'taskid': taskid, 'val': (!task.showcmt ? '1' : '0')}, function(r){
                 callback();
-                if (L.isNull(r)){
+                if (Y.Lang.isNull(r)){
                     return;
                 }
                 task.showcmt = r * 1 > 0;
@@ -883,7 +889,7 @@ Component.entryPoint = function(NS){
             var __self = this;
             this.ajax({'do': 'taskexpand', 'taskid': taskid, 'val': (!task.expanded ? '1' : '0')}, function(r){
                 callback();
-                if (L.isNull(r)){
+                if (Y.Lang.isNull(r)){
                     return;
                 }
                 task.expanded = r * 1 > 0;
@@ -897,7 +903,7 @@ Component.entryPoint = function(NS){
             var __self = this;
             this.ajax({'do': 'taskvoting', 'taskid': taskid, 'val': value}, function(r){
                 callback();
-                if (L.isNull(r)){
+                if (Y.Lang.isNull(r)){
                     return;
                 }
                 var task = NS.taskManager.list.find(taskid);
@@ -916,11 +922,11 @@ Component.entryPoint = function(NS){
             });
         },
         _setLoadedTaskData: function(d){
-            if (L.isNull(d)){
+            if (Y.Lang.isNull(d)){
                 return;
             }
             var task = this.list.find(d['id']);
-            if (L.isNull(task)){
+            if (Y.Lang.isNull(task)){
                 return;
             }
 
@@ -935,7 +941,7 @@ Component.entryPoint = function(NS){
         },
         checkTaskOpenChilds: function(taskid){ // проверить, есть ли открытые подзадачи
             var task = this.list.find(taskid);
-            if (L.isNull(task)){
+            if (Y.Lang.isNull(task)){
                 return false;
             }
             var find = false;
@@ -973,7 +979,7 @@ Component.entryPoint = function(NS){
                 };
             var task = this.list.find(taskid);
 
-            if (L.isNull(task) || task.isLoad){
+            if (Y.Lang.isNull(task) || task.isLoad){
                 callback();
                 return true;
             }
@@ -1000,7 +1006,7 @@ Component.entryPoint = function(NS){
                 'do': 'custatsave',
                 'custat': sd
             }, function(r){
-                if (!L.isNull(r)){
+                if (!Y.Lang.isNull(r)){
                     task.custatus = r;
                 }
                 callback();
@@ -1064,7 +1070,7 @@ Component.entryPoint = function(NS){
 
 
     NS.buildTaskManager = function(callback){
-        if (!L.isNull(NS.taskManager)){
+        if (!Y.Lang.isNull(NS.taskManager)){
             callback(NS.taskManager);
             return;
         }
@@ -1096,7 +1102,7 @@ Component.entryPoint = function(NS){
     TZ_OFFSET = 0;
 
     NS.dateToServer = function(date){
-        if (L.isNull(date)){
+        if (Y.Lang.isNull(date)){
             return 0;
         }
         var tz = TZ_OFFSET * 60 * 1000;
@@ -1117,7 +1123,7 @@ Component.entryPoint = function(NS){
 
     var DPOINT = '.';
     NS.dateToString = function(date){
-        if (L.isNull(date)){
+        if (Y.Lang.isNull(date)){
             return '';
         }
         var day = date.getDate();
@@ -1142,7 +1148,7 @@ Component.entryPoint = function(NS){
     };
 
     NS.timeToString = function(date){
-        if (L.isNull(date)){
+        if (Y.Lang.isNull(date)){
             return '';
         }
         return lz(date.getHours()) + ':' + lz(date.getMinutes());
@@ -1250,7 +1256,7 @@ Component.entryPoint = function(NS){
             this.updateCountLabel();
         },
         updateCountLabel: function(){
-            if (L.isNull(NS.taskManager)){
+            if (Y.Lang.isNull(NS.taskManager)){
                 return;
             }
             var TM = this._TM,

@@ -42,7 +42,7 @@ Component.entryPoint = function(NS){
     FolderViewWidget.prototype = {
         init: function(container, task){
             this.task = task;
-            if (L.isNull(task)){
+            if (Y.Lang.isNull(task)){
                 container.innerHTML = buildTemplate(this, 'empty').replace('empty');
                 return;
             }
@@ -79,7 +79,7 @@ Component.entryPoint = function(NS){
             });
         },
         destroy: function(){
-            if (L.isNull(this.task)){
+            if (Y.Lang.isNull(this.task)){
                 return;
             }
 

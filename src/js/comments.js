@@ -52,7 +52,7 @@ Component.entryPoint = function(NS){
 
             var tpath = function(arr, task){
 
-                if (!L.isNull(task.parent)){
+                if (!Y.Lang.isNull(task.parent)){
                     tpath(arr, task.parent);
                 }
 
@@ -92,7 +92,7 @@ Component.entryPoint = function(NS){
 
     var _activeCommentsPanel = null;
     NS.API.showLastCommentsPanel = function(){
-        if (L.isNull(_activeCommentsPanel) || _activeCommentsPanel.isDestroy()){
+        if (Y.Lang.isNull(_activeCommentsPanel) || _activeCommentsPanel.isDestroy()){
             _activeCommentsPanel = new LastCommentsPanel();
         }
         return _activeCommentsPanel;

@@ -186,7 +186,7 @@ Component.entryPoint = function(){
             gel('sex').value = user['sex'];
 
             var bDate = NS.dateToClient(user['birthday']);
-            if (!L.isNull(bDate)){
+            if (!Y.Lang.isNull(bDate)){
                 gel('bdateday').value = bDate.getDate();
                 gel('bdatemonth').value = bDate.getMonth() + 1;
                 gel('bdateyear').value = bDate.getFullYear();

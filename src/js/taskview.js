@@ -44,7 +44,7 @@ Component.entryPoint = function(NS){
     TaskViewWidget.prototype = {
         init: function(container, task){
             this.task = task;
-            if (L.isNull(task)){
+            if (Y.Lang.isNull(task)){
                 container.innerHTML = buildTemplate(this, 'empty').replace('empty');
                 return;
             }
@@ -83,14 +83,14 @@ Component.entryPoint = function(NS){
             });
         },
         destroy: function(){
-            if (L.isNull(this.task)){
+            if (Y.Lang.isNull(this.task)){
                 return;
             }
 
             NS.taskManager.historyChangedEvent.unsubscribe(this.onHistoryChanged);
             NS.taskManager.userConfigChangedEvent.unsubscribe(this.onUserConfigChanged);
 
-            if (!L.isNull(this.drawListWidget)){
+            if (!Y.Lang.isNull(this.drawListWidget)){
                 this.drawListWidget.destroy();
             }
 
@@ -189,7 +189,7 @@ Component.entryPoint = function(NS){
 
             var sddl = "", sddlt = "";
             // срок исполнения
-            if (!L.isNull(task.deadline)){
+            if (!Y.Lang.isNull(task.deadline)){
                 sddl = Brick.dateExt.convert(task.deadline, 3, true);
                 if (task.ddlTime){
                     sddlt = Brick.dateExt.convert(task.deadline, 4);

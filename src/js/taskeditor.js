@@ -28,8 +28,8 @@ Component.entryPoint = function(NS){
             var TM = buildTemplate(this, 'widget');
 
             container.innerHTML = TM.replace('widget', {
-                'pid': L.isNull(task.parent) ? 0 : task.parent.id,
-                'ptitle': L.isNull(task.parent) ? '' : task.parent.title
+                'pid': Y.Lang.isNull(task.parent) ? 0 : task.parent.id,
+                'ptitle': Y.Lang.isNull(task.parent) ? '' : task.parent.title
             });
             this.onLoad();
         },
@@ -42,7 +42,7 @@ Component.entryPoint = function(NS){
 
             Dom.setStyle(TM.getEl('widget.tl' + (task.id * 1 > 0 ? 'new' : 'edit')), 'display', 'none');
 
-            this.parentSelWidget = new NS.TaskTreeSelectWidget(gel('path'), task.id, L.isNull(task.parent) ? 0 : task.parent.id);
+            this.parentSelWidget = new NS.TaskTreeSelectWidget(gel('path'), task.id, Y.Lang.isNull(task.parent) ? 0 : task.parent.id);
 
             gel('tl').value = task.title;
             TM.getEl('widget.editor').value = task.descript;
@@ -65,7 +65,7 @@ Component.entryPoint = function(NS){
                 Dom.setStyle(gel('rfiles'), 'display', 'none');
             }
 
-            var users = task.id * 1 == 0 && !L.isNull(task.parent) ? task.parent.users : task.users;
+            var users = task.id * 1 == 0 && !Y.Lang.isNull(task.parent) ? task.parent.users : task.users;
 
             this.usersWidget = new UP.UserSelectWidget(gel('users'), users);
 
@@ -128,7 +128,7 @@ Component.entryPoint = function(NS){
             var tk = this.task;
             if (tk.id > 0){
                 NS.navigator.taskView(tk.id);
-            } else if (tk.id == 0 || !L.isNull(tk.parent)){
+            } else if (tk.id == 0 || !Y.Lang.isNull(tk.parent)){
                 NS.navigator.taskView(tk.parent.id);
             } else {
                 NS.navigator.taskHome();
@@ -148,7 +148,7 @@ Component.entryPoint = function(NS){
             users[users.length] = Brick.env.user.id;
 
             var images = [];
-            if (!L.isNull(this.drawListWidget)){
+            if (!Y.Lang.isNull(this.drawListWidget)){
                 images = this.drawListWidget.toSave();
             }
 
@@ -156,7 +156,7 @@ Component.entryPoint = function(NS){
                 'title': gel('tl').value,
                 'descript': this.editor.getContent(),
                 'checks': this.checklist.getSaveData(),
-                'files': L.isNull(this.filesWidget) ? task.files : this.filesWidget.files,
+                'files': Y.Lang.isNull(this.filesWidget) ? task.files : this.filesWidget.files,
                 'images': images,
                 'users': users,
                 'parentid': this.parentSelWidget.getValue(),

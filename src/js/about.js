@@ -44,7 +44,7 @@ Component.entryPoint = function(NS){
 
     var _activeAboutPanel = null;
     NS.API.showAboutPanel = function(){
-        if (L.isNull(_activeAboutPanel) || _activeAboutPanel.isDestroy()){
+        if (Y.Lang.isNull(_activeAboutPanel) || _activeAboutPanel.isDestroy()){
             _activeAboutPanel = new AboutPanel();
         }
         return _activeAboutPanel;

@@ -26,8 +26,8 @@ Component.entryPoint = function(NS){
             var TM = buildTemplate(this, 'widget');
 
             container.innerHTML = TM.replace('widget', {
-                'pid': L.isNull(task.parent) ? 0 : task.parent.id,
-                'ptitle': L.isNull(task.parent) ? '' : task.parent.title
+                'pid': Y.Lang.isNull(task.parent) ? 0 : task.parent.id,
+                'ptitle': Y.Lang.isNull(task.parent) ? '' : task.parent.title
             });
 
             var TM = this._TM,
@@ -38,11 +38,11 @@ Component.entryPoint = function(NS){
 
             Dom.setStyle(TM.getEl('widget.tl' + (task.id * 1 > 0 ? 'new' : 'edit')), 'display', 'none');
 
-            this.parentSelWidget = new NS.TaskTreeSelectWidget(gel('path'), L.isNull(task.parent) ? 0 : task.parent.id);
+            this.parentSelWidget = new NS.TaskTreeSelectWidget(gel('path'), Y.Lang.isNull(task.parent) ? 0 : task.parent.id);
 
             gel('tl').value = task.title;
 
-            var users = task.id * 1 == 0 && !L.isNull(task.parent) ? task.parent.users : task.users;
+            var users = task.id * 1 == 0 && !Y.Lang.isNull(task.parent) ? task.parent.users : task.users;
             this.usersWidget = new UP.UserSelectWidget(gel('users'), users);
 
             var __self = this;
@@ -75,7 +75,7 @@ Component.entryPoint = function(NS){
             var tk = this.task;
             if (tk.id > 0){
                 NS.navigator.folderView(tk.id);
-            } else if (tk.id == 0 || !L.isNull(tk.parent)){
+            } else if (tk.id == 0 || !Y.Lang.isNull(tk.parent)){
                 NS.navigator.folderView(tk.parent.id);
             } else {
                 NS.navigator.home();

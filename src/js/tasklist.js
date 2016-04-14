@@ -7,32 +7,20 @@ Component.requires = {
 };
 Component.entryPoint = function(NS){
 
-    var Dom = YAHOO.util.Dom,
-        E = YAHOO.util.Event,
-        L = YAHOO.lang;
+    var Y = Brick.YUI,
+        COMPONENT = this,
+        SYS = Brick.mod.sys;
 
-    var TST = NS.TaskStatus;
-
-    var buildTemplate = this.buildTemplate;
-
-    // var LNG = Brick.util.Language.geta(['mod', '{C#MODNAME}'])
     var LNG = this.language;
 
+    NS.TaskTableWidget = Y.Base.create('TaskTableWidget', SYS.AppWidget, [], {
+        onInitAppWidget: function(err, appInstance, options){
 
-    var TaskTableWidget = function(container, taskList, config){
-        this.init(container, taskList, config);
-    };
-    TaskTableWidget.prototype = {
-        init: function(elTaskTable, taskList, config){
-            this.elTaskTable = elTaskTable;
-            this.list = taskList;
-            this.setConfig(config);
             this.t = {};
-
-            buildTemplate(this.t, 'table,row,rcolname,rcolddl,rcolprt,rcolfav,rcolvot,rcolwork,rcolexec,hcolname,hcolddl,hcolprt,hcolfav,hcolvot,hcolwork,hcolexec');
-
             this.vtMan = null;
             this._timeSelectedRow = 0;
+
+            // var tp = this.template;
 
             // Подписаться на событие изменений в задачах
             NS.taskManager.historyChangedEvent.subscribe(this.onHistoryChanged, this, true);
@@ -40,45 +28,27 @@ Component.entryPoint = function(NS){
             NS.taskManager.taskUserChangedEvent.subscribe(this.onTaskUserChanged, this, true);
             NS.taskManager.userConfigChangedEvent.subscribe(this.onUserConfigChanged, this, true);
 
-            var __self = this;
-            E.on(elTaskTable, 'click', function(e){
-                if (__self._onClick(E.getTarget(e))){
-                    E.preventDefault(e);
-                }
-            });
+            /*
+             E.on(elTaskTable, 'mouseout', function(e){
+             instance.onMouseOut(E.getTarget(e));
+             });
+             /**/
 
-            E.on(elTaskTable, 'mouseout', function(e){
-                __self.onMouseOut(E.getTarget(e));
-            });
+            this.renderList();
         },
-        setConfig: function(config){
-            this.cfg = L.merge({
-                'columns': 'name,deadline,priority,favorite,voting', // executant
-                'showflagnew': true,
-                'globalsort': false,
-                'limit': 0,
-                'sortclick': true,
-                'tasksort': 'deadline',
-                'tasksortdesc': false,
-                'childs': true, // показывать древовидную структуру
-                'showwork': false, // показать колонку затраченного времени
-                'workuserid': 0 // затрачено времени конкретного пользователя
-            }, config || {});
-
-            var a = this.cfg['columns'].split(',');
-            this._columns = {};
-            for (var i = 0; i < a.length; i++){
-                var n = L.trim(a[i]);
-                this._columns[n] = true;
-            }
+        destructor: function(){
+            NS.taskManager.historyChangedEvent.unsubscribe(this.onHistoryChanged);
+            NS.taskManager.newTaskReadEvent.unsubscribe(this.onNewTaskRead);
+            NS.taskManager.taskUserChangedEvent.unsubscribe(this.onTaskUserChanged);
+            NS.taskManager.userConfigChangedEvent.unsubscribe(this.onUserConfigChanged);
         },
         buildNewInfo: function(){
             var tnew = {};
-            this.list.foreach(function(tk){
+            this.get('taskList').foreach(function(tk){
                 if (tk.isNew){
                     tnew[tk.id] = tnew[tk.id] || {};
                     tnew[tk.id]['n'] = true;
-                    if (!L.isNull(tk.parent)){
+                    if (!Y.Lang.isNull(tk.parent)){
                         tnew[tk.parent.id] = tnew[tk.parent.id] || {};
                         tnew[tk.parent.id]['cn'] = true;
                     }
@@ -93,13 +63,13 @@ Component.entryPoint = function(NS){
             return tk.childs.count() > 0 && tk.expanded;
         },
         isChildExpanded: function(task){ // проверка, есть ли у задачи подзадачи, и если есть, нужно ли их раскрывать
-            if (!this.cfg['childs'] || task.childs.count() == 0){
+            if (!this.get('config')['childs'] || task.childs.count() == 0){
                 return null;
             }
             return task.expanded;
         },
         renderRow: function(tk, data){
-            return this.t._TM.replace('row', data);
+            return this.template.replace('row', data);
         },
         buildRow: function(tk, level){
             if (!this.isRenderTask(tk)){
@@ -107,20 +77,20 @@ Component.entryPoint = function(NS){
             }
 
             level = level || 0;
-            var TM = this.t._TM, ddl = "", cfg = this.cfg;
-            if (!L.isNull(tk.deadline)){
+            var tp = this.template,
+                ddl = "",
+                cfg = this.get('config');
+
+            if (!Y.Lang.isNull(tk.deadline)){
                 ddl = Brick.dateExt.convert(tk.deadline.getTime() / 1000, 0, !tk.ddlTime);
             }
 
-            var author = NS.taskManager.users.get(tk.userid);
-
-            var expd = this.isChildExpanded(tk);
-            var chcls = L.isNull(expd) ? 'nochild' : (expd ? 'expanded' : '');
-
-            var tnew = this.tnew[tk.id] || {};
-            var n = tk.order;
-
-            var enCols = this._columns,
+            var author = NS.taskManager.users.get(tk.userid),
+                expd = this.isChildExpanded(tk),
+                chcls = Y.Lang.isNull(expd) ? 'nochild' : (expd ? 'expanded' : ''),
+                tnew = this.tnew[tk.id] || {},
+                n = tk.order,
+                enCols = this._columns,
                 sCols = "";
 
             if (enCols['name']){
@@ -130,10 +100,10 @@ Component.entryPoint = function(NS){
                 } else if (tk.type == 'project'){
                     sViewLink = 'projectview';
                 }
-                sCols += TM.replace('rcolname', {
+                sCols += tp.replace('rcolname', {
                     'id': tk.id,
                     'viewlink': sViewLink,
-                    'aunm': L.isNull(author) ? 'null' : author.get('viewName'),
+                    'aunm': Y.Lang.isNull(author) ? 'null' : author.get('viewName'),
                     'tl': tk.title == "" ? LNG['nottitle'] : tk.title,
                     'dl': Brick.dateExt.convert(tk.date.getTime() / 1000),
                     'udl': Brick.dateExt.convert(tk.uDate.getTime() / 1000)
@@ -141,13 +111,13 @@ Component.entryPoint = function(NS){
             }
 
             if (enCols['deadline']){
-                sCols += TM.replace('rcolddl', {
+                sCols += tp.replace('rcolddl', {
                     'ddl': ddl
                 });
             }
 
             if (enCols['priority']){
-                sCols += TM.replace('rcolprt', {
+                sCols += tp.replace('rcolprt', {
                     'prts': LNG['priority'][tk.priority]
                 });
             }
@@ -162,20 +132,20 @@ Component.entryPoint = function(NS){
                 // 'aunm': author.get('viewName'),
                 // 'auid': author.id,
 
-                sCols += TM.replace('rcolexec', {
+                sCols += tp.replace('rcolexec', {
                     'exec': sExec
                 });
             }
 
             if (enCols['favorite']){
-                sCols += TM.replace('rcolfav', {
+                sCols += tp.replace('rcolfav', {
                     'id': tk.id,
                     'fav': tk.favorite ? 'fav-checked' : ''
                 });
             }
 
             if (enCols['voting']){
-                sCols += TM.replace('rcolvot', {
+                sCols += tp.replace('rcolvot', {
                     'id': tk.id,
                     'fav': tk.favorite ? 'fav-checked' : '',
                     'ord': n != 0 ? ((n > 0 ? '+' : '') + n) : '&mdash;'
@@ -185,7 +155,7 @@ Component.entryPoint = function(NS){
             if (enCols['work']){
                 var hr = '';
 
-                if (!L.isNull(tk.work)){
+                if (!Y.Lang.isNull(tk.work)){
                     if (cfg['workuserid'] * 1 > 0){
                         var ti = tk.work.users[cfg['workuserid']];
                         if (ti){
@@ -216,7 +186,7 @@ Component.entryPoint = function(NS){
                     shr = ahr.join(' ');
                 }
 
-                sCols += TM.replace('rcolwork', {
+                sCols += tp.replace('rcolwork', {
                     'work': shr
                 });
             }
@@ -232,8 +202,8 @@ Component.entryPoint = function(NS){
                 'level': level,
                 'classch': chcls,
                 'tl': tk.title == "" ? LNG['nottitle'] : tk.title,
-                'aunm': L.isNull(author) ? 'null' : author.get('viewName'),
-                'auid': L.isNull(author) ? 'null' : author.id,
+                'aunm': Y.Lang.isNull(author) ? 'null' : author.get('viewName'),
+                'auid': Y.Lang.isNull(author) ? 'null' : author.id,
                 'cols': sCols
             });
 
@@ -245,13 +215,14 @@ Component.entryPoint = function(NS){
         },
         buildRows: function(list, level){
             level = level || 0;
-            var lst = "", __self = this,
-                cfg = this.cfg;
+            var lst = "",
+                instance = this,
+                cfg = this.get('config');
 
             this.buildNewInfo();
 
             list.foreach(function(tk){
-                    lst += __self.buildRow(tk, level);
+                    lst += instance.buildRow(tk, level);
                 },
                 cfg['childs'],
                 cfg['tasksort'],
@@ -262,46 +233,46 @@ Component.entryPoint = function(NS){
 
             return lst;
         },
-        render: function(){
-            var TM = this.t._TM,
-                lst = this.buildRows(this.list, 0),
-                cfg = this.cfg;
+        renderList: function(){
+            var tp = this.template,
+                lst = this.buildRows(this.get('taskList'), 0),
+                cfg = this.get('config');
 
             var enCols = this._columns,
                 sCols = "";
 
             if (enCols['name']){
-                sCols += TM.replace('hcolname', {
+                sCols += tp.replace('hcolname', {
                     'sortname': (cfg['tasksort'] != 'name') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
                 });
             }
             if (enCols['deadline']){
-                sCols += TM.replace('hcolddl', {
+                sCols += tp.replace('hcolddl', {
                     'sortdeadline': (cfg['tasksort'] != 'deadline') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
                 });
             }
             if (enCols['priority']){
-                sCols += TM.replace('hcolprt', {
+                sCols += tp.replace('hcolprt', {
                     'sortpriority': (cfg['tasksort'] != 'priority') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
                 });
             }
             if (enCols['executant']){
-                sCols += TM.replace('hcolexec', {
+                sCols += tp.replace('hcolexec', {
                     'sortexecutant': (cfg['tasksort'] != 'executant') ? '' : (cfg['executantdesc'] ? 'sb' : 'sa')
                 });
             }
             if (enCols['favorite']){
-                sCols += TM.replace('hcolfav', {
+                sCols += tp.replace('hcolfav', {
                     'sortfavorite': (cfg['tasksort'] != 'favorite') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
                 });
             }
             if (enCols['voting']){
-                sCols += TM.replace('hcolvot', {
+                sCols += tp.replace('hcolvot', {
                     'sortvoting': (cfg['tasksort'] != 'voting') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
                 });
             }
             if (enCols['work']){
-                sCols += TM.replace('hcolwork', {
+                sCols += tp.replace('hcolwork', {
                     'sortwork': (cfg['tasksort'] != 'work') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
                 });
             }
@@ -313,13 +284,17 @@ Component.entryPoint = function(NS){
 
 
             d['sort' + cfg['tasksort']] = cfg['tasksortdesc'] ? 'sb' : 'sa';
-            this.elTaskTable.innerHTML = TM.replace('table', d);
+
+            tp.setHTML({
+                table: tp.replace('table', d)
+            });
 
             if (this._timeSelectedRow * 1 > 0){
                 var taskid = this._timeSelectedRow;
 
                 this._timeSelectedRow = 0;
                 var elRow = Dom.get(TM.getElId('row.id') + '-' + taskid);
+
                 Dom.addClass(elRow, 'row-hover');
                 setTimeout(function(){
                     Dom.removeClass(elRow, 'row-hover');
@@ -328,7 +303,7 @@ Component.entryPoint = function(NS){
         },
         _onClick: function(el){
             var TId = this.t._TId;
-            if (this.cfg['sortclick']){
+            if (this.get('config')['sortclick']){
                 switch (el.id) {
                     case TId['hcolname']['sortname']:
                         this.sort('name');
@@ -382,26 +357,26 @@ Component.entryPoint = function(NS){
             var cfg = NS.taskManager.userConfig,
                 desc = cfg['tasksort'] == field;
 
-            this.cfg['tasksort'] = cfg['tasksort'] = field;
-            this.cfg['tasksortdesc'] = cfg['tasksortdesc'] = desc ? !cfg['tasksortdesc'] : false;
+            this.get('config')['tasksort'] = cfg['tasksort'] = field;
+            this.get('config')['tasksortdesc'] = cfg['tasksortdesc'] = desc ? !cfg['tasksortdesc'] : false;
 
             NS.taskManager.userConfigSave();
-            this.render();
+            this.renderList();
         },
 
         taskFavorite: function(taskid){
             NS.taskManager.taskFavorite(taskid);
             var task = NS.taskManager.list.find(taskid);
             task.favorite = !task.favorite;
-            this.render();
+            this.renderList();
         },
         onMouseOut: function(el){
-            if (L.isNull(this.vtMan)){
+            if (Y.Lang.isNull(this.vtMan)){
                 return;
             }
 
             var psid = this._parseId(el);
-            if (L.isNull(psid)){
+            if (Y.Lang.isNull(psid)){
                 return;
             }
 
@@ -412,7 +387,7 @@ Component.entryPoint = function(NS){
                 return;
             }
 
-            var vtMan = this.vtMan, taskid = psid[1], __self = this;
+            var vtMan = this.vtMan, taskid = psid[1], instance = this;
             this.vtMan = null;
             if (vtMan.task.id * 1 != taskid * 1){
                 return;
@@ -422,8 +397,8 @@ Component.entryPoint = function(NS){
             var elList = TM.getEl('list.id');
             Dom.addClass(elList, 'voting-process');
             NS.taskManager.taskSetOrder(taskid, vtMan['n'], function(){
-                __self._isVotingProcess = false;
-                __self._timeSelectedRow = taskid;
+                instance._isVotingProcess = false;
+                instance._timeSelectedRow = taskid;
                 Dom.removeClass(elList, 'voting-process');
             });
         },
@@ -432,7 +407,7 @@ Component.entryPoint = function(NS){
                 return;
             }
 
-            if (L.isNull(this.vtMan)){
+            if (Y.Lang.isNull(this.vtMan)){
                 var task = NS.taskManager.getTask(taskid);
                 this.vtMan = {'task': task, 'n': task.order};
             }
@@ -446,13 +421,13 @@ Component.entryPoint = function(NS){
         },
         shChilds: function(taskid){
             var task = NS.taskManager.getTask(taskid);
-            if (L.isNull(task)){
+            if (Y.Lang.isNull(task)){
                 return;
             }
             var TM = this.t._TM;
 
             var elRow = Dom.get(TM.getElId('row.id') + '-' + taskid);
-            if (L.isNull(elRow)){
+            if (Y.Lang.isNull(elRow)){
                 return;
             }
             if (task.childs.count() == 0){
@@ -463,16 +438,10 @@ Component.entryPoint = function(NS){
             NS.taskManager.taskExpand(taskid);
             task.expanded = !task.expanded;
 
-            this.render();
-        },
-        destroy: function(){
-            NS.taskManager.historyChangedEvent.unsubscribe(this.onHistoryChanged);
-            NS.taskManager.newTaskReadEvent.unsubscribe(this.onNewTaskRead);
-            NS.taskManager.taskUserChangedEvent.unsubscribe(this.onTaskUserChanged);
-            NS.taskManager.userConfigChangedEvent.unsubscribe(this.onUserConfigChanged);
+            this.renderList();
         },
         _isHistoryChanged: function(list, ids){
-            var __self = this, find = false;
+            var instance = this, find = false;
             list.foreach(function(tk){
                 for (var id in ids){
                     if (tk.id * 1 == id * 1){
@@ -481,7 +450,7 @@ Component.entryPoint = function(NS){
                     }
                 }
                 if (tk.childs.count() > 0 && tk.expanded){
-                    if (__self._isHistoryChanged(tk.childs, ids)){
+                    if (instance._isHistoryChanged(tk.childs, ids)){
                         find = true;
                         return true;
                     }
@@ -491,20 +460,65 @@ Component.entryPoint = function(NS){
         },
 
         onTaskUserChanged: function(type, args){
-            this.render();
+            this.renderList();
         },
 
         onHistoryChanged: function(type, args){
-            this.render();
+            this.renderList();
         },
         onNewTaskRead: function(type, args){
-            this.render();
+            this.renderList();
         },
         onUserConfigChanged: function(type, args){
-            this.render();
+            this.renderList();
         }
-    };
-    NS.TaskTableWidget = TaskTableWidget;
+    }, {
+        ATTRS: {
+            component: {value: COMPONENT},
+            templateBlockName: {value: 'table,row,rcolname,rcolddl,rcolprt,rcolfav,rcolvot,rcolwork,rcolexec,hcolname,hcolddl,hcolprt,hcolfav,hcolvot,hcolwork,hcolexec'},
+            taskList: {
+                value: null
+            },
+            config: {
+                setter: function(val){
+                    val = Y.merge({
+                        columns: 'name,deadline,priority,favorite,voting', // executant
+                        showflagnew: true,
+                        globalsort: false,
+                        limit: 0,
+                        sortclick: true,
+                        tasksort: 'deadline',
+                        tasksortdesc: false,
+                        childs: true, // показывать древовидную структуру
+                        showwork: false, // показать колонку затраченного времени
+                        workuserid: 0 // затрачено времени конкретного пользователя
+                    }, val || {});
+
+                    var a = val.columns.split(',');
+                    this._columns = {};
+                    for (var i = 0; i < a.length; i++){
+                        var n = Y.Lang.trim(a[i]);
+                        this._columns[n] = true;
+                    }
+                    return val;
+                }
+            }
+        },
+        CLICKS: {}
+    });
+
+    return; // TODO: remove old functions
+
+    var Dom = YAHOO.util.Dom,
+        E = YAHOO.util.Event,
+        L = YAHOO.lang;
+
+    var TST = NS.TaskStatus;
+
+    var buildTemplate = this.buildTemplate;
+
+    // var LNG = Brick.util.Language.geta(['mod', '{C#MODNAME}'])
+
 
     var TaskListWidget = function(container, ptaskid, config){
         ptaskid = ptaskid || 0;
@@ -527,13 +541,13 @@ Component.entryPoint = function(NS){
 
             var TM = this._TM;
 
-            container.innerHTML = TM.replace('list');
+            container.innerHTML = tp.replace('list');
 
             TaskListWidget.superclass.init.call(this, TM.getEl('list.table'), list, config);
 
-            var __self = this;
+            var instance = this;
             E.on(container, 'click', function(e){
-                if (__self.onClick(E.getTarget(e))){
+                if (instance.onClick(E.getTarget(e))){
                     E.preventDefault(e);
                 }
             });
@@ -571,9 +585,9 @@ Component.entryPoint = function(NS){
             }
             Dom.addClass(page['el'], 'current');
 
-            this.cfg['childs'] = pagename == 'opened';
+            this.get('config')['childs'] = pagename == 'opened';
 
-            this.render();
+            this.renderList();
         },
         isRenderChild: function(tk){
             if (this.selectedTabPage['name'] == 'opened'){

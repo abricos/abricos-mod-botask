@@ -118,7 +118,7 @@ Component.entryPoint = function(NS){
             } else {
 
 
-                if (!L.isNull(ph) &&
+                if (!Y.Lang.isNull(ph) &&
                     ph.userid == hst.userid &&
                     ph.status == hst.status &&
                     ph.taskid == hst.taskid){

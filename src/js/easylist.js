@@ -10,62 +10,31 @@ Component.entryPoint = function(NS){
         COMPONENT = this,
         SYS = Brick.mod.sys;
 
-    var Dom = YAHOO.util.Dom,
-        E = YAHOO.util.Event,
-        L = YAHOO.lang;
-
-    // var LNG = Brick.util.Language.geta(['mod', '{C#MODNAME}', '{C#COMNAME}']);
     var LNG = this.language['{C#COMNAME}'];
 
-    var buildTemplate = this.buildTemplate;
+    NS.TaskListBoxWidget = Y.Base.create('TaskListBoxWidget', SYS.AppWidget, [], {
+        onInitAppWidget: function(err, appInstance, options){
+            var tp = this.template,
+                config = this.get('config');
 
-    var TaskInWorkInfoWidget = function(container){
-        this.init(container);
-    };
-    TaskInWorkInfoWidget.prototype = {
-        init: function(container){
-            buildTemplate(this, 'inwork');
-            container.innerHTML = this._TM.replace('inwork');
-            this.render();
-        },
-        render: function(){
-
-        }
-    };
-    NS.TaskInWorkInfoWidget = TaskInWorkInfoWidget;
-
-    var TaskListBoxWidget = function(container, list, config){
-        config = L.merge({
-            'boxstate': '',
-            'boxtitle': '',
-            'countlabeltext': '',
-            'funcfilter': function(){
-                return false;
-            }
-        }, config || {});
-        TaskListBoxWidget.superclass.constructor.call(this, container, list, config);
-    };
-    YAHOO.extend(TaskListBoxWidget, NS.TaskTableWidget, {
-        init: function(container, list, config){
-
-            buildTemplate(this, 'boxitem');
-            var TM = this._TM;
-            container.innerHTML = TM.replace('boxitem');
-            TM.getEl('boxitem.tl').innerHTML = config['boxtitle'];
-
-            var __self = this;
-            E.on(container, 'click', function(e){
-                if (__self.onClick(E.getTarget(e))){
-                    E.preventDefault(e);
-                }
+            tp.setHTML({
+                tl: config.boxtitle
             });
 
-            TaskListBoxWidget.superclass.init.call(this, TM.getEl('boxitem.table'), list, config);
-            this.render();
+            console.log(this.get('taskList'));
+            this.taskTableWidget = new NS.TaskTableWidget({
+                srcNode: tp.one('table'),
+                config: config,
+                taskList: this.get('taskList')
+            });
 
-            if (config['boxstate'] == 'hide'){
-                this.shBox();
-            }
+            /*
+             if (config['boxstate'] == 'hide'){
+             this.shBox();
+             }
+             /**/
+        },
+        destructor: function(){
         },
         isRenderChild: function(tk){
             return false;
@@ -80,6 +49,7 @@ Component.entryPoint = function(NS){
             }
             return isr;
         },
+        /*
         render: function(){
             this.countRows = 0;
             TaskListBoxWidget.superclass.render.call(this);
@@ -104,6 +74,7 @@ Component.entryPoint = function(NS){
 
             gel('cnt').innerHTML = this.cfg['countlabeltext'] != '' ? this.cfg['countlabeltext'] : this.countRows;
         },
+        /**/
         shBox: function(){
             this._isHide = !this._isHide;
 
@@ -130,8 +101,29 @@ Component.entryPoint = function(NS){
             }
             return false;
         }
+    }, {
+        ATTRS: {
+            component: {value: COMPONENT},
+            templateBlockName: {value: 'boxitem'},
+            taskList: {
+                value: null
+            },
+            config: {
+                value: {},
+                setter: function(val){
+                    return Y.merge({
+                        boxstate: '',
+                        boxtitle: '',
+                        countlabeltext: '',
+                        funcfilter: function(){
+                            return false;
+                        }
+                    }, val || {});
+                }
+            }
+        },
+        CLICKS: {}
     });
-    NS.TaskListBoxWidget = TaskListBoxWidget;
 
 
     NS.EasyListWidget = Y.Base.create('EasyListWidget', SYS.AppWidget, [], {
@@ -140,41 +132,53 @@ Component.entryPoint = function(NS){
 
             this.widgets = [];
 
-            this.widgets['work'] = new NS.TaskListBoxWidget(tp.gel('boxwork'), NS.taskManager.list, {
-                'sortclick': false,
-                'columns': 'name,deadline,priority,favorite,executant',
-                'childs': false,
-                'globalsort': true,
-                'showflagnew': false,
-                'boxtitle': LNG['boxtitle']['work'],
-                'funcfilter': function(tk){
-                    return tk.isInWorked() && !tk.isNew;
+            this.widgets['work'] = new NS.TaskListBoxWidget({
+                srcNode: tp.gel('boxwork'),
+                taskList: NS.taskManager.list,
+                config: {
+                    sortclick: false,
+                    columns: 'name,deadline,priority,favorite,executant',
+                    childs: false,
+                    globalsort: true,
+                    showflagnew: false,
+                    boxtitle: LNG['boxtitle']['work'],
+                    funcfilter: function(tk){
+                        return tk.isInWorked() && !tk.isNew;
+                    }
                 }
             });
 
-            this.widgets['tasknew'] = new NS.TaskListBoxWidget(tp.gel('boxnew'), NS.taskManager.list, {
-                'columns': 'name,deadline,priority,favorite',
-                'globalsort': true,
-                'tasksort': 'date',
-                'childs': false,
-                'showflagnew': false,
-                'boxtitle': LNG['boxtitle']['new'],
-                'funcfilter': function(tk){
-                    return tk.isNew;
+            this.widgets['tasknew'] = new NS.TaskListBoxWidget({
+                srcNode: tp.gel('boxnew'),
+                taskList: NS.taskManager.list,
+                config: {
+                    columns: 'name,deadline,priority,favorite',
+                    globalsort: true,
+                    tasksort: 'date',
+                    childs: false,
+                    showflagnew: false,
+                    boxtitle: LNG['boxtitle']['new'],
+                    funcfilter: function(tk){
+                        return tk.isNew;
+                    }
                 }
             });
 
-            this.widgets['cmtnew'] = new NS.TaskListBoxWidget(tp.gel('boxcmt'), NS.taskManager.list, {
-                'columns': 'name,deadline,priority,favorite',
-                'childs': false,
-                'showflagnew': false,
-                'boxtitle': LNG['boxtitle']['comment'],
-                'funcfilter': function(tk){
-                    return tk.isNewCmt && !tk.isNew;
+            this.widgets['cmtnew'] = new NS.TaskListBoxWidget({
+                srcNode: tp.gel('boxcmt'),
+                taskList: NS.taskManager.list,
+                config: {
+                    columns: 'name,deadline,priority,favorite',
+                    childs: false,
+                    showflagnew: false,
+                    boxtitle: LNG['boxtitle']['comment'],
+                    funcfilter: function(tk){
+                        return tk.isNewCmt && !tk.isNew;
+                    }
                 }
             });
 
-            this.widgets['journal'] = NS.API.taskJournalBoxWidget(this.get('srcFavorite'));
+            // this.widgets['journal'] = NS.API.taskJournalBoxWidget(this.get('srcFavorite'));
         },
         destructor: function(){
             var ws = this.widgets;
@@ -196,6 +200,7 @@ Component.entryPoint = function(NS){
         CLICKS: {}
     });
 
+    /*
     NS.API.taskCommentsBoxWidget = function(container){
         return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
             'columns': 'name,favorite,voting',
@@ -261,8 +266,9 @@ Component.entryPoint = function(NS){
             'showflagnew': false,
             'boxtitle': LNG['boxtitle']['journal'],
             'funcfilter': function(tk){
-                return !L.isNull(tk.vDate);
+                return !Y.Lang.isNull(tk.vDate);
             }
         });
     };
+    /**/
 };

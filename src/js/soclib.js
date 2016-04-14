@@ -73,7 +73,7 @@ Component.entryPoint = function(){
             return fItem;
         },
         exist: function(itemid){
-            return !L.isNull(this.find(itemid));
+            return !Y.Lang.isNull(this.find(itemid));
         },
         add: function(item){
             if (this.exist(item.id)){
@@ -300,7 +300,7 @@ Component.entryPoint = function(){
     TZ_OFFSET = 0;
 
     NS.dateToServer = function(date){
-        if (L.isNull(date)){
+        if (Y.Lang.isNull(date)){
             return 0;
         }
         var tz = TZ_OFFSET * 60 * 1000;
@@ -321,7 +321,7 @@ Component.entryPoint = function(){
 
     var DPOINT = '.';
     NS.dateToString = function(date){
-        if (L.isNull(date)){
+        if (Y.Lang.isNull(date)){
             return '';
         }
         var day = date.getDate();
@@ -346,7 +346,7 @@ Component.entryPoint = function(){
     };
 
     NS.timeToString = function(date){
-        if (L.isNull(date)){
+        if (Y.Lang.isNull(date)){
             return '';
         }
         return lz(date.getHours()) + ':' + lz(date.getMinutes());

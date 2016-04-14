@@ -140,7 +140,7 @@ Component.entryPoint = function(NS){
             var TM = this._TM, __self = this, elSel = TM.getEl('cstat.sel');
             Dom.setStyle(elSel, 'display', show ? '' : 'none');
 
-            if (show && L.isNull(this.myList)){
+            if (show && Y.Lang.isNull(this.myList)){
                 this.myList = new SelectMyStatusListWidget(TM.getEl('cstat.sel'), this.task, function(my){
                     if (!my){
                         return;
@@ -153,7 +153,7 @@ Component.entryPoint = function(NS){
                 bodyClick = function(e){
                     var el = E.getTarget(e),
                         elEd = TM.getEl('editor.val');
-                    if (L.isNull(elEd)){
+                    if (Y.Lang.isNull(elEd)){
                         E.removeListener(document.body, 'click', bodyClick);
                         return;
                     }
