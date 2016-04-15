@@ -25,6 +25,9 @@ Component.entryPoint = function(NS){
                 srcNode: tp.one('table'),
                 config: config,
                 taskList: this.get('taskList'),
+                onBeforeRenderListFn: function(){
+                    this.countRows = 0;
+                },
                 isRenderChildFn: function(tk){
                     return false;
                 },
@@ -33,13 +36,12 @@ Component.entryPoint = function(NS){
                 },
                 isRenderTaskFn: function(tk){
                     var isr = this.get('config').funcfilter(tk);
-                    this.countRows = this.countRows || 0;
                     if (isr){
                         this.countRows++;
                     }
                     return isr;
                 },
-                onRenderListFn: function(){
+                onAfterRenderListFn: function(){
                     var cfg = this.get('config');
 
                     tp.toggleView(this.countRows > 0, 'tlist', 'empty');

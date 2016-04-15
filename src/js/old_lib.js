@@ -682,7 +682,7 @@ Component.entryPoint = function(NS){
                 return false;
             }
             if (r.u * 1 != Brick.env.user.id){ // пользователь разлогинился
-                Brick.Page.reload();
+                // Brick.Page.reload();
                 return false;
             }
             if (Y.Lang.isNull(r['changes'])){

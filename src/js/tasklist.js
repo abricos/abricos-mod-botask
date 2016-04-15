@@ -220,6 +220,9 @@ Component.entryPoint = function(NS){
             return lst;
         },
         renderList: function(){
+
+            this.get('onBeforeRenderListFn').call(this);
+
             var tp = this.template,
                 lst = this.buildRows(this.get('taskList'), 0),
                 cfg = this.get('config');
@@ -274,7 +277,7 @@ Component.entryPoint = function(NS){
                 table: tp.replace('table', d)
             });
 
-            this.get('onRenderListFn').call(this);
+            this.get('onAfterRenderListFn').call(this);
 
             if (this._timeSelectedRow * 1 > 0){
                 var taskid = this._timeSelectedRow;
@@ -288,57 +291,30 @@ Component.entryPoint = function(NS){
                 }, 500);
             }
         },
-        _onClick: function(el){
-            var TId = this.t._TId;
-            if (this.get('config')['sortclick']){
-                switch (el.id) {
-                    case TId['hcolname']['sortname']:
-                        this.sort('name');
-                        return true;
-                    case TId['hcolddl']['sortdeadline']:
-                        this.sort('deadline');
-                        return true;
-                    case TId['hcolprt']['sortpriority']:
-                        this.sort('priority');
-                        return true;
-                    case TId['hcolfav']['sortfavorite']:
-                        this.sort('favorite');
-                        return true;
-                    case TId['hcolvot']['sortvoting']:
-                        this.sort('voting');
-                        return true;
-                }
-            }
+        onClick: function(e){
+            var node = e.defineTarget ? e.defineTarget : e.target,
+                taskid = node.getData('id');
 
-            var prefix = el.id.replace(/([0-9]+$)/, ''),
-                taskid = el.id.replace(prefix, "");
-
-            switch (prefix) {
-                case (TId['row']['exp'] + '-'):
-                    this.shChilds(taskid);
+            switch (e.dataClick) {
+                case 'sortname':
+                    this.sort('name');
                     return true;
-                case (TId['rcolvot']['up'] + '-'):
-                    this.taskVoting(taskid, 1);
+                case 'sortdeadline':
+                    this.sort('deadline');
                     return true;
-                case (TId['rcolvot']['down'] + '-'):
-                    this.taskVoting(taskid, -1);
+                case 'sortpriority':
+                    this.sort('priority');
                     return true;
-                case (TId['rcolfav']['fav'] + '-'):
-                case (TId['rcolfav']['favi'] + '-'):
+                case 'sortfavorite':
+                    this.sort('favorite');
+                    return true;
+                case 'sortvoting':
+                    this.sort('voting');
+                    return true;
+                case 'favorite':
                     this.taskFavorite(taskid);
                     return true;
             }
-
-            return false;
-        },
-        _parseId: function(el){
-            if (!el.id){
-                return null;
-            }
-            var prefix = el.id.replace(/([0-9]+$)/, ''),
-                taskid = el.id.replace(prefix, "");
-
-            return [prefix, taskid];
         },
         sort: function(field){
             var cfg = NS.taskManager.userConfig,
@@ -350,61 +326,11 @@ Component.entryPoint = function(NS){
             NS.taskManager.userConfigSave();
             this.renderList();
         },
-
         taskFavorite: function(taskid){
             NS.taskManager.taskFavorite(taskid);
             var task = NS.taskManager.list.find(taskid);
             task.favorite = !task.favorite;
             this.renderList();
-        },
-        onMouseOut: function(el){
-            if (Y.Lang.isNull(this.vtMan)){
-                return;
-            }
-
-            var psid = this._parseId(el);
-            if (Y.Lang.isNull(psid)){
-                return;
-            }
-
-            var TM = this.t._TM, TId = this.t._TId;
-
-            var prefix = psid[0], tp = TId['rcolvot'];
-            if (!((tp['up'] + '-') == prefix || (tp['down'] + '-') == prefix)){
-                return;
-            }
-
-            var vtMan = this.vtMan, taskid = psid[1], instance = this;
-            this.vtMan = null;
-            if (vtMan.task.id * 1 != taskid * 1){
-                return;
-            }
-
-            this._isVotingProcess = true;
-            var elList = TM.getEl('list.id');
-            Dom.addClass(elList, 'voting-process');
-            NS.taskManager.taskSetOrder(taskid, vtMan['n'], function(){
-                instance._isVotingProcess = false;
-                instance._timeSelectedRow = taskid;
-                Dom.removeClass(elList, 'voting-process');
-            });
-        },
-        taskVoting: function(taskid, inc){
-            if (this._isVotingProcess){
-                return;
-            }
-
-            if (Y.Lang.isNull(this.vtMan)){
-                var task = NS.taskManager.getTask(taskid);
-                this.vtMan = {'task': task, 'n': task.order};
-            }
-            var vtMan = this.vtMan;
-            vtMan['n'] += inc;
-
-            var elRow = Dom.get(this.t._TM.getElId('rcolvot.vot') + '-' + taskid);
-            var n = vtMan['n'];
-
-            elRow.innerHTML = n != 0 ? ((n > 0 ? '+' : '') + n) : '&mdash;';
         },
         shChilds: function(taskid){
             var task = NS.taskManager.getTask(taskid);
@@ -445,7 +371,6 @@ Component.entryPoint = function(NS){
             }, true);
             return find;
         },
-
         onTaskUserChanged: function(type, args){
             this.renderList();
         },
@@ -508,7 +433,11 @@ Component.entryPoint = function(NS){
                     return task.expanded;
                 }
             },
-            onRenderListFn: {
+            onBeforeRenderListFn: {
+                value: function(){
+                }
+            },
+            onAfterRenderListFn: {
                 value: function(){
                 }
             }

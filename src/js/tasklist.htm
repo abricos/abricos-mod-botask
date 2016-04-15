@@ -14,7 +14,9 @@
 <!--{hcolname}-->
 <th class="tname">
     <ul class="{v#sortname}">
-        <li class="tl"><a id="{i#sortname}" href="#">{#mod.botask.tasklist.hcolname.1}</a></li>
+        <li class="tl">
+            <a data-click="sortname" href="#">{#mod.botask.tasklist.hcolname.1}</a>
+        </li>
         <li>
             <div class="sort sortstr-asc"></div>
         </li>
@@ -27,7 +29,9 @@
 <!--{hcolddl}-->
 <th class="tddl">
     <ul class="{v#sortdeadline}">
-        <li class="tl"><a id="{i#sortdeadline}" href="#">{#mod.botask.tasklist.hcolddl.1}</a></li>
+        <li class="tl">
+            <a data-click="sortdeadline" href="#">{#mod.botask.tasklist.hcolddl.1}</a>
+        </li>
         <li>
             <div class="sort sortdate-asc"></div>
         </li>
@@ -40,7 +44,9 @@
 <!--{hcolprt}-->
 <th class="tprt">
     <ul class="{v#sortpriority}">
-        <li class="tl"><a id="{i#sortpriority}" href="#">{#mod.botask.tasklist.hcolprt.1}</a></li>
+        <li class="tl">
+            <a data-click="sortpriority" href="#">{#mod.botask.tasklist.hcolprt.1}</a>
+        </li>
         <li>
             <div class="sort sort-asc"></div>
         </li>
@@ -55,7 +61,7 @@
     <ul class="{v#sortfavorite}">
         <li class="tl">
 			<span class="fav-icon-normal">
-				<img id="{i#sortfavorite}" class="fav-checked" src="/images/empty.gif">
+				<img data-click="sortfavorite" class="fav-checked" src="/images/empty.gif">
 			</span>
         </li>
         <li>
@@ -70,7 +76,8 @@
 <!--{hcolvot}-->
 <th class="tvot">
     <ul class="{v#sortvoting}">
-        <li class="tl"><a id="{i#sortvoting}" href="#" title="{#mod.botask.tasklist.hcolvot.1}">{#mod.botask.tasklist.hcolvot.2}</a>
+        <li class="tl">
+            <a data-click="sortvoting" href="#" title="{#mod.botask.tasklist.hcolvot.1}">{#mod.botask.tasklist.hcolvot.2}</a>
         </li>
         <li>
             <div class="sort sort-asc"></div>
@@ -142,7 +149,7 @@
 
 <!--{rcolfav}-->
 <td class="tfav">
-	<span id="{i#fav}-{v#id}" class="fav-icon-normal" title="{#mod.botask.tasklist.rcolfav.1}">
+	<span data-click="favorite" data-id="{v#id}" class="fav-icon-normal" title="{#mod.botask.tasklist.rcolfav.1}">
 		<img id="{i#favi}-{v#id}" class="{v#fav}" src="/images/empty.gif">
 	</span>
 </td>
