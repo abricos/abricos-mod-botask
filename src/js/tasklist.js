@@ -20,8 +20,6 @@ Component.entryPoint = function(NS){
             this.vtMan = null;
             this._timeSelectedRow = 0;
 
-            // var tp = this.template;
-
             // Подписаться на событие изменений в задачах
             NS.taskManager.historyChangedEvent.subscribe(this.onHistoryChanged, this, true);
             NS.taskManager.newTaskReadEvent.subscribe(this.onNewTaskRead, this, true);
@@ -56,23 +54,11 @@ Component.entryPoint = function(NS){
             });
             this.tnew = tnew;
         },
-        isRenderTask: function(task){ // проверка возможности отрисовки задачи
-            return true;
-        },
-        isRenderChild: function(tk){ // проверка возможности отрисовки списка подзадач
-            return tk.childs.count() > 0 && tk.expanded;
-        },
-        isChildExpanded: function(task){ // проверка, есть ли у задачи подзадачи, и если есть, нужно ли их раскрывать
-            if (!this.get('config')['childs'] || task.childs.count() == 0){
-                return null;
-            }
-            return task.expanded;
-        },
         renderRow: function(tk, data){
             return this.template.replace('row', data);
         },
         buildRow: function(tk, level){
-            if (!this.isRenderTask(tk)){
+            if (!this.get('isRenderTaskFn').call(this, tk)){
                 return "";
             }
 
@@ -86,7 +72,7 @@ Component.entryPoint = function(NS){
             }
 
             var author = NS.taskManager.users.get(tk.userid),
-                expd = this.isChildExpanded(tk),
+                expd = this.get('isChildExpandedFn').call(this, tk),
                 chcls = Y.Lang.isNull(expd) ? 'nochild' : (expd ? 'expanded' : ''),
                 tnew = this.tnew[tk.id] || {},
                 n = tk.order,
@@ -207,7 +193,7 @@ Component.entryPoint = function(NS){
                 'cols': sCols
             });
 
-            if (this.isRenderChild(tk)){
+            if (this.get('isRenderChildFn').call(this, tk)){
                 sRow += this.buildRows(tk.childs, level + 1);
             }
 
@@ -225,7 +211,7 @@ Component.entryPoint = function(NS){
                     lst += instance.buildRow(tk, level);
                 },
                 cfg['childs'],
-                cfg['tasksort'],
+                cfg.tasksort,
                 cfg['tasksortdesc'],
                 cfg['globalsort'],
                 cfg['limit']
@@ -243,37 +229,37 @@ Component.entryPoint = function(NS){
 
             if (enCols['name']){
                 sCols += tp.replace('hcolname', {
-                    'sortname': (cfg['tasksort'] != 'name') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
+                    'sortname': (cfg.tasksort != 'name') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
                 });
             }
             if (enCols['deadline']){
                 sCols += tp.replace('hcolddl', {
-                    'sortdeadline': (cfg['tasksort'] != 'deadline') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
+                    'sortdeadline': (cfg.tasksort != 'deadline') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
                 });
             }
             if (enCols['priority']){
                 sCols += tp.replace('hcolprt', {
-                    'sortpriority': (cfg['tasksort'] != 'priority') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
+                    'sortpriority': (cfg.tasksort != 'priority') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
                 });
             }
             if (enCols['executant']){
                 sCols += tp.replace('hcolexec', {
-                    'sortexecutant': (cfg['tasksort'] != 'executant') ? '' : (cfg['executantdesc'] ? 'sb' : 'sa')
+                    'sortexecutant': (cfg.tasksort != 'executant') ? '' : (cfg['executantdesc'] ? 'sb' : 'sa')
                 });
             }
             if (enCols['favorite']){
                 sCols += tp.replace('hcolfav', {
-                    'sortfavorite': (cfg['tasksort'] != 'favorite') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
+                    'sortfavorite': (cfg.tasksort != 'favorite') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
                 });
             }
             if (enCols['voting']){
                 sCols += tp.replace('hcolvot', {
-                    'sortvoting': (cfg['tasksort'] != 'voting') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
+                    'sortvoting': (cfg.tasksort != 'voting') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
                 });
             }
             if (enCols['work']){
                 sCols += tp.replace('hcolwork', {
-                    'sortwork': (cfg['tasksort'] != 'work') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
+                    'sortwork': (cfg.tasksort != 'work') ? '' : (cfg['tasksortdesc'] ? 'sb' : 'sa')
                 });
             }
 
@@ -282,12 +268,13 @@ Component.entryPoint = function(NS){
                 'rows': lst
             };
 
-
-            d['sort' + cfg['tasksort']] = cfg['tasksortdesc'] ? 'sb' : 'sa';
+            d['sort' + cfg.tasksort] = cfg['tasksortdesc'] ? 'sb' : 'sa';
 
             tp.setHTML({
                 table: tp.replace('table', d)
             });
+
+            this.get('onRenderListFn').call(this);
 
             if (this._timeSelectedRow * 1 > 0){
                 var taskid = this._timeSelectedRow;
@@ -355,9 +342,9 @@ Component.entryPoint = function(NS){
         },
         sort: function(field){
             var cfg = NS.taskManager.userConfig,
-                desc = cfg['tasksort'] == field;
+                desc = cfg.tasksort == field;
 
-            this.get('config')['tasksort'] = cfg['tasksort'] = field;
+            this.get('config')['tasksort'] = cfg.tasksort = field;
             this.get('config')['tasksortdesc'] = cfg['tasksortdesc'] = desc ? !cfg['tasksortdesc'] : false;
 
             NS.taskManager.userConfigSave();
@@ -462,7 +449,6 @@ Component.entryPoint = function(NS){
         onTaskUserChanged: function(type, args){
             this.renderList();
         },
-
         onHistoryChanged: function(type, args){
             this.renderList();
         },
@@ -475,11 +461,12 @@ Component.entryPoint = function(NS){
     }, {
         ATTRS: {
             component: {value: COMPONENT},
-            templateBlockName: {value: 'table,row,rcolname,rcolddl,rcolprt,rcolfav,rcolvot,rcolwork,rcolexec,hcolname,hcolddl,hcolprt,hcolfav,hcolvot,hcolwork,hcolexec'},
+            templateBlockName: {value: 'widget,table,row,rcolname,rcolddl,rcolprt,rcolfav,rcolvot,rcolwork,rcolexec,hcolname,hcolddl,hcolprt,hcolfav,hcolvot,hcolwork,hcolexec'},
             taskList: {
                 value: null
             },
             config: {
+                value: {},
                 setter: function(val){
                     val = Y.merge({
                         columns: 'name,deadline,priority,favorite,voting', // executant
@@ -501,6 +488,28 @@ Component.entryPoint = function(NS){
                         this._columns[n] = true;
                     }
                     return val;
+                }
+            },
+            isRenderTaskFn: { // проверка возможности отрисовки задачи
+                value: function(){
+                    return true;
+                }
+            },
+            isRenderChildFn: { // проверка возможности отрисовки списка подзадач
+                value: function(tk){
+                    return tk.childs.count() > 0 && tk.expanded;
+                }
+            },
+            isChildExpandedFn: {
+                value: function(task){ // проверка, есть ли у задачи подзадачи, и если есть, нужно ли их раскрывать
+                    if (!this.get('config')['childs'] || task.childs.count() == 0){
+                        return null;
+                    }
+                    return task.expanded;
+                }
+            },
+            onRenderListFn: {
+                value: function(){
                 }
             }
         },

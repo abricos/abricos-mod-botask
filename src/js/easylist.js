@@ -21,86 +21,41 @@ Component.entryPoint = function(NS){
                 tl: config.boxtitle
             });
 
-            console.log(this.get('taskList'));
             this.taskTableWidget = new NS.TaskTableWidget({
                 srcNode: tp.one('table'),
                 config: config,
-                taskList: this.get('taskList')
-            });
+                taskList: this.get('taskList'),
+                isRenderChildFn: function(tk){
+                    return false;
+                },
+                isChildExpandedFn: function(tk){
+                    return null;
+                },
+                isRenderTaskFn: function(tk){
+                    var isr = this.get('config').funcfilter(tk);
+                    this.countRows = this.countRows || 0;
+                    if (isr){
+                        this.countRows++;
+                    }
+                    return isr;
+                },
+                onRenderListFn: function(){
+                    var cfg = this.get('config');
 
-            /*
-             if (config['boxstate'] == 'hide'){
-             this.shBox();
-             }
-             /**/
+                    tp.toggleView(this.countRows > 0, 'tlist', 'empty');
+                    tp.toggleView(!cfg['hidecountlabel'], 'countlabel');
+                    tp.setHTML({
+                        cnt: config['countlabeltext'] != '' ? config['countlabeltext'] : this.countRows
+                    });
+                }
+            });
         },
         destructor: function(){
-        },
-        isRenderChild: function(tk){
-            return false;
-        },
-        isChildExpanded: function(tk){
-            return null;
-        },
-        isRenderTask: function(tk){
-            var isr = this.cfg['funcfilter'](tk);
-            if (isr){
-                this.countRows++;
-            }
-            return isr;
-        },
-        /*
-        render: function(){
-            this.countRows = 0;
-            TaskListBoxWidget.superclass.render.call(this);
-
-            var TM = this._TM,
-                gel = function(nm){
-                    return TM.getEl('boxitem.' + nm);
-                };
-
-            if (this.countRows > 0){
-                Dom.removeClass(gel('tlist'), 'hide');
-                Dom.addClass(gel('empty'), 'hide');
-            } else {
-                Dom.removeClass(gel('empty'), 'hide');
-                Dom.addClass(gel('tlist'), 'hide');
-            }
-            if (this.cfg['hidecountlabel']){
-                Dom.addClass(gel('countlabel'), 'hide');
-            } else {
-                Dom.removeClass(gel('countlabel'), 'hide');
-            }
-
-            gel('cnt').innerHTML = this.cfg['countlabeltext'] != '' ? this.cfg['countlabeltext'] : this.countRows;
-        },
-        /**/
-        shBox: function(){
-            this._isHide = !this._isHide;
-
-            var TM = this._TM,
-                el = TM.getEl('boxitem.id'),
-                elBody = TM.getEl('boxitem.boxbody');
-            if (this._isHide){
-                Dom.replaceClass(el, 'boxstshow', 'boxsthide');
-                Dom.setStyle(elBody, 'opacity', 0.9);
-            } else {
-                Dom.replaceClass(el, 'boxsthide', 'boxstshow');
-                Dom.setStyle(elBody, 'opacity', 1);
+            if (this.taskTableWidget){
+                this.taskTableWidget.destroy();
+                this.taskTableWidget = null;
             }
         },
-        onClick: function(el){
-            var tp = this._TId['boxitem'];
-            switch (el.id) {
-                case tp['head']:
-                case tp['info']:
-                case tp['tl']:
-                case tp['shbox']:
-                    this.shBox();
-                    return true;
-            }
-            return false;
-        }
     }, {
         ATTRS: {
             component: {value: COMPONENT},
@@ -201,74 +156,74 @@ Component.entryPoint = function(NS){
     });
 
     /*
-    NS.API.taskCommentsBoxWidget = function(container){
-        return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
-            'columns': 'name,favorite,voting',
-            'globalsort': true,
-            'tasksort': 'voting',
-            'childs': false,
-            'showflagnew': false,
-            'boxtitle': LNG['boxtitle']['comment'],
-            'funcfilter': function(tk){
-                return tk.isNewCmt && !tk.isNew;
-            }
-        });
-    };
-    NS.API.taskUpdatingBoxWidget = function(container){
-        return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
-            'columns': 'name,favorite,voting',
-            'globalsort': true,
-            'tasksort': 'udate',
-            'childs': false,
-            'showflagnew': false,
-            'boxtitle': LNG['boxtitle']['update'],
-            'funcfilter': function(tk){
-                return tk.vDate < tk.uDate && !tk.isNew;
-            }
-        });
-    };
-    NS.API.taskIncomingBoxWidget = function(container){
-        return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
-            'columns': 'name,favorite,voting',
-            'globalsort': true,
-            'tasksort': 'date',
-            'childs': false,
-            'showflagnew': false,
-            'boxtitle': LNG['boxtitle']['new'],
-            'funcfilter': function(tk){
-                return tk.isNew;
-            }
-        });
-    };
-    NS.API.taskFavoriteBoxWidget = function(container){
-        return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
-            'columns': 'name,favorite,voting',
-            'globalsort': true,
-            'tasksort': 'voting',
-            'childs': false,
-            'showflagnew': false,
-            'boxtitle': LNG['boxtitle']['favorite'],
-            'funcfilter': function(tk){
-                return tk.favorite;
-            }
-        });
-    };
-    NS.API.taskJournalBoxWidget = function(container){
-        return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
-            'sortclick': false,
-            'columns': 'name,deadline,priority,favorite',
-            'countlabeltext': LNG['boxtitle']['journalext'],
-            'globalsort': true,
-            'limit': 10,
-            'tasksort': 'vdate',
-            'tasksortdesc': true,
-            'childs': false,
-            'showflagnew': false,
-            'boxtitle': LNG['boxtitle']['journal'],
-            'funcfilter': function(tk){
-                return !Y.Lang.isNull(tk.vDate);
-            }
-        });
-    };
-    /**/
+     NS.API.taskCommentsBoxWidget = function(container){
+     return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
+     'columns': 'name,favorite,voting',
+     'globalsort': true,
+     'tasksort': 'voting',
+     'childs': false,
+     'showflagnew': false,
+     'boxtitle': LNG['boxtitle']['comment'],
+     'funcfilter': function(tk){
+     return tk.isNewCmt && !tk.isNew;
+     }
+     });
+     };
+     NS.API.taskUpdatingBoxWidget = function(container){
+     return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
+     'columns': 'name,favorite,voting',
+     'globalsort': true,
+     'tasksort': 'udate',
+     'childs': false,
+     'showflagnew': false,
+     'boxtitle': LNG['boxtitle']['update'],
+     'funcfilter': function(tk){
+     return tk.vDate < tk.uDate && !tk.isNew;
+     }
+     });
+     };
+     NS.API.taskIncomingBoxWidget = function(container){
+     return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
+     'columns': 'name,favorite,voting',
+     'globalsort': true,
+     'tasksort': 'date',
+     'childs': false,
+     'showflagnew': false,
+     'boxtitle': LNG['boxtitle']['new'],
+     'funcfilter': function(tk){
+     return tk.isNew;
+     }
+     });
+     };
+     NS.API.taskFavoriteBoxWidget = function(container){
+     return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
+     'columns': 'name,favorite,voting',
+     'globalsort': true,
+     'tasksort': 'voting',
+     'childs': false,
+     'showflagnew': false,
+     'boxtitle': LNG['boxtitle']['favorite'],
+     'funcfilter': function(tk){
+     return tk.favorite;
+     }
+     });
+     };
+     NS.API.taskJournalBoxWidget = function(container){
+     return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
+     'sortclick': false,
+     'columns': 'name,deadline,priority,favorite',
+     'countlabeltext': LNG['boxtitle']['journalext'],
+     'globalsort': true,
+     'limit': 10,
+     'tasksort': 'vdate',
+     'tasksortdesc': true,
+     'childs': false,
+     'showflagnew': false,
+     'boxtitle': LNG['boxtitle']['journal'],
+     'funcfilter': function(tk){
+     return !Y.Lang.isNull(tk.vDate);
+     }
+     });
+     };
+     /**/
 };
