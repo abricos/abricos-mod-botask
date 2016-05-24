@@ -13,7 +13,9 @@ Component.entryPoint = function(NS){
 
     var LNG = this.language;
 
-    NS.TaskTableWidget = Y.Base.create('TaskTableWidget', SYS.AppWidget, [], {
+    NS.TaskTableWidget = Y.Base.create('TaskTableWidget', SYS.AppWidget, [
+        // SYS.Navigator
+    ], {
         onInitAppWidget: function(err, appInstance, options){
 
             this.t = {};
@@ -80,19 +82,13 @@ Component.entryPoint = function(NS){
                 sCols = "";
 
             if (enCols['name']){
-                var sViewLink = 'taskview';
-                if (tk.type == 'folder'){
-                    sViewLink = 'folderview';
-                } else if (tk.type == 'project'){
-                    sViewLink = 'projectview';
-                }
                 sCols += tp.replace('rcolname', {
-                    'id': tk.id,
-                    'viewlink': sViewLink,
-                    'aunm': Y.Lang.isNull(author) ? 'null' : author.get('viewName'),
-                    'tl': tk.title == "" ? LNG['nottitle'] : tk.title,
-                    'dl': Brick.dateExt.convert(tk.date.getTime() / 1000),
-                    'udl': Brick.dateExt.convert(tk.uDate.getTime() / 1000)
+                    id: tk.id,
+                    type: tk.type,
+                    aunm: Y.Lang.isNull(author) ? 'null' : author.get('viewName'),
+                    tl: tk.title == "" ? LNG['nottitle'] : tk.title,
+                    dl: Brick.dateExt.convert(tk.date.getTime() / 1000),
+                    udl: Brick.dateExt.convert(tk.uDate.getTime() / 1000)
                 });
             }
 
@@ -151,8 +147,9 @@ Component.entryPoint = function(NS){
                         hr = tk.work.seconds;
                     }
                 }
-                var shr = '';
-                var ahr = [];
+
+                var shr = '',
+                    ahr = [];
                 if (hr != ''){
                     var d = Math.floor(hr / (60 * 60 * 24));
                     if (d > 0){
@@ -277,6 +274,8 @@ Component.entryPoint = function(NS){
                 table: tp.replace('table', d)
             });
 
+            this.appURLUpdate();
+
             this.get('onAfterRenderListFn').call(this);
 
             if (this._timeSelectedRow * 1 > 0){
@@ -293,7 +292,8 @@ Component.entryPoint = function(NS){
         },
         onClick: function(e){
             var node = e.defineTarget ? e.defineTarget : e.target,
-                taskid = node.getData('id');
+                taskid = node.getData('id'),
+                taskType = node.getData('type');
 
             switch (e.dataClick) {
                 case 'sortname':
@@ -314,6 +314,8 @@ Component.entryPoint = function(NS){
                 case 'favorite':
                     this.taskFavorite(taskid);
                     return true;
+                case 'itemView':
+                    return false;
             }
         },
         sort: function(field){

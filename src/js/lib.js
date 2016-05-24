@@ -56,8 +56,33 @@ Component.entryPoint = function(NS){
                 edit: function(id){
                 },
                 view: function(id){
+                    return this.getURL('ws') + 'folderview/FolderViewWidget/' + (id | 0) + '/';
                 }
             },
+            project: {
+                create: function(){
+                },
+                edit: function(id){
+                },
+                view: function(id){
+                    return this.getURL('ws') + 'projectview/ProjectViewWidget/' + (id | 0) + '/';
+                }
+            },
+            task: {
+                create: function(){
+                },
+                edit: function(id){
+                },
+                view: function(id){
+                    return this.getURL('ws') + 'taskview/TaskViewWidget/' + (id | 0) + '/';
+                }
+            },
+            item: {
+                view: function(type, id){
+                    console.log(arguments);
+                    return this.getURL(type + '.view' , id);
+                }
+            }
         }
     });
 };

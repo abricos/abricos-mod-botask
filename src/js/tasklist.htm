@@ -128,8 +128,14 @@
         <div class="ch-btn" id="{i#exp}-{v#id}">&nbsp;</div>
     </div>
     <div class="ch-tl">
-        <a href="#app=botask/ws/showWorkspacePanel/{v#viewlink}/{v#id}/"
-           title="{v#tl} (Автор: {v#aunm}; Создан: {v#dl}; Изменен: {v#udl})">{v#tl}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
+        <a data-click="itemView"
+           data-url="item.view({v#type},{v#id})"
+           data-type="{v#type}"
+           data-id="{v#id}"
+           title="{v#tl} (Автор: {v#aunm}; Создан: {v#dl}; Изменен: {v#udl})"
+           href="#">
+            {v#tl}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </a>
         <span id="{i#new}-{v#id}" class="new" title="{#mod.botask.tasklist.rcolname.1}">{#mod.botask.tasklist.rcolname.2}</span>
         <span id="{i#chnew}-{v#id}" class="chnew" title="{#mod.botask.tasklist.rcolname.3}">{#mod.botask.tasklist.rcolname.4}</span>
 
