@@ -143,5 +143,3 @@ class BotaskHistory {
         BotaskQuery::HistoryAppend(Abricos::$db, $this);
     }
 }
-
-?>

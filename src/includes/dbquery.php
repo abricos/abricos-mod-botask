@@ -866,5 +866,3 @@ class BotaskQuery {
     }
 
 }
-
-?>

@@ -237,7 +237,4 @@ if ($updateManager->isUpdate('0.3.1') && !$updateManager->isInstall()){
 		ALTER TABLE ".$pfx."btk_task
 		DROP contentid
 	");
-
 }
-
-?>

@@ -7,5 +7,3 @@
  * @author Alexander Kuzmin <roosit@abricos.org>
  */
 
- 
-?>

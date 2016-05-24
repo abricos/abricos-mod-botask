@@ -1209,7 +1209,4 @@ class BotaskManager extends Ab_ModuleManager {
             )
         );
     }
-
 }
-
-?>

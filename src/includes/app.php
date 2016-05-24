@@ -119,7 +119,7 @@ class BotaskApp extends AbricosApplication {
             $autors[$row['uid']] = true;
         }
 
-        foreach($autors as $uid => $v){
+        foreach ($autors as $uid => $v){
             $ret->users[] = $uid;
         }
 
@@ -150,5 +150,3 @@ class BotaskApp extends AbricosApplication {
     }
 
 }
-
-?>

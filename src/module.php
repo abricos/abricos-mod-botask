@@ -137,5 +137,3 @@ class BotaskPermission extends Ab_UserPermission {
 }
 
 Abricos::ModuleRegister(new BotaskModule());
-
-?>
