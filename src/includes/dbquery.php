@@ -188,7 +188,7 @@ class BotaskQuery {
         return $db->query_read($sql);
     }
 
-    public static function MyUserData(Ab_Database $db, $userid, $retarray = false){
+    public static function MyUserData(Ab_Database $db, $userid, $retArray = false){
         $sql = "
 			SELECT
 				DISTINCT
@@ -197,28 +197,28 @@ class BotaskQuery {
 				u.firstname as fnm,
 				u.lastname as lnm,
 				u.avatar as avt
-			FROM ".$db->prefix."user u 
+			FROM ".$db->prefix."user u
 			WHERE u.userid=".bkint($userid)."
 			LIMIT 1
 		";
-        return $retarray ? $db->query_first($sql) : $db->query_read($sql);
+        return $retArray ? $db->query_first($sql) : $db->query_read($sql);
     }
 
     public static function HistoryAppend(Ab_Database $db, BotaskHistory $h){
         $sql = "
 			INSERT INTO ".$db->prefix."btk_history (
-				taskid, userid, dateline, 
+				taskid, userid, dateline,
 				parenttaskid, parenttaskidc,
 				title, titlec,
-				body, bodyc, 
-				imagedata, imagedatac, 
+				body, bodyc,
+				imagedata, imagedatac,
 				checklist, checkc,
-				deadline, deadlinec, 
+				deadline, deadlinec,
 				deadlinebytime, deadlinebytimec,
 				status,prevstatus,statuserid,
 				priority,priorityc,
 				useradded, userremoved) VALUES (
-				
+
 				".bkint($h->taskid).",
 				".bkint($h->userid).",
 				".TIMENOW.",
@@ -228,24 +228,24 @@ class BotaskQuery {
 				".bkint($h->titlec).",
 				'".bkstr($h->body)."',
 				".bkint($h->bodyc).",
-				
+
 				'".bkstr($h->imagedata)."',
 				".bkint($h->imagedatac).",
-				
+
 				'".bkstr($h->check)."',
 				".bkint($h->checkc).",
 				".bkint($h->deadline).",
 				".bkint($h->deadlinec).",
 				".bkint($h->deadlinebytime).",
 				".bkint($h->deadlinebytimec).",
-				
+
 				".bkint($h->status).",
 				".bkint($h->prevstatus).",
 				".bkint($h->statuserid).",
 
 				".bkint($h->priority).",
 				".bkint($h->priorityc).",
-				
+
 				'".bkstr($h->useradded)."',
 				'".bkstr($h->userremoved)."'
 			)
@@ -261,16 +261,16 @@ class BotaskQuery {
 		p.title 			as ttl,
 		h.userid 			as uid,
 		h.dateline 			as dl,
-		
+
 		h.parenttaskidc 	as ptidc,
 		h.titlec 			as tlc,
 		h.bodyc 			as bdc,
 		h.checkc 			as chc,
-		h.deadlinec 		as ddlc, 
+		h.deadlinec 		as ddlc,
 		h.deadlinebytimec 	as ddltc,
 		h.useradded 		as usad,
 		h.userremoved 		as usrm,
-		
+
 		h.status 			as st,
 		h.prevstatus 		as pst,
 		h.statuserid 		as stuid,
@@ -291,13 +291,13 @@ class BotaskQuery {
 
         $sql = "
 			SELECT
-				".BotaskQuery::HISTORY_FIELDS." 
-			FROM ".$db->prefix."btk_userrole ur 
+				".BotaskQuery::HISTORY_FIELDS."
+			FROM ".$db->prefix."btk_userrole ur
 			INNER JOIN ".$db->prefix."btk_task p ON ur.taskid=p.taskid
 			INNER JOIN ".$db->prefix."btk_history h ON ur.taskid=h.taskid
 			WHERE ur.userid=".bkint($userid)." AND p.deldate=0 ".$where."
 			ORDER BY h.dateline DESC
-			LIMIT 15 
+			LIMIT 15
 		";
         return $db->query_read($sql);
     }
@@ -310,13 +310,13 @@ class BotaskQuery {
         }
 
         $sql = "
-			SELECT 
-				".BotaskQuery::HISTORY_FIELDS." 
+			SELECT
+				".BotaskQuery::HISTORY_FIELDS."
 			FROM ".$db->prefix."btk_history h
 			INNER JOIN ".$db->prefix."btk_task p ON h.taskid=p.taskid
 			WHERE h.taskid=".bkint($taskid)." ".$where."
 			ORDER BY h.dateline DESC
-			LIMIT 7 
+			LIMIT 7
 		";
         return $db->query_read($sql);
     }
@@ -327,7 +327,7 @@ class BotaskQuery {
 				".BotaskQuery::HISTORY_FIELDS."
 			FROM ".$db->prefix."btk_history h
 			INNER JOIN ".$db->prefix."btk_task p ON h.taskid=p.taskid
-			WHERE h.taskid=".bkint($taskid)." 
+			WHERE h.taskid=".bkint($taskid)."
 				AND h.status>0 AND h.status<>".bkint($curst)."
 			ORDER BY h.dateline DESC
 			LIMIT 1
@@ -335,22 +335,20 @@ class BotaskQuery {
         return $db->query_first($sql);
     }
 
-    public static function Task(Ab_Database $db, $taskid, $userid, $retarray = false){
+    public static function Task(Ab_Database $db, $taskid, $userid, $retArray = false){
         $sql = "
 			SELECT
 				".BotaskQuery::TASK_FIELDS.",
-				c.body as bd,
-				p.contentid as ctid
+				p.body as bd
 			FROM ".$db->prefix."btk_task p
 			INNER JOIN ".$db->prefix."btk_userrole ur ON p.taskid=ur.taskid AND ur.userid=".bkint($userid)."
-			INNER JOIN ".$db->prefix."content c ON p.contentid=c.contentid
-			WHERE p.taskid=".bkint($taskid)." 
+			WHERE p.taskid=".bkint($taskid)."
 			LIMIT 1
 		";
-        return $retarray ? $db->query_first($sql) : $db->query_read($sql);
+        return $retArray ? $db->query_first($sql) : $db->query_read($sql);
     }
 
-    public static function TaskByContentId(Ab_Database $db, $userid, $contentid, $retarray = false){
+    public static function TaskByContentId(Ab_Database $db, $userid, $contentid, $retArray = false){
         $sql = "
 			SELECT
 				".BotaskQuery::TASK_FIELDS.",
@@ -359,10 +357,10 @@ class BotaskQuery {
 			FROM ".$db->prefix."btk_task p
 			INNER JOIN ".$db->prefix."btk_userrole ur ON p.taskid=ur.taskid AND ur.userid=".bkint($userid)."
 			INNER JOIN ".$db->prefix."content c ON p.contentid=c.contentid
-			WHERE p.contentid=".bkint($contentid)." 
+			WHERE p.contentid=".bkint($contentid)."
 			LIMIT 1
 		";
-        return $retarray ? $db->query_first($sql) : $db->query_read($sql);
+        return $retArray ? $db->query_first($sql) : $db->query_read($sql);
     }
 
     public static function TaskAppend(Ab_Database $db, $tk, $pubkey){
@@ -370,7 +368,7 @@ class BotaskQuery {
 
         $sql = "
 			INSERT INTO ".$db->prefix."btk_task (
-				userid, parenttaskid, tasktype, title, status, statdate, pubkey, contentid, 
+				userid, parenttaskid, tasktype, title, status, statdate, pubkey, contentid,
 				deadline, deadlinebytime, dateline, updatedate, priority) VALUES (
 				".bkint($tk->uid).",
 				".bkint($tk->pid).",
@@ -437,7 +435,7 @@ class BotaskQuery {
      */
     public static function TaskUserList(Ab_Database $db, $taskid){
         $sql = "
-			SELECT 
+			SELECT
 				p.userid as id,
 				u.username as unm,
 				u.firstname as fnm,
@@ -457,7 +455,7 @@ class BotaskQuery {
      */
     public static function TaskUserListForNotify(Ab_Database $db, $taskid){
         $sql = "
-			SELECT 
+			SELECT
 				p.userid as id,
 				u.username as unm,
 				u.firstname as fnm,
@@ -482,7 +480,7 @@ class BotaskQuery {
         $db->query_write($sql);
     }
 
-    public static function UserRole(Ab_Database $db, $taskid, $userid, $retarray = false){
+    public static function UserRole(Ab_Database $db, $taskid, $userid, $retArray = false){
         $sql = "
 			SELECT
 				ur.userroleid as id
@@ -490,7 +488,7 @@ class BotaskQuery {
 			WHERE ur.taskid=".bkint($taskid)." AND ur.userid=".bkint($userid)."
 			LIMIT 1
 		";
-        return $retarray ? $db->query_first($sql) : $db->query_read($sql);
+        return $retArray ? $db->query_first($sql) : $db->query_read($sql);
     }
 
     public static function UserRoleRemove(Ab_Database $db, $taskid, $userid){

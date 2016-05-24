@@ -35,6 +35,34 @@ Component.entryPoint = function(NS){
                 args: ['hlid'],
                 attribute: false,
                 onResponse: function(data){
+                    return function(callback, context){
+                        this.getApp('uprofile').userListByIds(data.users, function(err, result){
+
+                            callback.call(context || null);
+                        }, context);
+                    };
+                }
+            },
+            task: {
+                args: ['taskid'],
+                attribute: false,
+                onResponse: function(data){
+                    if (!data){
+                        return;
+                    }
+                    var task = NS.taskManager.list.find(data['id']);
+                    if (!task){
+                        return;
+                    }
+
+                    var isNew = task.isNew;
+                    task.setData(data);
+
+                    NS.taskManager.historyUpdate(data['hst']);
+
+                    if (isNew){
+                        NS.taskManager.newTaskReadEvent.fire(task);
+                    }
 
                     return function(callback, context){
                         this.getApp('uprofile').userListByIds(data.users, function(err, result){
@@ -80,7 +108,7 @@ Component.entryPoint = function(NS){
             item: {
                 view: function(type, id){
                     console.log(arguments);
-                    return this.getURL(type + '.view' , id);
+                    return this.getURL(type + '.view', id);
                 }
             }
         }

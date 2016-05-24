@@ -9,14 +9,11 @@ Component.requires = {
     ]
 };
 Component.entryPoint = function(NS){
+    var Y = Brick.YUI,
+        COMPONENT = this,
+        SYS = Brick.mod.sys;
 
-    var Dom = YAHOO.util.Dom,
-        E = YAHOO.util.Event,
-        L = YAHOO.lang;
-
-    var buildTemplate = this.buildTemplate;
-
-    var LNG = Brick.util.Language.geta(['mod', '{C#MODNAME}']);
+    var LNG = this.language;
 
     var TST = NS.TaskStatus;
 
@@ -35,39 +32,21 @@ Component.entryPoint = function(NS){
         }
     };
 
-    var ProjectViewWidget = function(container, task){
-        if (L.isString(task) || L.isNumber(task)){
-            task = NS.taskManager.getTask(task);
-        }
-        this.init(container, task);
-    };
-    ProjectViewWidget.prototype = {
-        init: function(container, task){
-            this.task = task;
-            if (Y.Lang.isNull(task)){
-                container.innerHTML = buildTemplate(this, 'empty').replace('empty');
-                return;
+    NS.ProjectViewWidget = Y.Base.create('ProjectViewWidget', SYS.AppWidget, [], {
+        buildTData: function(){
+            var task = this.get('task');
+
+            if (!task){
+                return; // TODO: show 404 (task not found)
             }
 
-            buildTemplate(this, 'panel,user');
-
-            var TM = this._TM;
-
-            container.innerHTML = TM.replace('panel', {
-                'id': task.id,
-                'tl': task.title
-            });
-            this.onLoad();
-
-            var __self = this;
-            E.on(TM.getEl('panel.id'), 'click', function(e){
-                if (__self.onClick(E.getTarget(e))){
-                    E.preventDefault(e);
-                }
-            });
+            return {
+                id: task.id,
+                tl: task.title
+            };
         },
-        onLoad: function(){
-            var task = this.task, __self = this;
+        onInitAppWidget: function(err, appInstance, options){
+            var task = this.get('task');
 
             this._firstRender = true;
 
@@ -77,33 +56,29 @@ Component.entryPoint = function(NS){
 
             this.drawListWidget = null;
 
-            // запросить дополнительные данные по задаче (описание, история)
-            NS.taskManager.taskLoad(task.id, function(){
-                __self.renderTask();
-            });
+            appInstance.task(task.id, function(err, result){
+                this.renderTask();
+            }, this)
         },
-        destroy: function(){
-            if (Y.Lang.isNull(this.task)){
+        destructor: function(){
+            if (!this.get('task')){
                 return;
             }
 
             NS.taskManager.historyChangedEvent.unsubscribe(this.onHistoryChanged);
             NS.taskManager.userConfigChangedEvent.unsubscribe(this.onUserConfigChanged);
 
-            if (!Y.Lang.isNull(this.drawListWidget)){
+            if (this.drawListWidget){
                 this.drawListWidget.destroy();
             }
-
-            var elw = this._TM.getEl('panel.id');
-            elw.parentNode.removeChild(elw);
         },
         onCanvasChanged: function(type, args){
-            Dom.setStyle(this._TM.getEl('panel.bimgsave'), 'display', '');
+            this.template.show('bimgsave');
         },
         onHistoryChanged: function(type, args){
             var history = args[0];
 
-            var task = this.task, isRTask = false;
+            var task = this.get('task'), isRTask = false;
             history.foreach(function(item){
                 if (item.taskid == task.id){
                     isRTask = true;
@@ -118,14 +93,12 @@ Component.entryPoint = function(NS){
             this.renderTask();
         },
         renderTask: function(){
-            var task = this.task;
-            var TM = this._TM, gel = function(nm){
-                return TM.getEl('panel.' + nm);
-            };
+            var tp = this.template,
+                task = this.get('task');
 
-            Dom.setStyle(gel('bimgsave'), 'display', 'none');
+            tp.show('bimgsave');
+            tp.setHTML('taskbody', task.descript);
 
-            gel('taskbody').innerHTML = task.descript;
             if (this._firstRender){ // первичная рендер
                 this._firstRender = false;
 
@@ -215,7 +188,7 @@ Component.entryPoint = function(NS){
             switch (el.id) {
 
                 case tp['biadd']:
-                    NS.navigator.add(this.task.id);
+                    NS.navigator.add(this.get('task').id);
                     return true;
 
                 case tp['fav']:
@@ -239,7 +212,7 @@ Component.entryPoint = function(NS){
 
                 case tp['biedit']:
                 case tp['beditor']:
-                    NS.navigator.projectEdit(this.task.id);
+                    NS.navigator.projectEdit(this.get('task').id);
                     return true;
 
                 case tp['bimgsave']:
@@ -255,35 +228,35 @@ Component.entryPoint = function(NS){
             TM.elShowHide('panel.bloading', show);
         },
         taskFavorite: function(){
-            var task = this.task;
+            var task = this.get('task');
             NS.taskManager.taskFavorite(task.id);
             task.favorite = !task.favorite;
             this.renderTask();
         },
         taskRemove: function(){
-            new NS.ProjectRemovePanel(this.task.id, function(){
+            new NS.ProjectRemovePanel(this.get('task').id, function(){
                 NS.navigator.taskHome();
             });
         },
         taskRestore: function(){
-            var __self = this;
+            var instance = this;
             this._shLoading(true);
-            NS.taskManager.taskRestore(this.task.id, function(){
-                __self._shLoading(false);
+            NS.taskManager.taskRestore(this.get('task').id, function(){
+                instance._shLoading(false);
             });
         },
         taskArhive: function(){
-            var __self = this;
+            var instance = this;
             this._shLoading(true);
-            NS.taskManager.taskArhive(this.task.id, function(){
-                __self._shLoading(false);
+            NS.taskManager.taskArhive(this.get('task').id, function(){
+                instance._shLoading(false);
             });
         },
         taskOpen: function(){ // открыть задачу повторно
-            var __self = this;
+            var instance = this;
             this._shLoading(true);
-            NS.taskManager.taskOpen(this.task.id, function(){
-                __self._shLoading(false);
+            NS.taskManager.taskOpen(this.get('task').id, function(){
+                instance._shLoading(false);
             });
         },
         saveImages: function(){
@@ -292,13 +265,36 @@ Component.entryPoint = function(NS){
                 'onlyimage': true,
                 'images': this.drawListWidget.toSave()
             };
-            var __self = this;
-            NS.taskManager.taskSave(this.task, newdata, function(){
-                __self._shLoading(false);
+            var instance = this;
+            NS.taskManager.taskSave(this.get('task'), newdata, function(){
+                instance._shLoading(false);
             });
+        },
+    }, {
+        ATTRS: {
+            component: {value: COMPONENT},
+            templateBlockName: {value: 'panel,user,empty'},
+            taskid: {
+                value: 0
+            },
+            task: {
+                readOnly: true,
+                getter: function(){
+                    var taskid = this.get('taskid');
+                    return NS.taskManager.getTask(taskid);
+                }
+            }
+        },
+        CLICKS: {},
+        parseURLParam: function(args){
+            args = args || [];
+            return {
+                taskid: (args[0] | 0)
+            };
         }
-    };
-    NS.ProjectViewWidget = ProjectViewWidget;
+    });
+
+    return; // TODO: remove old functions
 
     var ProjectRemovePanel = function(taskid, callback){
         this.taskid = taskid;
@@ -328,12 +324,12 @@ Component.entryPoint = function(NS){
             var TM = this._TM, gel = function(n){
                     return TM.getEl('tkremovepanel.' + n);
                 },
-                __self = this;
+                instance = this;
             Dom.setStyle(gel('btns'), 'display', 'none');
             Dom.setStyle(gel('bloading'), 'display', '');
             NS.taskManager.taskRemove(this.taskid, function(){
-                __self.close();
-                __self.callback();
+                instance.close();
+                instance.callback();
             });
         }
     });
