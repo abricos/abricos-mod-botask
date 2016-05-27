@@ -1,7 +1,7 @@
 var Component = new Brick.Component();
 Component.requires = {
     mod: [
-        {name: 'sys', files: ['container.js']},
+        {name: 'comment', files: ['tree.js']},
         {name: 'filemanager', files: ['attachment.js']},
         {name: 'uprofile', files: ['users.js']},
         {name: '{C#MODNAME}', files: ['tasklist.js', 'checklist.js', 'extinfo.js']},
@@ -102,44 +102,39 @@ Component.entryPoint = function(NS){
             if (this._firstRender){ // первичная рендер
                 this._firstRender = false;
 
-                // Инициализировать менеджер комментариев
-                Brick.ff('comment', 'comment', function(){
-                    Brick.mod.comment.API.buildCommentTree({
-                        'container': TM.getEl('panel.comments'),
-                        'dbContentId': task.ctid,
-                        'config': {
-                            'onLoadComments': function(){
-                                aTargetBlank(TM.getEl('panel.taskbody'));
-                                aTargetBlank(TM.getEl('panel.comments'));
-                            }
-                            // ,
-                            // 'readOnly': project.w*1 == 0,
-                            // 'manBlock': L.isFunction(config['buildManBlock']) ? config.buildManBlock() : null
-                        },
-                        'instanceCallback': function(b){
-                        }
-                    });
+                this._commentsWidget = new Brick.mod.comment.CommentTreeWidget({
+                    srcNode: tp.gel('comments'),
+                    commentOwner: {
+                        module: 'botask',
+                        type: 'content',
+                        ownerid: task.id
+                    },
+                    readOnly: !NS.roles.isWrite
                 });
 
-                this.checklist = new NS.ChecklistWidget(gel('checklist'), task);
-                this.attachListWidget = new Brick.mod.filemanager.AttachmentListWidget(TM.getEl('panel.ftable'));
+                this.checklist = new NS.ChecklistWidget(tp.gel('checklist'), task);
+                this.attachListWidget = new Brick.mod.filemanager.AttachmentListWidget(tp.gel('ftable'));
 
                 var mPT = Brick.mod.pictab;
                 if (mPT && mPT.ImageListWidget && L.isArray(task.images) && task.images.length > 0){
-                    TM.elShow('panel.imgwidget');
-                    this.drawListWidget = new mPT.ImageListWidget(gel('images'), task.images, true);
+                    tp.show('imgwidget');
+                    this.drawListWidget = new mPT.ImageListWidget(tp.gel('images'), task.images, true);
                     this.drawListWidget.changedEvent.subscribe(this.onCanvasChanged, this, true);
                 }
                 task.isNewCmt = false;
 
-                this.extinfo = new NS.ExtInfo(gel('extinfo'), task);
+                this.extinfo = new NS.ExtInfo({
+                    srcNode: tp.gel('extinfo'),
+                    task: task
+                });
             }
             this.checklist.update();
 
-            // Статус
-            gel('status').innerHTML = LNG['project']['status'][task.status];
-
-            gel('taskid').innerHTML = task.id;
+            tp.setHTML({
+                status: LNG['project']['status'][task.status],
+                taskid: task.id
+            });
+            return;
 
             // Автор
             var user = NS.taskManager.users.get(task.userid);

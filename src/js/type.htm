@@ -1,39 +1,34 @@
 <!--{widget}-->
-<div id="{i#id}" class="typeselect panel panel-default">
+<div class="type panel panel-default">
     <div class="panel-heading">
-        <span>{#mod.botask.type.widget.1}</span>
+        <h3 class="panel-title">
+            Добавление нового элемента
+        </h3>
     </div>
+
     <div class="panel-body">
 
-        <p>{#mod.botask.type.widget.2}</p>
+        <p>
+            <a href="#" data-url="project.create" class="btn btn-default" >
+                Добавить проект
+            </a>
+        </p>
+        <p>
+            <a href="#" data-url="taskt.create" class="btn btn-default">
+                Добавить задачу
+            </a>
+        </p>
+        <p>
+            <a href="#" data-url="folder.create" class="btn btn-default">
+                Добавить раздел
+            </a>
+        </p>
 
-        <div class="radio">
-            <label>
-                <input id="{i#tpproject}" checked name="typesel" type="radio" value="2"/>
-                {#mod.botask.type.widget.3}
-            </label>
-        </div>
-        <div class="radio">
-            <label>
-                <input id="{i#tptask}" name="typesel" type="radio" value="3"/>
-                {#mod.botask.type.widget.4}
-            </label>
-        </div>
-        <div class="radio">
-            <label>
-                <input id="{i#tpfolder}" name="typesel" type="radio" value="1"/>
-                {#mod.botask.type.widget.5}
-            </label>
-        </div>
+    </div>
 
-        <div class="text-center">
-            <button id="{i#bsave}" class="btn btn-default">
-                {#mod.botask.type.widget.6}
-            </button>
-            <button id="{i#bcancel}" class="btn btn-default" style="display: none">
-                {#mod.botask.type.widget.7}
-            </button>
-            <img src="/images/loading.gif" id="{i#loadingi}" style="display: none;"/>
-        </div>
+    <div class="panel-footer text-right">
+        <a href="#" data-url="ws" class="btn btn-default" data-wait="disable">
+            Отмена
+        </a>
     </div>
 </div>

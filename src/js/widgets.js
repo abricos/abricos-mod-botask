@@ -5,24 +5,19 @@ Component.requires = {
     ]
 };
 Component.entryPoint = function(NS){
+    var Y = Brick.YUI,
+        COMPONENT = this,
+        SYS = Brick.mod.sys;
 
-    var Dom = YAHOO.util.Dom,
-        E = YAHOO.util.Event,
-        L = YAHOO.lang;
-
-    var buildTemplate = this.buildTemplate;
-
-    var TaskTreeSelectWidget = function(container, taskid, ptaskid){
-        this.init(container, taskid, ptaskid);
-    };
-    TaskTreeSelectWidget.prototype = {
-        init: function(container, taskid, ptaskid){
-            var TM = buildTemplate(this, 'tree,node');
+    NS.TaskTreeSelectWidget = Y.Base.create('TaskTreeSelectWidget', SYS.AppWidget, [], {
+        onBuildTData: function(){
+            var tp = this.template,
+                taskid = this.get('taskid');
 
             // путь
             var getPT = function(tk){
                 var tl = tk.title;
-                if (!Y.Lang.isNull(tk.parent)){
+                if (tk.parent){
                     tl = getPT(tk.parent) + " / " + tl;
                 }
                 return tl;
@@ -31,7 +26,7 @@ Component.entryPoint = function(NS){
                 if (tk.id == taskid){
                     return true;
                 }
-                if (!Y.Lang.isNull(tk.parent)){
+                if (tk.parent){
                     return isChild(tk.parent);
                 }
                 return false;
@@ -39,7 +34,7 @@ Component.entryPoint = function(NS){
 
             var lst = "";
             NS.taskManager.list.foreach(function(tk){
-                if (Y.Lang.isNull(tk.parent) && tk.parentTaskId > 0){
+                if (!tk.parent && tk.parentTaskId > 0){
                     return;
                 }
                 if (tk.isClosed() || tk.isRemoved() || tk.isArhive()){
@@ -48,21 +43,30 @@ Component.entryPoint = function(NS){
                 if (tk.id == taskid || isChild(tk)){
                     return;
                 }
-                lst += TM.replace('node', {
+                lst += tp.replace('node', {
                     'id': tk.id,
                     'tl': getPT(tk)
                 });
             }, false, NS.taskSort['name']);
 
-            container.innerHTML = TM.replace('tree', {'rows': lst});
-            this.setValue(ptaskid);
+            return tp.replace('tree', {'rows': lst});
         },
-        setValue: function(taskid){
-            this._TM.getEl('tree.id').value = taskid || 0;
+        onInitAppWidget: function(err, appInstance){
+            this.setValue(this.get('parentTaskId'));
+        },
+        setValue: function(val){
+            this.template.setValue('id', val);
         },
         getValue: function(){
-            return this._TM.getEl('tree.id').value;
+            return this.template.getValue('id');
         }
-    };
-    NS.TaskTreeSelectWidget = TaskTreeSelectWidget;
+    }, {
+        ATTRS: {
+            component: {value: COMPONENT},
+            templateBlockName: {value: 'tree,node'},
+            taskid: {value: 0},
+            parentTaskId: {value: 0}
+        },
+        CLICKS: {},
+    });
 };

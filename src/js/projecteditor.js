@@ -11,20 +11,121 @@ Component.requires = {
 };
 Component.entryPoint = function(NS){
 
-    var Dom = YAHOO.util.Dom,
-        E = YAHOO.util.Event,
-        L = YAHOO.lang;
+    var Y = Brick.YUI,
+        COMPONENT = this,
+        SYS = Brick.mod.sys;
 
-    var UP = Brick.mod.uprofile;
+    NS.ProjectEditorWidget = Y.Base.create('ProjectEditorWidget', SYS.AppWidget, [
+        SYS.WidgetEditorStatus
+    ], {
+        onInitAppWidget: function(err, appInstance){
+            var taskid = this.get('taskid'),
+                task = this.get('task');
 
-    var buildTemplate = this.buildTemplate;
+            if (!task){
+                return;
+            }
 
+            if (taskid === 0){
+                return this._onLoadTask();
+            }
+
+            this.set('waiting', true);
+            appInstance.task(taskid, function(err, result){
+                this.set('waiting', false);
+
+                this._onLoadTask();
+            }, this)
+        },
+        destructor: function(){
+            if (this.parentSelectWidget){
+                this.parentSelectWidget.destroy();
+                this.parentSelectWidget = null;
+            }
+            if (this.editor){
+                this.editor.destroy();
+                this.editor = null;
+            }
+            if (this.checklist){
+                this.checklist.destroy();
+                this.checklist = null;
+            }
+        },
+        _onLoadTask: function(){
+            var tp = this.template,
+                taskid = this.get('taskid'),
+                task = this.get('task');
+
+            this.parentSelectWidget = new NS.TaskTreeSelectWidget({
+                srcNode: tp.one('path'),
+                taskid: taskid,
+                parentTaskId: task.parent ? task.parent.id : 0
+            });
+
+            tp.setValue({
+                tl: task.title
+            });
+
+            this.editor = new SYS.Editor({
+                appInstance: this.get('appInstance'),
+                srcNode: tp.gel('editor'),
+                content: task.descript,
+                toolbar: SYS.Editor.TOOLBAR_MINIMAL
+            });
+
+            this.checklist = new NS.ChecklistWidget({
+                srcNode: tp.one('checklist'),
+                task: task,
+                config: {
+                    hidebtn: true,
+                    hideinfo: true
+               }
+            });
+            this.checklist.update();
+
+        }
+    }, {
+        ATTRS: {
+            component: {value: COMPONENT},
+            templateBlockName: {value: 'widget'},
+            taskid: {
+                value: 0,
+                setter: function(val){
+                    return val | 0;
+                },
+            },
+            task: {
+                readOnly: true,
+                getter: function(){
+                    var taskid = this.get('taskid');
+                    if (taskid > 0){
+                        return NS.taskManager.getTask(taskid);
+                    }
+                    if (this._taskNewCache){
+                        return this._taskNewCache;
+                    }
+                    return this._taskNewCache = new NS.Task();
+                }
+            },
+            isEdit: {
+                getter: function(){
+                    return (this.get('taskid') | 0) > 0
+                }
+            }
+        },
+        CLICKS: {
+            save: 'save'
+        },
+        parseURLParam: function(args){
+            args = args || [];
+            return {
+                taskid: (args[0] | 0)
+            };
+        }
+    });
+
+    return;
     var ProjectEditorWidget = function(container, task, config){
-        config = L.merge({
-            'onSaveCallback': null,
-            'onCancelCallback': null
-        }, config || {});
-        this.init(container, task, config);
     };
     ProjectEditorWidget.prototype = {
         init: function(container, task, config){
@@ -40,29 +141,6 @@ Component.entryPoint = function(NS){
             this.onLoad();
         },
         onLoad: function(){
-            var TM = this._TM,
-                gel = function(n){
-                    return TM.getEl('widget.' + n);
-                },
-                task = this.task;
-
-            Dom.setStyle(TM.getEl('widget.tl' + (task.id * 1 > 0 ? 'new' : 'edit')), 'display', 'none');
-
-            this.parentSelWidget = new NS.TaskTreeSelectWidget(gel('path'), task.id, Y.Lang.isNull(task.parent) ? 0 : task.parent.id);
-
-            gel('tl').value = task.title;
-            TM.getEl('widget.editor').value = task.descript;
-
-            var Editor = Brick.widget.Editor;
-            this.editor = new Editor(gel('editor'), {
-                width: '750px', height: '350px', 'mode': Editor.MODE_VISUAL
-            });
-
-            this.checklist = new NS.ChecklistWidget(gel('checklist'), task, {
-                'hidebtn': true,
-                'hideinfo': true
-            });
-            this.checklist.update();
 
             if (Brick.mod.filemanager.roles.isWrite){
                 this.filesWidget = new Brick.mod.filemanager.AttachmentWidget(gel('files'), task.files);
@@ -167,7 +245,7 @@ Component.entryPoint = function(NS){
                 'files': Y.Lang.isNull(this.filesWidget) ? task.files : this.filesWidget.files,
                 'images': images,
                 'users': users,
-                'parentid': this.parentSelWidget.getValue()
+                'parentid': this.parentSelectWidget.getValue()
             };
             NS.taskManager.taskSave(task, newdata, function(d){
                 d = d || {};

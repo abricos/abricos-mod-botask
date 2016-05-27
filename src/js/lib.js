@@ -80,8 +80,10 @@ Component.entryPoint = function(NS){
             ws: "#app={C#MODNAMEURI}/wspace/ws/",
             folder: {
                 create: function(){
+                    return this.getURL('folder.edit');
                 },
                 edit: function(id){
+                    return this.getURL('ws') + 'foldereditor/FolderEditorWidget/' + (id | 0) + '/';
                 },
                 view: function(id){
                     return this.getURL('ws') + 'folderview/FolderViewWidget/' + (id | 0) + '/';
@@ -89,8 +91,10 @@ Component.entryPoint = function(NS){
             },
             project: {
                 create: function(){
+                    return this.getURL('project.edit');
                 },
                 edit: function(id){
+                    return this.getURL('ws') + 'projecteditor/ProjectEditorWidget/' + (id | 0) + '/';
                 },
                 view: function(id){
                     return this.getURL('ws') + 'projectview/ProjectViewWidget/' + (id | 0) + '/';
@@ -98,16 +102,20 @@ Component.entryPoint = function(NS){
             },
             task: {
                 create: function(){
+                    return this.getURL('task.edit');
                 },
                 edit: function(id){
+                    return this.getURL('ws') + 'taskeditor/TaskEditorWidget/' + (id | 0) + '/';
                 },
                 view: function(id){
                     return this.getURL('ws') + 'taskview/TaskViewWidget/' + (id | 0) + '/';
                 }
             },
             item: {
+                create: function(){
+                    return this.getURL('ws') + 'type/TypeSelectWidget/';
+                },
                 view: function(type, id){
-                    console.log(arguments);
                     return this.getURL(type + '.view', id);
                 }
             }

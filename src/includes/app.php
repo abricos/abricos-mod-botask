@@ -448,4 +448,124 @@ class BotaskApp extends AbricosApplication {
         return $task;
     }
 
+    private function UserNameBuild($user){
+        $firstname = !empty($user['fnm']) ? $user['fnm'] : $user['firstname'];
+        $lastname = !empty($user['lnm']) ? $user['lnm'] : $user['lastname'];
+        $username = !empty($user['unm']) ? $user['unm'] : $user['username'];
+        return (!empty($firstname) && !empty($lastname)) ? $firstname." ".$lastname : $username;
+    }
+
+
+    ////////////////////////////// Comments /////////////////////////////
+
+    public function Comment_IsList($type, $ownerid){
+        if (!$this->IsViewRole() || $type !== 'content'){
+            return false;
+        }
+
+        return $this->TaskAccess($ownerid);
+    }
+
+    public function Comment_IsWrite($type, $ownerid){
+        if (!$this->IsViewRole() || $type !== 'content'){
+            return false;
+        }
+        return $this->TaskAccess($ownerid);
+    }
+
+    private function TaskUserListForNotify($taskid, $retarray = false){
+        $rows = BotaskQuery::TaskUserListForNotify($this->db, $taskid);
+        if (!$retarray){
+            return $rows;
+        }
+        return $this->ToArrayById($rows);
+    }
+
+    /**
+     * @param string $type
+     * @param Comment $comment
+     * @param Comment $parentComment
+     */
+    public function Comment_SendNotify($type, $ownerid, $comment, $parentComment){
+        if (!$this->IsViewRole() || $type !== 'content' || !$this->TaskAccess($ownerid)){
+            return;
+        }
+
+        $task = $this->Task($ownerid);
+        $host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_ENV['HTTP_HOST'];
+
+        /** @var NotifyApp $notifyApp */
+        $notifyApp = Abricos::GetApp('notify');
+
+        if ($task['tp'] == 2){
+            $templateSuffix = "Proj";
+            $itemLink = "http://".$host."/bos/#app=botask/wspace/ws/projectview/ProjectViewWidget/".$task['id']."/";
+        } else if ($task['tp'] == 3){
+            $templateSuffix = "Task";
+            $itemLink = "http://".$host."/bos/#app=botask/wspace/ws/taskview/TaskViewWidget/".$task['id']."/";
+        } else {
+            return;
+        }
+
+        $emails = array();
+
+        // уведомление "комментарий на комментарий"
+        if (!empty($parentComment) && $parentComment->userid != Abricos::$user->id){
+
+            $brick = Brick::$builder->LoadBrickS('botask', 'notifyCmtAns'.$templateSuffix, null, null);
+            $v = &$brick->param->var;
+
+            $user = UserQuery::User($this->db, $parentComment->userid);
+            $email = $user['email'];
+            if (!empty($email)){
+                $emails[$email] = true;
+
+                $mail = $notifyApp->MailByFields(
+                    $email,
+                    Brick::ReplaceVarByData($v['subject'], array("tl" => $task['tl'])),
+                    Brick::ReplaceVarByData($brick->content, array(
+                        "sitename" => SystemModule::$instance->GetPhrases()->Get('site_name'),
+                        "email" => $email,
+                        "unm" => $this->UserNameBuild($user),
+                        "plnk" => $itemLink,
+                        "tl" => $task['tl'],
+                        "parentComment" => $parentComment->body." ",
+                        "comment" => $comment->body." ",
+                    ))
+                );
+
+                $notifyApp->MailSend($mail);
+            }
+        }
+
+        $users = $this->TaskUserListForNotify($task['id'], true);
+
+        // уведомление автору и подписчикам
+        foreach ($users as $user){
+            $email = $user['email'];
+
+            if (empty($email) || $emails[$email]){
+                continue;
+            }
+            $emails[$email] = true;
+
+            $brick = Brick::$builder->LoadBrickS('botask', 'notifyCmt'.$templateSuffix, null, null);
+            $v = &$brick->param->var;
+
+            $mail = $notifyApp->MailByFields(
+                $email,
+                Brick::ReplaceVarByData($v['subject'], array("tl" => $task['tl'])),
+                Brick::ReplaceVarByData($brick->content, array(
+                    "sitename" => SystemModule::$instance->GetPhrases()->Get('site_name'),
+                    "email" => $email,
+                    "unm" => $this->UserNameBuild($user),
+                    "plnk" => $itemLink,
+                    "tl" => $task['tl'],
+                    "comment" => $comment->body." ",
+                ))
+            );
+
+            $notifyApp->MailSend($mail);
+        }
+    }
 }

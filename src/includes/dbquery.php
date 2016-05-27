@@ -348,6 +348,7 @@ class BotaskQuery {
         return $retArray ? $db->query_first($sql) : $db->query_read($sql);
     }
 
+    /*
     public static function TaskByContentId(Ab_Database $db, $userid, $contentid, $retArray = false){
         $sql = "
 			SELECT
@@ -362,6 +363,7 @@ class BotaskQuery {
 		";
         return $retArray ? $db->query_first($sql) : $db->query_read($sql);
     }
+    /**/
 
     public static function TaskAppend(Ab_Database $db, $tk, $pubkey){
         $contentid = Ab_CoreQuery::ContentAppend($db, $tk->bd, 'botask');

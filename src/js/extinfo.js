@@ -5,47 +5,55 @@ Component.requires = {
     ]
 };
 Component.entryPoint = function(NS){
-
-    var Dom = YAHOO.util.Dom,
-        E = YAHOO.util.Event,
-        L = YAHOO.lang;
+    var Y = Brick.YUI,
+        COMPONENT = this,
+        SYS = Brick.mod.sys;
 
     var UID = Brick.env.user.id;
 
-    var buildTemplate = this.buildTemplate;
+    NS.ExtInfo = Y.Base.create('ExtInfo', SYS.AppWidget, [], {
+        onInitAppWidget: function(err, appInstance){
+            var tp = this.template,
+                task = this.get('task');
 
-    var ExtInfo = function(container, task){
-        this.init(container, task);
-    };
-    ExtInfo.prototype = {
-        init: function(container, task){
-            var TM = buildTemplate(this, 'extinfo');
-            container.innerHTML = TM.replace('extinfo');
+            this.historyWidget = new NS.HistoryWidget({
+                srcNode: tp.one('history'),
+                history: task.history,
+                config: {'pagerow': 3}
+            });
 
-            this.historyWidget = new NS.HistoryWidget(TM.getEl('extinfo.history'), task.history, {'pagerow': 3});
-            this.custatusWidget = new NS.CustomStatusWidget(TM.getEl('extinfo.custatus'), task);
+            this.custatusWidget = new NS.CustomStatusWidget({
+                srcNode: tp.one('custatus'),
+                task: task
+            });
+        },
+        destructor: function(){
+            this.historyWidget.destroy();
+            this.custatusWidget.destroy();
         }
-    };
-    NS.ExtInfo = ExtInfo;
+    }, {
+        ATTRS: {
+            component: {value: COMPONENT},
+            templateBlockName: {value: 'extinfo'},
+            task: {}
+        },
+        CLICKS: {},
+    });
 
-    var SelectMyStatusListWidget = function(container, task, callback){
-        this.init(container, task, callback);
-    };
-    SelectMyStatusListWidget.prototype = {
-        init: function(container, task, callback){
-            this.task = task;
-            this.callback = callback;
-            var TM = buildTemplate(this, 'myw,myrow');
+    NS.SelectMyStatusListWidget = Y.Base.create('SelectMyStatusListWidget', SYS.AppWidget, [], {
+        onInitAppWidget: function(err, appInstance, options){
+            var tp = this.template,
+                task = this.get('task'),
+                lst = "",
+                mys = task.custatus.my;
 
-            var lst = "", mys = task.custatus.my;
             for (var i = 0; i < mys.length; i++){
-                lst += TM.replace('myrow', {
+                lst += tp.replace('myrow', {
                     'id': i,
                     'tl': mys[i]['tl']
                 });
             }
-
-            container.innerHTML = TM.replace('myw', {'rows': lst});
+            tp.setHTML('myw', {'rows': lst});
         },
         onClick: function(el){
             var prefix = el.id.replace(/([0-9]+$)/, ''),
@@ -58,34 +66,51 @@ Component.entryPoint = function(NS){
             }
         },
         onSelect: function(id){
-            var my = this.task.custatus.my[id];
+            var my = this.get('task').custatus.my[id];
             NS.life(this.callback, my);
         }
-    };
-    NS.SelectMyStatusListWidget = SelectMyStatusListWidget;
+    }, {
+        ATTRS: {
+            component: {value: COMPONENT},
+            templateBlockName: {value: 'myw,myrow'},
+            task: {},
+            callback: {}
+        },
+        CLICKS: {},
+    });
 
-    var CustomStatusWidget = function(container, task){
-        this.init(container, task);
-    };
-    CustomStatusWidget.prototype = {
-        init: function(container, task){
-            this.task = task;
-
+    NS.CustomStatusWidget = Y.Base.create('CustomStatusWidget', SYS.AppWidget, [], {
+        onInitAppWidget: function(err, appInstance){
             this.myList = null;
 
-            var TM = buildTemplate(this, 'cstat,user,editor,slrow');
-            container.innerHTML = TM.replace('cstat');
+            var tp = this.template,
+                tk = this.get('task'),
+                lst = "",
+                userList = appInstance.getApp('uprofile').get('userList');
 
-            var __self = this;
-            E.on(container, 'click', function(e){
-                if (__self.onClick(E.getTarget(e))){
-                    E.preventDefault(e);
+            var instance = this;
+
+            var buildRow = function(user){
+                return tp.replace('user', {
+                    avatar: user.get('avatarSrc24'),
+                    uid: user.get('id'),
+                    unm: user.get('viewName'),
+                    'status': user.get('id') == UID ? tp.replace('editor') : instance.getSt(user.get('id'))['tl']
+                });
+            };
+
+            lst += buildRow(userList.getById(UID));
+
+            for (var i = 0; i < tk.users.length; i++){
+                var user = userList.getById(tk.users[i]);
+                if (user.get('id') != UID){
+                    lst += buildRow(user);
                 }
-            });
+            }
+            tp.setHTML('list', lst);
+            tp.setValue('editor.val', this.getSt(UID)['tl']);
 
-            this.render();
-        },
-        destroy: function(){
+            tp.one('editor.val').on('keyup', this.onEditorChange, this);
         },
         onClick: function(el){
             var TId = this._TId, tp = TId['cstat'];
@@ -104,49 +129,19 @@ Component.entryPoint = function(NS){
             return false;
         },
         getSt: function(uid){
-            return this.task.custatus.list[uid] || {'tl': ''};
-        },
-        render: function(){
-            var TM = this._TM, tk = this.task, lst = "";
-            var users = NS.taskManager.users;
-            var __self = this;
-
-            var buildRow = function(user){
-                return TM.replace('user', {
-                    avatar: user.get('avatarSrc24'),
-                    uid: user.get('id'), unm: user.get('viewName'),
-                    'status': user.get('id') == UID ? TM.replace('editor') : __self.getSt(user.get('id'))['tl']
-                });
-            };
-
-            lst += buildRow(users.get(UID));
-
-            for (var i = 0; i < tk.users.length; i++){
-                var user = users.get(tk.users[i]);
-                if (user.get('id') != UID){
-                    lst += buildRow(user);
-                }
-            }
-            TM.getEl('cstat.list').innerHTML = lst;
-
-            var elVal = TM.getEl('editor.val');
-            elVal.value = this.getSt(UID)['tl'];
-
-            E.on(elVal, 'keyup', function(e){
-                __self.onEditorChange();
-            });
+            return this.get('task').custatus.list[uid] || {'tl': ''};
         },
         shSelect: function(show){
-            var TM = this._TM, __self = this, elSel = TM.getEl('cstat.sel');
+            var TM = this._TM, instance = this, elSel = TM.getEl('cstat.sel');
             Dom.setStyle(elSel, 'display', show ? '' : 'none');
 
             if (show && Y.Lang.isNull(this.myList)){
-                this.myList = new SelectMyStatusListWidget(TM.getEl('cstat.sel'), this.task, function(my){
+                this.myList = new SelectMyStatusListWidget(TM.getEl('cstat.sel'), this.get('task'), function(my){
                     if (!my){
                         return;
                     }
                     TM.getEl('editor.val').value = my['tl'];
-                    __self.updateSaveStatus();
+                    instance.updateSaveStatus();
                 });
 
                 var bodyClick = null;
@@ -161,8 +156,8 @@ Component.entryPoint = function(NS){
                     if (elEd.id == el.id){
                         return;
                     }
-                    __self.myList.onClick(el);
-                    __self.shSelect(false);
+                    instance.myList.onClick(el);
+                    instance.shSelect(false);
                 };
 
                 E.on(document.body, 'click', bodyClick);
@@ -179,7 +174,7 @@ Component.entryPoint = function(NS){
         updateSaveStatus: function(){
             var TM = this._TM, el = TM.getEl('editor.val'),
                 elBtns = TM.getEl('cstat.btns'),
-                tk = this.task;
+                tk = this.get('task');
 
             var cst = tk.custatus.list[UID] || {'tl': ''},
                 cval = cst['tl'];
@@ -194,18 +189,18 @@ Component.entryPoint = function(NS){
             var TM = this._TM, gel = function(n){
                 return TM.getEl('cstat.' + n);
             };
-            var __self = this;
+            var instance = this;
 
             Dom.setStyle(gel('bact'), 'display', 'none');
             Dom.setStyle(gel('saved'), 'display', '');
             var sd = {
-                'taskid': this.task.id,
+                'taskid': this.get('task').id,
                 'title': TM.getEl('editor.val').value
             };
-            NS.taskManager.custatusSave(this.task, sd, function(){
+            NS.taskManager.custatusSave(this.get('task'), sd, function(){
                 Dom.setStyle(gel('bact'), 'display', '');
                 Dom.setStyle(gel('saved'), 'display', 'none');
-                __self.updateSaveStatus();
+                instance.updateSaveStatus();
             });
         },
         cancel: function(){
@@ -213,6 +208,12 @@ Component.entryPoint = function(NS){
             TM.getEl('editor.val').value = this.getSt(UID)['tl'];
             this.updateSaveStatus();
         }
-    };
-    NS.CustomStatusWidget = CustomStatusWidget;
+    }, {
+        ATTRS: {
+            component: {value: COMPONENT},
+            templateBlockName: {value: 'cstat,user,editor,slrow'},
+            task: {}
+        },
+        CLICKS: {},
+    });
 };

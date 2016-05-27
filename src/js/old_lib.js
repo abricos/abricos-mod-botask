@@ -613,7 +613,6 @@ Component.entryPoint = function(NS){
      /**/
 
     var TaskManager = function(userOptions, initData){
-
         initData = L.merge({
             'board': {},
             'users': {},
