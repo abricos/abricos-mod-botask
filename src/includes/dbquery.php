@@ -348,29 +348,10 @@ class BotaskQuery {
         return $retArray ? $db->query_first($sql) : $db->query_read($sql);
     }
 
-    /*
-    public static function TaskByContentId(Ab_Database $db, $userid, $contentid, $retArray = false){
-        $sql = "
-			SELECT
-				".BotaskQuery::TASK_FIELDS.",
-				c.body as bd,
-				p.contentid as ctid
-			FROM ".$db->prefix."btk_task p
-			INNER JOIN ".$db->prefix."btk_userrole ur ON p.taskid=ur.taskid AND ur.userid=".bkint($userid)."
-			INNER JOIN ".$db->prefix."content c ON p.contentid=c.contentid
-			WHERE p.contentid=".bkint($contentid)."
-			LIMIT 1
-		";
-        return $retArray ? $db->query_first($sql) : $db->query_read($sql);
-    }
-    /**/
-
     public static function TaskAppend(Ab_Database $db, $tk, $pubkey){
-        $contentid = Ab_CoreQuery::ContentAppend($db, $tk->bd, 'botask');
-
         $sql = "
 			INSERT INTO ".$db->prefix."btk_task (
-				userid, parenttaskid, tasktype, title, status, statdate, pubkey, contentid,
+				userid, parenttaskid, tasktype, title, status, statdate, pubkey, body,
 				deadline, deadlinebytime, dateline, updatedate, priority) VALUES (
 				".bkint($tk->uid).",
 				".bkint($tk->pid).",
@@ -379,7 +360,7 @@ class BotaskQuery {
 				".BotaskStatus::TASK_OPEN.",
 				".TIMENOW.",
 				'".bkstr($pubkey)."',
-				".$contentid.",
+				'".bkstr($tk->bd)."',
 				".bkint($tk->ddl).",
 				".bkint($tk->ddlt).",
 				".TIMENOW.",
@@ -392,12 +373,11 @@ class BotaskQuery {
     }
 
     public static function TaskUpdate(Ab_Database $db, $tk, $userid){
-        $info = BotaskQuery::Task($db, $tk->id, $userid, true);
-        Ab_CoreQuery::ContentUpdate($db, $info['ctid'], $tk->bd);
         $sql = "
 			UPDATE ".$db->prefix."btk_task
 			SET
 				title='".bkstr($tk->tl)."',
+				body='".bkstr($tk->bd)."',
 				parenttaskid=".bkint($tk->pid).",
 				deadline=".bkint($tk->ddl).",
 				deadlinebytime=".bkint($tk->ddlt).",
@@ -473,7 +453,7 @@ class BotaskQuery {
 
     public static function UserRoleAppend(Ab_Database $db, $taskid, $userid){
         $sql = "
-			INSERT INTO ".$db->prefix."btk_userrole (taskid, userid) VALUES
+			INSERT IGNORE INTO ".$db->prefix."btk_userrole (taskid, userid) VALUES
 			(
 				".bkint($taskid).",
 				".bkint($userid)."

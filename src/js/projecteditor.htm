@@ -24,7 +24,7 @@
         <div class="clearfix"></div>
     </div>
     <div class="panel-body">
-        <form class="form-horizontal">
+        <div class="form-horizontal">
 
             <div class="form-group">
                 <label class="col-sm-2 control-label">
@@ -65,7 +65,7 @@
                 </div>
             </div>
 
-            <div class="form-group">
+            <div id="{i#rfiles}" class="form-group">
                 <label class="col-sm-2 control-label">
                     {#mod.botask.projecteditor.widget.9}
                 </label>
@@ -75,20 +75,27 @@
                 </div>
             </div>
 
-            <div class="form-group pimg">
+            <div id="{i#rimage}" class="form-group pimg">
                 <label class="col-sm-2 control-label">
                     {#mod.botask.projecteditor.widget.10}
                 </label>
 
                 <div class="col-sm-10">
                     <span class="imgbuse">
-                        <a href="#" id="{i#bimgdis}" class="abtn" title="{#mod.botask.projecteditor.widget.11}">{#mod.botask.projecteditor.widget.12}</a>
-                        <a href="#" id="{i#bimgen}" class="abtn" title="{#mod.botask.projecteditor.widget.13}"
-                           style="display: none">{#mod.botask.projecteditor.widget.14}</a>
+                        <a data-click="imageDisable" id="{i#imageDisable}" href="#" class="abtn"
+                           title="{#mod.botask.projecteditor.widget.11}">
+                            {#mod.botask.projecteditor.widget.12}
+                        </a>
+                        <a data-click="imageEnable" id="{i#imageEnable}" href="#" class="abtn hide"
+                           title="{#mod.botask.projecteditor.widget.13}">
+                            {#mod.botask.projecteditor.widget.14}
+                        </a>
                     </span>
                     <span>
-                        <a href="#" id="{i#baddtab}" class="abtn addtab"
-                           title="{#mod.botask.projecteditor.widget.15}">{#mod.botask.projecteditor.widget.16}</a>
+                        <a data-click="addImageTab" id="{i#addImageTab}" href="#" class="abtn addtab"
+                           title="{#mod.botask.projecteditor.widget.15}">
+                            {#mod.botask.projecteditor.widget.16}
+                        </a>
                     </span>
                 </div>
             </div>
@@ -106,17 +113,26 @@
             </div>
 
             <div class="btn-toolbar text-right">
-                <button id="{i#bsave}" class="btn btn-default">
-                    {#mod.botask.projecteditor.widget.18}
-                </button>
-                <button id="{i#bcancel}" class="btn btn-default">
-                    {#mod.botask.projecteditor.widget.19}
-                </button>
-                <img src="/images/loading.gif" id="{i#loading}" style="display: none;"/>
             </div>
 
-        </form>
+        </div>
     </div>
+    <div class="panel-footer text-right">
+        <div class="pull-left" data-wait="show">
+            <img src="/images/loading.gif"/>
+        </div>
 
+        <button data-click="save" class="btn btn-default"
+                data-isedit="hide">
+            Добавить
+        </button>
+        <button data-click="save" class="btn btn-default"
+                data-isedit="show">
+            Сохранить
+        </button>
+        <a href="#" data-url="ws" class="btn btn-default">
+            Отмена
+        </a>
 
+    </div>
 </div>

@@ -985,6 +985,7 @@ Component.entryPoint = function(NS){
             this._taskAJAX(taskid, 'task', callback);
         },
 
+        /*
         checkListSave: function(taskid, checkList, callback){
             callback = callback || function(){
                 };
@@ -998,6 +999,7 @@ Component.entryPoint = function(NS){
                 callback();
             });
         },
+        /**/
 
         custatusSave: function(task, sd, callback){
             // var __self = this;
@@ -1021,6 +1023,7 @@ Component.entryPoint = function(NS){
         },
 
         // сохранить задачу (task - задача, newdata - новые данных по задаче)
+        /*
         taskSave: function(task, d, callback){
             callback = callback || function(){
                 };
@@ -1063,6 +1066,7 @@ Component.entryPoint = function(NS){
                 callback(r);
             });
         }
+        /**/
     };
     NS.TaskManager = TaskManager;
     NS.taskManager = null;

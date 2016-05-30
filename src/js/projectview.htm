@@ -23,8 +23,8 @@
                             </div>
                         </td>
                         <td id="{i#vbiadd}">
-                            <div class="bc" title="{#mod.botask.projectview.panel.4}">
-                                <div id="{i#biadd}" class="badd-icon b"></div>
+                            <div data-click="addChildItem" class="bc" title="{#mod.botask.projectview.panel.4}">
+                                <div class="badd-icon b"></div>
                             </div>
                         </td>
                     </tr>
@@ -59,21 +59,29 @@
                 </dl>
             </td>
             <td>
-
-                <div class="manbuttons" id="{i#manbuttons}">
+                <div class="manbuttons">
 					<span id="{i#buttons}">
 					
-						<a id="{i#bopen}" style="display: none;" class="bsetexec btkbt" href="#"
-                           title="{#mod.botask.projectview.panel.8}">{#mod.botask.projectview.panel.9}</a>
-						<a id="{i#barhive}" style="display: none;" class="bsetexec btkbt" href="#"
-                           title="{#mod.botask.projectview.panel.10}">{#mod.botask.projectview.panel.11}</a>
-						<a id="{i#brestore}" style="display: none;" class="bsetexec btkbt" href="#"
-                           title="{#mod.botask.projectview.panel.12}">{#mod.botask.projectview.panel.13}</a>
+						<a id="{i#bopen}" class="bsetexec btkbt" href="#"
+                           title="{#mod.botask.projectview.panel.8}">
+                            Открыть
+                        </a>
+						<a id="{i#barhive}" class="bsetexec btkbt" href="#"
+                           title="{#mod.botask.projectview.panel.10}">
+                            В архив
+                        </a>
+						<a id="{i#brestore}" class="bsetexec btkbt" href="#"
+                           title="{#mod.botask.projectview.panel.12}">
+                            Восстановить
+                        </a>
 						
-						<a id="{i#beditor}" class="beditor btkbt" href="#">{#mod.botask.projectview.panel.16}</a>
-						<a id="{i#bremove}" class="bremove btkbt" href="#">{#mod.botask.projectview.panel.17}</a>
+						<a id="{i#beditor}" class="beditor btkbt" href="#">
+                            Редактировать
+                        </a>
+						<a id="{i#bremove}" class="bremove btkbt" href="#">
+                            Удалить
+                        </a>
 					</span>
-                    <img id="{i#bloading}" src="/images/loading.gif" style="display: none;"/>
                 </div>
 
             </td>
@@ -85,9 +93,7 @@
 
     <div class="panel-body">
         <div class="bodybox">
-            <div id="{i#taskbody}" class="taskbody aw-page-content">
-                <img src="/images/loading.gif"/>
-            </div>
+            <div id="{i#taskbody}" class="taskbody"></div>
 
             <div id="{i#checklist}" class="taskbody"></div>
 
@@ -104,7 +110,7 @@
             <img id="{i#bimgsaveload}" src="/images/loading.gif" class="bimgsaveload" style="display: none"/>
 
             <div class="imgsave">
-                <a id="{i#bimgsave}" class="bimgsave btkbt hide" href="#" >{#mod.botask.projectview.panel.15}</a>
+                <a id="{i#bimgsave}" class="bimgsave btkbt hide" href="#">{#mod.botask.projectview.panel.15}</a>
             </div>
 
             <div id="{i#images}"></div>

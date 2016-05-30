@@ -8,31 +8,12 @@ Component.entryPoint = function(NS){
 
     NS.ChecklistWidget = Y.Base.create('ChecklistWidget', SYS.AppWidget, [], {
         onInitAppWidget: function(err, appInstance){
-            var tp = this.template;
-
             this.hideRecycle = true;
             this.list = [];
 
             this.publish('changedEvent');
-
-            // this.elTable = tp.one('table');
-            // this.elRecTable = tp.one('rectable');
-            // this.elBAdd = tp.one('badd');
-
-            this.get('srcNode').on('keyPress', this._onKeyPress, this);
         },
         destructor: function(){
-        },
-        _onKeyPress: function(e, el){
-            var ret = false;
-            this.foreach(function(ch){
-                if (!ch.onKeyPress(e, el)){
-                    return;
-                }
-                return ret = true;
-            });
-
-            return ret;
         },
         onClick: function(e){
             switch (e.dataClick) {
@@ -103,24 +84,21 @@ Component.entryPoint = function(NS){
                 }
             }
         },
-        getSaveData: function(){
+        toJSON: function(){
             var sd = [];
             this.foreach(function(ch){
-                if (ch.isDestroyed()){
-                    return;
-                }
-                scheck[sd.length] = ch.data;
+                sd[sd.length] = ch.get('check');
             });
             return sd;
         },
         save: function(){
             this._shButtons();
 
-            var sd = this.getSaveData();
+            var sd = this.toJSON();
 
-            NS.taskManager.checkListSave(this.get('task').id, sd, function(){
-                // __self._shLoading(false);
-            });
+            this.get('appInstance').checkListSave(this.get('task').id, sd, function(err, result){
+                this._shLoading(false);
+            }, this);
         },
         cancel: function(){
             this._shButtons();
@@ -178,18 +156,18 @@ Component.entryPoint = function(NS){
                 cUser = userList.getById(check['cuid']), // выполнил
                 dUser = userList.getById(check['duid']); // удалил
 
-
             tp.setHTML({
                 info: cfg['hideinfo'] ? '' : tp.replace('info', {
-                    'inew': de.convert(check['dl']) + ', ' + nUser.getUserName(),
+                    'inew': de.convert(check['dl']) + ', ' + nUser.get('viewName'),
+
                     'diupdate': !uUser ? 'none' : 'block',
-                    'iupdate': !uUser ? '' : (de.convert(check['udl']) + ', ' + uUser.getUserName()),
+                    'iupdate': !uUser ? '' : (de.convert(check['udl']) + ', ' + uUser.get('viewName')),
 
                     'dicheck': !cUser ? 'none' : 'block',
-                    'icheck': !cUser ? '' : (de.convert(check['cdl']) + ', ' + cUser.getUserName()),
+                    'icheck': !cUser ? '' : (de.convert(check['cdl']) + ', ' + cUser.get('viewName')),
 
                     'diremove': !dUser ? 'none' : 'block',
-                    'iremove': !dUser ? '' : (de.convert(check['ddl']) + ', ' + dUser.getUserName())
+                    'iremove': !dUser ? '' : (de.convert(check['ddl']) + ', ' + dUser.get('viewName'))
                 }),
                 text: check['tl']
             });
@@ -203,29 +181,6 @@ Component.entryPoint = function(NS){
             if (check['id'] * 1 == 0){
                 this.setEditMode();
             }
-        },
-        onClick: function(e){
-            switch (e.dataClick) {
-                case 'text':
-                    this.setEditMode();
-                    return true;
-                case 'cancel':
-                    this.cancel();
-                    return true;
-                case 'save':
-                    this.setViewMode();
-                    return true;
-                case 'checkbox':
-                    this.onChecked();
-                    return false;
-                case 'remove':
-                    this.remove();
-                    return false;
-                case 'brestore':
-                    this.restore();
-                    return false;
-            }
-            return false;
         },
         cancel: function(){
             this.setViewMode(true);
@@ -390,8 +345,14 @@ Component.entryPoint = function(NS){
             },
             owner: {}
         },
-
-        CLICKS: {},
+        CLICKS: {
+            text: 'setEditMode',
+            cancel: 'cancel',
+            save: 'setViewMode',
+            checkbox: 'onChecked',
+            remove: 'remove',
+            restore: 'restore',
+        },
     });
 
 };

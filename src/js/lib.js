@@ -71,6 +71,12 @@ Component.entryPoint = function(NS){
                         }, context);
                     };
                 }
+            },
+            taskSave: {
+                args: ['data']
+            },
+            checkListSave: {
+                args: ['taskid', 'data']
             }
         },
         ATTRS: {

@@ -13,10 +13,12 @@
         {#mod.botask.checklist.widget.4}
     </a>
 	<span id="{i#btnlst}" class="btnlst hide">
-		<a data-click="save" class="bsave" href="#" title="{#mod.botask.checklist.widget.5}">
+		<button data-click="save" class="bsave" title="{#mod.botask.checklist.widget.5}">
             {#mod.botask.checklist.widget.6}
-        </a>
-		<a data-click="cancel" class="bcancel" href="#" title="{#mod.botask.checklist.widget.7}">{#mod.botask.checklist.widget.8}</a>
+        </button>
+		<button data-click="cancel" class="bcancel" title="{#mod.botask.checklist.widget.7}">
+            {#mod.botask.checklist.widget.8}
+        </button>
 	</span>
 </div>
 
@@ -42,12 +44,12 @@
                 <textarea id="{i#input}" class="form-control input-sm"></textarea>
 
                 <div id="{i#btns}" class="btns">
-                    <a href="#" id="{i#bsave}" class="btn btn-default btn-xs">
+                    <button data-click="save" class="btn btn-default btn-xs">
                         {#mod.botask.checklist.row.3}
-                    </a>
-                    <a href="#" id="{i#bcancel}" class="btn btn-default btn-xs">
+                    </button>
+                    <button data-click="cancel" class="btn btn-default btn-xs">
                         {#mod.botask.checklist.row.4}
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>

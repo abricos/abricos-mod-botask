@@ -45,7 +45,7 @@ Component.entryPoint = function(NS){
                 tl: task.title
             };
         },
-        onInitAppWidget: function(err, appInstance, options){
+        onInitAppWidget: function(err, appInstance){
             var task = this.get('task');
 
             this._firstRender = true;
@@ -94,6 +94,8 @@ Component.entryPoint = function(NS){
         },
         renderTask: function(){
             var tp = this.template,
+                appInstance = this.get('appInstance'),
+                userList = appInstance.getApp('uprofile').get('userList'),
                 task = this.get('task');
 
             tp.show('bimgsave');
@@ -112,7 +114,10 @@ Component.entryPoint = function(NS){
                     readOnly: !NS.roles.isWrite
                 });
 
-                this.checklist = new NS.ChecklistWidget(tp.gel('checklist'), task);
+                this.checklist = new NS.ChecklistWidget({
+                    srcNode: tp.one('checklist'),
+                    task: task
+                });
                 this.attachListWidget = new Brick.mod.filemanager.AttachmentListWidget(tp.gel('ftable'));
 
                 var mPT = Brick.mod.pictab;
@@ -134,56 +139,59 @@ Component.entryPoint = function(NS){
                 status: LNG['project']['status'][task.status],
                 taskid: task.id
             });
-            return;
 
             // Автор
-            var user = NS.taskManager.users.get(task.userid);
-            gel('author').innerHTML = TM.replace('user', {
-                uid: user.get('id'), unm: user.get('viewName')
-            });
-            // Создана
-            gel('dl').innerHTML = Brick.dateExt.convert(task.date, 3, true);
-            gel('dl').title = Brick.dateExt.convert(task.date, 4);
+            var user = userList.getById(task.userid);
 
+            tp.setHTML({
+                author: tp.replace('user', {
+                    uid: user.get('id'),
+                    unm: user.get('viewName')
+                }),
+                dl: Brick.dateExt.convert(task.date, 3, true)
+            });
+
+            tp.one('dl').set('title', Brick.dateExt.convert(task.date, 4));
+            
             // закрыть все кнопки, открыть те, что соответсуют статусу задачи
-            TM.elHide('panel.bopen,beditor,bremove,brestore,barhive');
+            tp.hide('bopen,beditor,bremove,brestore,barhive');
 
             // статус
             switch (task.status) {
                 case TST.OPEN:
                 case TST.REOPEN:
-                    TM.elShow('panel.bremove');
+                    tp.show('bremove');
                     break;
                 case TST.ACCEPT:
-                    TM.elShow('panel.bremove');
+                    tp.show('bremove');
                     break;
                 case TST.REMOVE:
-                    TM.elShow('panel.brestore');
+                    tp.show('brestore');
                     break;
             }
 
             // показать прикрепленные файлы
             this.attachListWidget.setFiles(task.files);
-            if (task.files.length > 0){
-                TM.elShow('panel.files');
-            } else {
-                TM.elHide('panel.files');
-            }
+            tp.toggleView(task.files.length > 0, 'files');
 
             // Избранное
             if (task.favorite){
-                Dom.addClass(gel('favi'), 'fav-checked');
+                tp.addClass('favi', 'fav-checked');
             } else {
-                Dom.removeClass(gel('favi'), 'fav-checked');
+                tp.removeClass('favi', 'fav-checked');
             }
-
         },
-        onClick: function(el){
-            var tp = this._TId['panel'];
-            switch (el.id) {
+        onClick: function(e){
 
+            switch (e.dataClick) {
+
+                case 'addChildItem':
+                    this.go('project.create', 0, this.get('task').id);
+                    break;
+
+                /*
                 case tp['biadd']:
-                    NS.navigator.add(this.get('task').id);
+                    NS.navigator.add();
                     return true;
 
                 case tp['fav']:
@@ -213,14 +221,14 @@ Component.entryPoint = function(NS){
                 case tp['bimgsave']:
                     this.saveImages();
                     return true;
-
+/**/
             }
             return false;
         },
         _shLoading: function(show){
             var TM = this._TM;
-            TM.elShowHide('panel.buttons', !show);
-            TM.elShowHide('panel.bloading', show);
+            tp.showHide('panel.buttons', !show);
+            tp.showHide('panel.bloading', show);
         },
         taskFavorite: function(){
             var task = this.get('task');
@@ -300,7 +308,7 @@ Component.entryPoint = function(NS){
     YAHOO.extend(ProjectRemovePanel, Brick.widget.Dialog, {
         initTemplate: function(){
             buildTemplate(this, 'tkremovepanel');
-            return this._TM.replace('tkremovepanel');
+            return this._tp.replace('tkremovepanel');
         },
         onClick: function(el){
             var tp = this._TId['tkremovepanel'];
