@@ -1,81 +1,113 @@
 <!--{widget}-->
-<div class="cklist">
-    <div id="{i#table}"></div>
-    <div id="{i#recycle}" class="recycle">
-        <div class="btntab">
-            <a href="#" id="{i#brecshow}">{#mod.botask.checklist.widget.1} (<span id="{i#reccnt}">0</span>)</a>
-            <a href="#" id="{i#brechide}" class="hide">{#mod.botask.checklist.widget.2}</a>
+<div class="checkList panel panel-default">
+    <div class="panel-body">
+        <div id="{i#table}"></div>
+        <div id="{i#recycle}" class="recycle">
+            <a href="#" id="{i#brecshow}">
+                показать корзину (<span id="{i#reccnt}">0</span>)
+            </a>
+            <a href="#" id="{i#brechide}" class="hide">
+                скрыть корзину
+            </a>
+
+            <div id="{i#recycleTable}" class="hide"></div>
         </div>
-        <div id="{i#rectable}" class="rectable hide"></div>
-        <div class="mgrbot"></div>
     </div>
-    <a id="{i#badd}" data-click="add" class="badd" title="{#mod.botask.checklist.widget.3}" href="#">
-        {#mod.botask.checklist.widget.4}
-    </a>
-	<span id="{i#btnlst}" class="btnlst hide">
-		<button data-click="save" class="bsave" title="{#mod.botask.checklist.widget.5}">
-            {#mod.botask.checklist.widget.6}
+
+    <div id="{i#buttons}" class="panel-footer">
+        <button id="{i#btnAddCheck}" data-click="add" class="btn btn-default btn-xs"
+                data-wait="disable"
+                title="Добавить микрозадачу">
+            <i class="fa fa-plus" aria-hidden="true"></i>
+            Добавить
         </button>
-		<button data-click="cancel" class="bcancel" title="{#mod.botask.checklist.widget.7}">
-            {#mod.botask.checklist.widget.8}
+        <button id="{i#btnSave}" data-click="save"
+                data-wait="disable"
+                class="btn btn-default btn-xs hide"
+                title="Сохранить изменения в чек-листе">
+            <i class="fa fa-floppy-o" aria-hidden="true"></i>
+            Сохранить
         </button>
-	</span>
+        <button id="{i#btnCancel}" data-click="cancel"
+                data-wait="disable"
+                class="btn btn-default btn-xs hide"
+                title="Отменить изменения в чек-листе">
+            <i class="fa fa-ban" aria-hidden="true"></i>
+            Отмена
+        </button>
+    </div>
 </div>
 
 <!--{row}-->
-<div class="chrow">
-    <div id="{i#bg}" class="uncheck">
-        <input type="checkbox" id="{i#checkbox}" class="chk" {v#checked}/>
-        <div class="chkok"></div>
+<div id="{i#bg}" class="checkRow uncheck">
+    <table id="{i#blurPanel}">
+        <tbody>
+        <tr>
+            <td class="colCheckbox">
+                <div id="{i#btnSetCheck}"
+                     data-click="setCheck"
+                     title="Выполнить микрозадачу">
+                    <i class="fa fa-square-o" aria-hidden="true"></i>
+                </div>
+                <div id="{i#btnUnsetCheck}"
+                     data-click="unsetCheck"
+                     title="Отменить выполнение микрозадачи">
+                    <i class="fa fa-check-square-o" aria-hidden="true"></i>
+                </div>
+            </td>
 
-        <div class="vt">
-            <div class="view">
+            <td id="{i#colView}" class="colValue">
                 <div id="{i#text}" data-click="text" class="text"></div>
-                <div class="btns" id="{i#btnsc}">
-                    <img src="/modules/botask/images/remove.gif"
-                         id="{i#bremove}" class="bremove"
-                         data-click="remove"
-                         title="{#mod.botask.checklist.row.1}"/>
-                    <a href="#" id="{i#brestore}" class="brestore">{#mod.botask.checklist.row.2}</a>
-                </div>
-            </div>
+            </td>
 
-            <div id="{i#action}" class="action hide">
+            <td id="{i#colViewButtons}" class="colButtons">
+                <button id="{i#btnRemove}" data-click="remove"
+                        class="btn btn-default btn-xs hide"
+                        title="Удалить">
+                    <i class="fa fa-trash" aria-hidden="true"></i>
+                </button>
+                <button id="{i#btnShowInfo}" data-click="showInfo"
+                        class="btn btn-default btn-xs hide"
+                        title="Показать дополнительную информацию">
+                    <i class="fa fa-info-circle" aria-hidden="true"></i>
+                </button>
+                <button id="{i#btnRestore}" data-click="restore"
+                        class="btn btn-default btn-xs hide"
+                        title="Удалить">
+                    Восстановить
+                </button>
+            </td>
+
+            <td id="{i#colInput}" class="colValue hide">
                 <textarea id="{i#input}" class="form-control input-sm"></textarea>
+            </td>
 
-                <div id="{i#btns}" class="btns">
-                    <button data-click="save" class="btn btn-default btn-xs">
-                        {#mod.botask.checklist.row.3}
-                    </button>
-                    <button data-click="cancel" class="btn btn-default btn-xs">
-                        {#mod.botask.checklist.row.4}
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div id="{i#info}"></div>
+            <td id="{i#colInputButtons}" class="colButtons hide">
+                <button data-click="save" class="btn btn-default btn-xs"
+                        title="Сохранить">
+                    <i class="fa fa-floppy-o" aria-hidden="true"></i>
+                </button>
+                <button data-click="cancel" class="btn btn-default btn-xs"
+                        title="Отмена">
+                    <i class="fa fa-ban" aria-hidden="true"></i>
+                </button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div id="{i#infoBox}" class="info alert alert-success hide">
+        <p>
+            Добавленно: {v#inew}
+        </p>
+        <p class="{v#diupdate}">
+            Изменено: {v#iupdate}
+        </p>
+        <p class="{v#dicheck}">
+            Выполнено: {v#icheck}
+        </p>
+        <p class="{v#diremove}">
+            Удалено: {v#iremove}
+        </p>
     </div>
-</div>
-
-<!--{info}-->
-<div class="info">
-    <p>
-        <span>{#mod.botask.checklist.info.1}:</span><br/>
-        {v#inew}
-    </p>
-
-    <p class="{v#diupdate}">
-        <span>{#mod.botask.checklist.info.2}:</span><br/>
-        {v#iupdate}
-    </p>
-
-    <p class="{v#dicheck}">
-        <span>{#mod.botask.checklist.info.3}:</span> <br/>
-        {v#icheck}
-    </p>
-
-    <p class="{v#diremove}">
-        <span>{#mod.botask.checklist.info.4}:</span> <br/>
-        {v#iremove}
-    </p>
 </div>

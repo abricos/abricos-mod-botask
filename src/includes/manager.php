@@ -29,12 +29,8 @@ class BotaskManager extends Ab_ModuleManager {
 
     private function _AJAX($d){
         switch ($d->do){
-            case 'task':
-                return $this->Task($d->taskid);
             case 'sync':
                 return $this->Sync();
-            case 'tasksave':
-                return $this->TaskSave($d->task);
             case 'custatsave':
                 return $this->CustatusSave($d->custat);
             case 'custatfull':
@@ -67,8 +63,6 @@ class BotaskManager extends Ab_ModuleManager {
                 return $this->CommentList();
             case 'towork':
                 return $this->ToWork();
-            case 'checklistsave':
-                return $this->CheckListSave($d->taskid, $d->checklist);
         }
         return null;
     }
