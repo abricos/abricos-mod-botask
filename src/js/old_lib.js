@@ -851,6 +851,7 @@ Component.entryPoint = function(NS){
             return this.list.find(taskid);
         },
 
+        /*
         taskFavorite: function(taskid, callback){
             var task = this.list.find(taskid);
             callback = callback || function(){
@@ -865,6 +866,7 @@ Component.entryPoint = function(NS){
                 __self.taskUserChangedEvent.fire(task);
             });
         },
+        /**/
 
         taskShowComments: function(taskid, callback){
             var task = this.list.find(taskid);
@@ -984,22 +986,6 @@ Component.entryPoint = function(NS){
             }
             this._taskAJAX(taskid, 'task', callback);
         },
-
-        /*
-        checkListSave: function(taskid, checkList, callback){
-            callback = callback || function(){
-                };
-            var __self = this;
-            this.ajax({
-                'do': 'checklistsave',
-                'taskid': taskid,
-                'checklist': checkList
-            }, function(r){
-                __self._setLoadedTaskData(r);
-                callback();
-            });
-        },
-        /**/
 
         custatusSave: function(task, sd, callback){
             // var __self = this;

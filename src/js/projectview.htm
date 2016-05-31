@@ -8,31 +8,32 @@
                     {v#tl}
                 </h3>
             </div>
-            <div class="col-md-1">
-                <table class="fav">
-                    <tbody>
-                    <tr>
-                        <td>
-                            <div id="{i#fav}" class="fav-icon-normal" title="{#mod.botask.projectview.panel.2}">
-                                <img id="{i#favi}" class="{v#fav}" src="/images/empty.gif">
-                            </div>
-                        </td>
-                        <td id="{i#vbieditor}">
-                            <div class="bc" title="{#mod.botask.projectview.panel.3}">
-                                <div id="{i#biedit}" class="bedit-icon b"></div>
-                            </div>
-                        </td>
-                        <td id="{i#vbiadd}">
-                            <div data-click="addChildItem" class="bc" title="{#mod.botask.projectview.panel.4}">
-                                <div class="badd-icon b"></div>
-                            </div>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="col-md-2">
-                <h3 class="panel-title text-center" id="{i#status}"></h3>
+            <div class="col-md-3 text-right">
+                <button id="{i#btnSetFavorite}" class="btn btn-default btn-xs"
+                        data-click="taskFavorite"
+                        title="Добавить в избранное">
+                    <i class="fa fa-star-o" aria-hidden="true"></i>
+                </button>
+
+                <button id="{i#btnUnsetFavorite}" class="btn btn-default btn-xs"
+                        data-click="taskFavorite"
+                        title="Удалить из избранного">
+                    <i class="fa fa-star" aria-hidden="true"></i>
+                </button>
+
+                <a href="#" id="{i#btnEdit}"
+                   data-url="project.edit({v#id})"
+                   class="btn btn-default btn-xs"
+                   title="Редактировать">
+                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                </a>
+
+                <a href="#" id="{i#btnAddChildItem}"
+                   data-url="item.create({v#id})"
+                   class="btn btn-default btn-xs"
+                   title="Добавить подпроект/подзадачу">
+                    <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                </a>
             </div>
         </div>
     </div>
@@ -42,48 +43,24 @@
         <tr>
             <td>
                 <dl>
-                    <dt>{#mod.botask.projectview.panel.5}</dt>
+                    <dt>№</dt>
                     <dd id="{i#taskid}"></dd>
                 </dl>
             </td>
             <td>
                 <dl>
-                    <dt>{#mod.botask.projectview.panel.6}</dt>
+                    <dt>Автор</dt>
                     <dd id="{i#author}"></dd>
                 </dl>
             </td>
             <td>
                 <dl>
-                    <dt>{#mod.botask.projectview.panel.7}</dt>
+                    <dt>Создан</dt>
                     <dd id="{i#dl}"></dd>
                 </dl>
             </td>
-            <td>
-                <div class="manbuttons">
-					<span id="{i#buttons}">
-					
-						<a id="{i#bopen}" class="bsetexec btkbt" href="#"
-                           title="{#mod.botask.projectview.panel.8}">
-                            Открыть
-                        </a>
-						<a id="{i#barhive}" class="bsetexec btkbt" href="#"
-                           title="{#mod.botask.projectview.panel.10}">
-                            В архив
-                        </a>
-						<a id="{i#brestore}" class="bsetexec btkbt" href="#"
-                           title="{#mod.botask.projectview.panel.12}">
-                            Восстановить
-                        </a>
-						
-						<a id="{i#beditor}" class="beditor btkbt" href="#">
-                            Редактировать
-                        </a>
-						<a id="{i#bremove}" class="bremove btkbt" href="#">
-                            Удалить
-                        </a>
-					</span>
-                </div>
-
+            <td class="text-right">
+                <h3 class="panel-title text-center" id="{i#status}"></h3>
             </td>
         </tr>
         </tbody>
@@ -93,9 +70,9 @@
 
     <div class="panel-body">
         <div class="bodybox">
-            <div id="{i#taskbody}" class="taskbody"></div>
+            <div id="{i#taskbody}"></div>
 
-            <div id="{i#checklist}" class="taskbody"></div>
+            <div id="{i#checklist}"></div>
 
             <div id="{i#files}" class="dfiles row" style="display: none">
                 <div class="col-md-2">

@@ -42,6 +42,28 @@ class BotaskApp extends AbricosApplication {
                 return $this->TaskToJSON($d->taskid);
             case 'taskSave':
                 return $this->TaskSaveToJSON($d->data);
+            case 'taskSetExec':
+                return $this->TaskSetExecToJSON($d->taskid);
+            case 'taskUnsetExec':
+                return $this->TaskUnsetExecToJSON($d->taskid);
+            case 'taskClose':
+                return $this->TaskCloseToJSON($d->taskid);
+            case 'taskRemove':
+                return $this->TaskRemoveToJSON($d->taskid);
+            case 'taskRestore':
+                return $this->TaskRestoreToJSON($d->taskid);
+            case 'taskArhive':
+                return $this->TaskArhiveToJSON($d->taskid);
+            case 'taskOpen':
+                return $this->TaskOpenToJSON($d->taskid);
+            case 'taskFavorite':
+                return $this->TaskFavoriteToJSON($d->taskid, $d->value);
+            case 'taskVoting':
+                return $this->TaskVotingToJSON($d->taskid, $d->value);
+            case 'taskExpand':
+                return $this->TaskExpandToJSON($d->taskid, $d->value);
+            case 'taskShowComments':
+                return $this->TaskShowCommentsToJSON($d->taskid, $d->value);
             case 'checkListSave':
                 return $this->CheckListSaveToJSON($d->taskid, $d->data);
         }
@@ -739,6 +761,352 @@ class BotaskApp extends AbricosApplication {
             $history->ImagesChange($cImgs);
         }
     }
+
+    public function TaskFavoriteToJSON($taskid, $value){
+        $res = $this->TaskFavorite($taskid, $value);
+        if (AbricosResponse::IsError($res)){
+            return $res;
+        }
+        return $this->ImplodeJSON(array(
+            $this->ResultToJSON('taskFavorite', $res),
+            $this->TaskToJSON($taskid)
+        ));
+    }
+
+    public function TaskFavorite($taskid, $value){
+        if (!$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        BotaskQuery::TaskFavorite($this->db, $taskid, Abricos::$user->id, $value);
+
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
+        $ret->value = $value;
+        return $ret;
+    }
+
+    public function TaskSetExecToJSON($taskid){
+        $res = $this->TaskSetExec($taskid);
+        if (AbricosResponse::IsError($res)){
+            return $res;
+        }
+        return $this->ImplodeJSON(array(
+            $this->ResultToJSON('taskSetExec', $res),
+            $this->TaskToJSON($taskid)
+        ));
+    }
+
+    public function TaskSetExec($taskid){
+        if (!$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        $task = BotaskQuery::Task($this->db, $taskid, Abricos::$user->id, true);
+
+        if ($task['st'] != BotaskStatus::TASK_OPEN && $task['st'] != BotaskStatus::TASK_REOPEN){
+            return AbricosResponse::ERR_BAD_REQUEST;
+        }
+
+        $history = new BotaskHistory(Abricos::$user->id);
+        $history->SetStatus($task, BotaskStatus::TASK_ACCEPT, Abricos::$user->id);
+        $history->Save();
+        BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_ACCEPT, Abricos::$user->id);
+
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
+        return $ret;
+    }
+
+    public function TaskUnsetExecToJSON($taskid){
+        $res = $this->TaskUnsetExec($taskid);
+        if (AbricosResponse::IsError($res)){
+            return $res;
+        }
+        return $this->ImplodeJSON(array(
+            $this->ResultToJSON('taskUnsetExec', $res),
+            $this->TaskToJSON($taskid)
+        ));
+    }
+
+    public function TaskUnsetExec($taskid){
+        if (!$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        $task = BotaskQuery::Task($this->db, $taskid, Abricos::$user->id, true);
+
+        if ($task['st'] != BotaskStatus::TASK_ACCEPT){
+            return AbricosResponse::ERR_BAD_REQUEST;
+        }
+
+        $history = new BotaskHistory(Abricos::$user->id);
+        $history->SetStatus($task, BotaskStatus::TASK_OPEN, Abricos::$user->id);
+        $history->Save();
+
+        BotaskQuery::TaskUnsetStatus($this->db, $taskid);
+
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
+        return $ret;
+    }
+
+    public function TaskCloseToJSON($taskid){
+        $res = $this->TaskClose($taskid);
+        if (AbricosResponse::IsError($res)){
+            return $res;
+        }
+        return $this->ImplodeJSON(array(
+            $this->ResultToJSON('taskClose', $res),
+            $this->TaskToJSON($taskid)
+        ));
+    }
+
+    public function TaskClose($taskid){
+        if (!$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        // сначало закрыть все подзадачи
+        $rows = BotaskQuery::Board($this->db, Abricos::$user->id, 0, $taskid);
+        while (($row = $this->db->fetch_array($rows))){
+            $this->TaskClose($row['id']);
+        }
+
+        $task = BotaskQuery::Task($this->db, $taskid, Abricos::$user->id, true);
+
+        if ($task['st'] == BotaskStatus::TASK_CLOSE){
+            return AbricosResponse::ERR_BAD_REQUEST;
+        }
+
+        $history = new BotaskHistory(Abricos::$user->id);
+        $history->SetStatus($task, BotaskStatus::TASK_CLOSE, Abricos::$user->id);
+        $history->Save();
+
+        BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_CLOSE, Abricos::$user->id);
+
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
+        return $ret;
+    }
+
+    public function TaskRemoveToJSON($taskid){
+        $res = $this->TaskRemove($taskid);
+        if (AbricosResponse::IsError($res)){
+            return $res;
+        }
+        return $this->ImplodeJSON(array(
+            $this->ResultToJSON('taskRemove', $res),
+            $this->TaskToJSON($taskid)
+        ));
+    }
+
+    public function TaskRemove($taskid){
+        if (!$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        // сначало закрыть все подзадачи
+        $rows = BotaskQuery::Board($this->db, Abricos::$user->id, 0, $taskid);
+        while (($row = $this->db->fetch_array($rows))){
+            $this->TaskRemove($row['id']);
+        }
+
+        $task = BotaskQuery::Task($this->db, $taskid, Abricos::$user->id, true);
+
+        if ($task['st'] == BotaskStatus::TASK_REMOVE){
+            return AbricosResponse::ERR_BAD_REQUEST;
+        }
+
+        $history = new BotaskHistory(Abricos::$user->id);
+        $history->SetStatus($task, BotaskStatus::TASK_REMOVE, Abricos::$user->id);
+        $history->Save();
+
+        BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_REMOVE, Abricos::$user->id);
+
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
+        return $ret;
+    }
+
+    public function TaskRestoreToJSON($taskid){
+        $res = $this->TaskRestore($taskid);
+        if (AbricosResponse::IsError($res)){
+            return $res;
+        }
+        return $this->ImplodeJSON(array(
+            $this->ResultToJSON('taskRestore', $res),
+            $this->TaskToJSON($taskid)
+        ));
+    }
+
+    public function TaskRestore($taskid){
+        if (!$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        $task = BotaskQuery::Task($this->db, $taskid, Abricos::$user->id, true);
+        if ($task['st'] != BotaskStatus::TASK_REMOVE){
+            return AbricosResponse::ERR_BAD_REQUEST;
+        }
+
+        // восстановить задачу
+
+        $row = BotaskQuery::TaskHistoryPrevStatus($this->db, $taskid, BotaskStatus::TASK_REMOVE);
+        $st = BotaskStatus::TASK_OPEN;
+        if (!empty($row)){
+            $st = $row['st'];
+        }
+        $history = new BotaskHistory(Abricos::$user->id);
+        $history->SetStatus($task, $st, Abricos::$user->id);
+        $history->Save();
+
+        BotaskQuery::TaskSetStatus($this->db, $taskid, $st, Abricos::$user->id);
+
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
+        return $ret;
+    }
+
+    public function TaskOpenToJSON($taskid){
+        $res = $this->TaskOpen($taskid);
+        if (AbricosResponse::IsError($res)){
+            return $res;
+        }
+        return $this->ImplodeJSON(array(
+            $this->ResultToJSON('taskOpen', $res),
+            $this->TaskToJSON($taskid)
+        ));
+    }
+
+    public function TaskOpen($taskid){
+        if (!$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        $task = BotaskQuery::Task($this->db, $taskid, Abricos::$user->id, true);
+
+        if ($task['st'] != BotaskStatus::TASK_CLOSE && $task['st'] != BotaskStatus::TASK_REMOVE
+        ){
+            return AbricosResponse::ERR_BAD_REQUEST;
+        }
+
+        $history = new BotaskHistory(Abricos::$user->id);
+        $history->SetStatus($task, BotaskStatus::TASK_REOPEN, Abricos::$user->id);
+        $history->Save();
+
+        BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_REOPEN, Abricos::$user->id);
+
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
+        return $ret;
+    }
+
+    public function TaskArhiveToJSON($taskid){
+        $res = $this->TaskArhive($taskid);
+        if (AbricosResponse::IsError($res)){
+            return $res;
+        }
+        return $this->ImplodeJSON(array(
+            $this->ResultToJSON('taskArhive', $res),
+            $this->TaskToJSON($taskid)
+        ));
+    }
+
+    public function TaskArhive($taskid){
+        if (!$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        $task = BotaskQuery::Task($this->db, $taskid, Abricos::$user->id, true);
+
+        if ($task['st'] != BotaskStatus::TASK_CLOSE){
+            return AbricosResponse::ERR_BAD_REQUEST;
+        }
+
+        $history = new BotaskHistory(Abricos::$user->id);
+        $history->SetStatus($task, BotaskStatus::TASK_ARHIVE, Abricos::$user->id);
+        $history->Save();
+
+        BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_ARHIVE, Abricos::$user->id);
+
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
+        return $ret;
+    }
+
+    public function TaskVotingToJSON($taskid, $value){
+        $res = $this->TaskVoting($taskid, $value);
+        if (AbricosResponse::IsError($res)){
+            return $res;
+        }
+        return $this->ImplodeJSON(array(
+            $this->ResultToJSON('taskVoting', $res),
+            $this->TaskToJSON($taskid)
+        ));
+    }
+
+    public function TaskVoting($taskid, $value){
+        if (!$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        BotaskQuery::TaskVoting($this->db, $taskid, Abricos::$user->id, $value);
+
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
+        $ret->value = $value;
+        return $ret;
+    }
+
+    public function TaskExpandToJSON($taskid, $value){
+        $res = $this->TaskExpand($taskid, $value);
+        if (AbricosResponse::IsError($res)){
+            return $res;
+        }
+        return $this->ImplodeJSON(array(
+            $this->ResultToJSON('taskExpand', $res),
+            $this->TaskToJSON($taskid)
+        ));
+    }
+
+    public function TaskExpand($taskid, $value){
+        if (!$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+        BotaskQuery::TaskExpand($this->db, $taskid, Abricos::$user->id, $value);
+
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
+        $ret->value = $value;
+        return $ret;
+
+    }
+
+    public function TaskShowCommentsToJSON($taskid, $value){
+        $res = $this->TaskShowComments($taskid, $value);
+        if (AbricosResponse::IsError($res)){
+            return $res;
+        }
+        return $this->ImplodeJSON(array(
+            $this->ResultToJSON('taskShowComments', $res),
+            $this->TaskToJSON($taskid)
+        ));
+    }
+
+    public function TaskShowComments($taskid, $value){
+        if (!$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+        BotaskQuery::TaskShowComments($this->db, $taskid, Abricos::$user->id, $value);
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
+        $ret->value = $value;
+        return $ret;
+    }
+
+
+    /* * * * * * * * * * * * * * * * * History * * * * * * * * * * * * * * */
 
     public function History($taskid, $firstHId){
         if (!$this->IsViewRole()){

@@ -32,7 +32,9 @@ Component.entryPoint = function(NS){
         }
     };
 
-    NS.ProjectViewWidget = Y.Base.create('ProjectViewWidget', SYS.AppWidget, [], {
+    NS.ProjectViewWidget = Y.Base.create('ProjectViewWidget', SYS.AppWidget, [
+        NS.UProfileWidgetExt
+    ], {
         buildTData: function(){
             var task = this.get('task');
 
@@ -94,8 +96,6 @@ Component.entryPoint = function(NS){
         },
         renderTask: function(){
             var tp = this.template,
-                appInstance = this.get('appInstance'),
-                userList = appInstance.getApp('uprofile').get('userList'),
                 task = this.get('task');
 
             tp.show('bimgsave');
@@ -140,8 +140,7 @@ Component.entryPoint = function(NS){
                 taskid: task.id
             });
 
-            // Автор
-            var user = userList.getById(task.userid);
+            var user = this.getUser(task.userid);
 
             tp.setHTML({
                 author: tp.replace('user', {
@@ -152,7 +151,7 @@ Component.entryPoint = function(NS){
             });
 
             tp.one('dl').set('title', Brick.dateExt.convert(task.date, 4));
-            
+
             // закрыть все кнопки, открыть те, что соответсуют статусу задачи
             tp.hide('bopen,beditor,bremove,brestore,barhive');
 
@@ -174,66 +173,12 @@ Component.entryPoint = function(NS){
             this.attachListWidget.setFiles(task.files);
             tp.toggleView(task.files.length > 0, 'files');
 
-            // Избранное
-            if (task.favorite){
-                tp.addClass('favi', 'fav-checked');
-            } else {
-                tp.removeClass('favi', 'fav-checked');
-            }
-        },
-        onClick: function(e){
-
-            switch (e.dataClick) {
-
-                case 'addChildItem':
-                    this.go('project.create', 0, this.get('task').id);
-                    break;
-
-                /*
-                case tp['biadd']:
-                    NS.navigator.add();
-                    return true;
-
-                case tp['fav']:
-                case tp['favi']:
-                    this.taskFavorite();
-                    return true;
-
-                case tp['bremove']:
-                    this.taskRemove();
-                    return true;
-                case tp['brestore']:
-                    this.taskRestore();
-                    return true;
-                case tp['barhive']:
-                    this.taskArhive();
-                    return true;
-
-                case tp['bopen']:
-                    this.taskOpen();
-                    return true;
-
-                case tp['biedit']:
-                case tp['beditor']:
-                    NS.navigator.projectEdit(this.get('task').id);
-                    return true;
-
-                case tp['bimgsave']:
-                    this.saveImages();
-                    return true;
-/**/
-            }
-            return false;
-        },
-        _shLoading: function(show){
-            var TM = this._TM;
-            tp.showHide('panel.buttons', !show);
-            tp.showHide('panel.bloading', show);
+            tp.toggleView(task.favorite, 'btnUnsetFavorite', 'btnSetFavorite');
         },
         taskFavorite: function(){
             var task = this.get('task');
-            NS.taskManager.taskFavorite(task.id);
             task.favorite = !task.favorite;
+            this.get('appInstance').taskFavorite(task.id, task.favorite);
             this.renderTask();
         },
         taskRemove: function(){
@@ -278,7 +223,10 @@ Component.entryPoint = function(NS){
             component: {value: COMPONENT},
             templateBlockName: {value: 'panel,user,empty'},
             taskid: {
-                value: 0
+                value: 0,
+                setter: function(val){
+                    return val | 0;
+                }
             },
             task: {
                 readOnly: true,
@@ -288,7 +236,9 @@ Component.entryPoint = function(NS){
                 }
             }
         },
-        CLICKS: {},
+        CLICKS: {
+            taskFavorite: 'taskFavorite'
+        },
         parseURLParam: function(args){
             args = args || [];
             return {
@@ -296,45 +246,4 @@ Component.entryPoint = function(NS){
             };
         }
     });
-
-    return; // TODO: remove old functions
-
-    var ProjectRemovePanel = function(taskid, callback){
-        this.taskid = taskid;
-        this.callback = L.isFunction(callback) ? callback : function(){
-        };
-        ProjectRemovePanel.superclass.constructor.call(this, {fixedcenter: true});
-    };
-    YAHOO.extend(ProjectRemovePanel, Brick.widget.Dialog, {
-        initTemplate: function(){
-            buildTemplate(this, 'tkremovepanel');
-            return this._tp.replace('tkremovepanel');
-        },
-        onClick: function(el){
-            var tp = this._TId['tkremovepanel'];
-            switch (el.id) {
-                case tp['bcancel']:
-                    this.close();
-                    return true;
-                case tp['bremove']:
-                    this.taskRemove();
-                    return true;
-            }
-
-            return false;
-        },
-        taskRemove: function(){
-            var TM = this._TM, gel = function(n){
-                    return TM.getEl('tkremovepanel.' + n);
-                },
-                instance = this;
-            Dom.setStyle(gel('btns'), 'display', 'none');
-            Dom.setStyle(gel('bloading'), 'display', '');
-            NS.taskManager.taskRemove(this.taskid, function(){
-                instance.close();
-                instance.callback();
-            });
-        }
-    });
-    NS.ProjectRemovePanel = ProjectRemovePanel;
 };

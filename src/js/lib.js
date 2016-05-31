@@ -75,6 +75,39 @@ Component.entryPoint = function(NS){
             taskSave: {
                 args: ['data']
             },
+            taskSetExec: {
+                args: ['taskid']
+            },
+            taskUnsetExec: {
+                args: ['taskid']
+            },
+            taskClose: {
+                args: ['taskid']
+            },
+            taskRemove: {
+                args: ['taskid']
+            },
+            taskRestore: {
+                args: ['taskid']
+            },
+            taskArhive: {
+                args: ['taskid']
+            },
+            taskOpen: {
+                args: ['taskid']
+            },
+            taskFavorite: {
+                args: ['taskid', 'value']
+            },
+            taskVoting: {
+                args: ['taskid', 'value']
+            },
+            taksExpand: {
+                args: ['taskid', 'value']
+            },
+            taskShowComments: {
+                args: ['taskid', 'value']
+            },
             checkListSave: {
                 args: ['taskid', 'data']
             }
@@ -118,8 +151,8 @@ Component.entryPoint = function(NS){
                 }
             },
             item: {
-                create: function(){
-                    return this.getURL('ws') + 'type/TypeSelectWidget/';
+                create: function(parentid){
+                    return this.getURL('ws') + 'type/TypeSelectWidget/' + (parentid | 0) + '/';
                 },
                 view: function(type, id){
                     return this.getURL(type + '.view', id);

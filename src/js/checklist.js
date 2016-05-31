@@ -33,7 +33,13 @@ Component.entryPoint = function(NS){
             }, this);
             this.list = [];
         },
+        setViewModeList: function(){
+            this.each(function(w){
+                w.setViewMode();
+            }, this);
+        },
         addCheck: function(check){
+            this.setViewModeList();
             check = NS.CheckListRowWidget.checkNormalize(check);
 
             var tp = this.template,
@@ -155,7 +161,7 @@ Component.entryPoint = function(NS){
 
             this.set('checked', check.ch > 0);
 
-            // tp.one('blurPanel').on('blur', this.cancel, this);
+            tp.toggleView(!this.isRemoved, 'btnRestore', 'btnRemove');
 
             if (check.id === 0){
                 this.setEditMode();
