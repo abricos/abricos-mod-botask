@@ -1,5 +1,5 @@
 <!--{panel}-->
-<div class="projectview panel panel-default">
+<div class="projectView taskItemView panel panel-default">
     <div class="panel-heading">
         <div class="row">
             <div class="col-md-9">
@@ -9,13 +9,15 @@
                 </h3>
             </div>
             <div class="col-md-3 text-right">
-                <button id="{i#btnSetFavorite}" class="btn btn-default btn-xs"
+                <button id="{i#btnSetFavorite}"
+                        class="btn btn-default btn-xs"
                         data-click="taskFavorite"
                         title="Добавить в избранное">
                     <i class="fa fa-star-o" aria-hidden="true"></i>
                 </button>
 
-                <button id="{i#btnUnsetFavorite}" class="btn btn-default btn-xs"
+                <button id="{i#btnUnsetFavorite}"
+                        class="btn btn-default btn-xs hide"
                         data-click="taskFavorite"
                         title="Удалить из избранного">
                     <i class="fa fa-star" aria-hidden="true"></i>
@@ -38,35 +40,29 @@
         </div>
     </div>
 
-    <table class="infobox">
-        <tbody>
-        <tr>
-            <td>
-                <dl>
-                    <dt>№</dt>
-                    <dd id="{i#taskid}"></dd>
-                </dl>
-            </td>
-            <td>
-                <dl>
-                    <dt>Автор</dt>
-                    <dd id="{i#author}"></dd>
-                </dl>
-            </td>
-            <td>
-                <dl>
-                    <dt>Создан</dt>
-                    <dd id="{i#dl}"></dd>
-                </dl>
-            </td>
-            <td class="text-right">
-                <h3 class="panel-title text-center" id="{i#status}"></h3>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-
-    <hr/>
+    <div class="row infoBox">
+        <div class="col-md-3 text-center">
+            <dl>
+                <dt>№</dt>
+                <dd id="{i#taskid}"></dd>
+            </dl>
+        </div>
+        <div class="col-md-3 text-center">
+            <dl>
+                <dt>Автор</dt>
+                <dd id="{i#author}"></dd>
+            </dl>
+        </div>
+        <div class="col-md-3 text-center">
+            <dl>
+                <dt>Создан</dt>
+                <dd id="{i#dl}"></dd>
+            </dl>
+        </div>
+        <div class="col-md-3 text-center">
+            <h3 class="panel-title text-center" id="{i#status}"></h3>
+        </div>
+    </div>
 
     <div class="panel-body">
         <div class="bodybox">

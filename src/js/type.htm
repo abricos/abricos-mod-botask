@@ -9,17 +9,17 @@
     <div class="panel-body">
 
         <p>
-            <a href="#" data-url="project.create" class="btn btn-default" >
+            <a href="#" data-url="project.create({v#parentTaskId})" class="btn btn-default" >
                 Добавить проект
             </a>
         </p>
         <p>
-            <a href="#" data-url="taskt.create" class="btn btn-default">
+            <a href="#" data-url="taskt.create({v#parentTaskId})" class="btn btn-default">
                 Добавить задачу
             </a>
         </p>
         <p>
-            <a href="#" data-url="folder.create" class="btn btn-default">
+            <a href="#" data-url="folder.create({v#parentTaskId})" class="btn btn-default">
                 Добавить раздел
             </a>
         </p>
@@ -27,7 +27,7 @@
     </div>
 
     <div class="panel-footer text-right">
-        <a href="#" data-url="ws" class="btn btn-default" data-wait="disable">
+        <a href="#" data-url="ws" class="btn btn-default btn-sm" data-wait="disable">
             Отмена
         </a>
     </div>

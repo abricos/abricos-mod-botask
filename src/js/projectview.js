@@ -33,6 +33,8 @@ Component.entryPoint = function(NS){
     };
 
     NS.ProjectViewWidget = Y.Base.create('ProjectViewWidget', SYS.AppWidget, [
+        NS.ContainerWidgetExt,
+        NS.TaskWidgetExt,
         NS.UProfileWidgetExt
     ], {
         buildTData: function(){
@@ -48,50 +50,53 @@ Component.entryPoint = function(NS){
             };
         },
         onInitAppWidget: function(err, appInstance){
-            var task = this.get('task');
-
-            this._firstRender = true;
-
-            // Подписаться на событие изменений в задачах
-            NS.taskManager.historyChangedEvent.subscribe(this.onHistoryChanged, this, true);
-            NS.taskManager.userConfigChangedEvent.subscribe(this.onUserConfigChanged, this, true);
-
-            this.drawListWidget = null;
-
-            appInstance.task(task.id, function(err, result){
-                this.renderTask();
-            }, this)
+            var taskid = this.get('taskid');
+            appInstance.task(taskid, this._onLoadTask, this)
         },
         destructor: function(){
-            if (!this.get('task')){
-                return;
-            }
-
-            NS.taskManager.historyChangedEvent.unsubscribe(this.onHistoryChanged);
-            NS.taskManager.userConfigChangedEvent.unsubscribe(this.onUserConfigChanged);
-
-            if (this.drawListWidget){
-                this.drawListWidget.destroy();
-            }
         },
-        onCanvasChanged: function(type, args){
-            this.template.show('bimgsave');
-        },
-        onHistoryChanged: function(type, args){
-            var history = args[0];
+        _onLoadTask: function(){
+            var tp = this.template,
+                task = this.get('task');
 
-            var task = this.get('task'), isRTask = false;
-            history.foreach(function(item){
-                if (item.taskid == task.id){
-                    isRTask = true;
-                    return true;
-                }
-            });
-            if (isRTask){
-                this.renderTask();
-            }
-        },
-        onUserConfigChanged: function(type, args){
+            this.addWidget('comments',
+                new Brick.mod.comment.CommentTreeWidget({
+                    srcNode: tp.gel('comments'),
+                    commentOwner: {
+                        module: 'botask',
+                        type: 'content',
+                        ownerid: task.id
+                    },
+                    readOnly: !NS.roles.isWrite
+                })
+            );
+
+            this.addWidget('checkList',
+                new NS.ChecklistWidget({
+                    srcNode: tp.one('checklist'),
+                    task: task
+                })
+            ).update();
+
+            this.addWidget('extInfo', new NS.ExtInfo({
+                    srcNode: tp.gel('extinfo'),
+                    task: task
+                })
+            );
+
+            this.addWidget('attacheFiles', new Brick.mod.filemanager.AttachmentListWidget(tp.gel('ftable')));
+
+
+            /*
+             var mPT = Brick.mod.pictab;
+             if (mPT && mPT.ImageListWidget && L.isArray(task.images) && task.images.length > 0){
+             tp.show('imgwidget');
+             this.drawListWidget = new mPT.ImageListWidget(tp.gel('images'), task.images, true);
+             this.drawListWidget.changedEvent.subscribe(this.onCanvasChanged, this, true);
+             }
+             task.isNewCmt = false;
+             /**/
+
             this.renderTask();
         },
         renderTask: function(){
@@ -100,40 +105,6 @@ Component.entryPoint = function(NS){
 
             tp.show('bimgsave');
             tp.setHTML('taskbody', task.descript);
-
-            if (this._firstRender){ // первичная рендер
-                this._firstRender = false;
-
-                this._commentsWidget = new Brick.mod.comment.CommentTreeWidget({
-                    srcNode: tp.gel('comments'),
-                    commentOwner: {
-                        module: 'botask',
-                        type: 'content',
-                        ownerid: task.id
-                    },
-                    readOnly: !NS.roles.isWrite
-                });
-
-                this.checklist = new NS.ChecklistWidget({
-                    srcNode: tp.one('checklist'),
-                    task: task
-                });
-                this.attachListWidget = new Brick.mod.filemanager.AttachmentListWidget(tp.gel('ftable'));
-
-                var mPT = Brick.mod.pictab;
-                if (mPT && mPT.ImageListWidget && L.isArray(task.images) && task.images.length > 0){
-                    tp.show('imgwidget');
-                    this.drawListWidget = new mPT.ImageListWidget(tp.gel('images'), task.images, true);
-                    this.drawListWidget.changedEvent.subscribe(this.onCanvasChanged, this, true);
-                }
-                task.isNewCmt = false;
-
-                this.extinfo = new NS.ExtInfo({
-                    srcNode: tp.gel('extinfo'),
-                    task: task
-                });
-            }
-            this.checklist.update();
 
             tp.setHTML({
                 status: LNG['project']['status'][task.status],
@@ -170,11 +141,33 @@ Component.entryPoint = function(NS){
             }
 
             // показать прикрепленные файлы
-            this.attachListWidget.setFiles(task.files);
+            this.getWidget('attacheFiles').setFiles(task.files);
             tp.toggleView(task.files.length > 0, 'files');
 
             tp.toggleView(task.favorite, 'btnUnsetFavorite', 'btnSetFavorite');
         },
+
+        onCanvasChanged: function(type, args){
+            this.template.show('bimgsave');
+        },
+        onHistoryChanged: function(type, args){
+            var history = args[0];
+
+            var task = this.get('task'), isRTask = false;
+            history.foreach(function(item){
+                if (item.taskid == task.id){
+                    isRTask = true;
+                    return true;
+                }
+            });
+            if (isRTask){
+                this.renderTask();
+            }
+        },
+        onUserConfigChanged: function(type, args){
+            this.renderTask();
+        },
+
         taskFavorite: function(){
             var task = this.get('task');
             task.favorite = !task.favorite;
@@ -222,19 +215,6 @@ Component.entryPoint = function(NS){
         ATTRS: {
             component: {value: COMPONENT},
             templateBlockName: {value: 'panel,user,empty'},
-            taskid: {
-                value: 0,
-                setter: function(val){
-                    return val | 0;
-                }
-            },
-            task: {
-                readOnly: true,
-                getter: function(){
-                    var taskid = this.get('taskid');
-                    return NS.taskManager.getTask(taskid);
-                }
-            }
         },
         CLICKS: {
             taskFavorite: 'taskFavorite'

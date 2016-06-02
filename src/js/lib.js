@@ -118,33 +118,33 @@ Component.entryPoint = function(NS){
         URLS: {
             ws: "#app={C#MODNAMEURI}/wspace/ws/",
             folder: {
-                create: function(){
-                    return this.getURL('folder.edit');
+                create: function(parentid){
+                    return this.getURL('folder.edit', 0, parentid | 0);
                 },
-                edit: function(id){
-                    return this.getURL('ws') + 'foldereditor/FolderEditorWidget/' + (id | 0) + '/';
+                edit: function(id, parentid){
+                    return this.getURL('ws') + 'foldereditor/FolderEditorWidget/' + (id | 0) + '/' + (parentid | 0) + '/';
                 },
                 view: function(id){
                     return this.getURL('ws') + 'folderview/FolderViewWidget/' + (id | 0) + '/';
                 }
             },
             project: {
-                create: function(){
-                    return this.getURL('project.edit');
+                create: function(parentid){
+                    return this.getURL('project.edit', 0, parentid | 0);
                 },
-                edit: function(id){
-                    return this.getURL('ws') + 'projecteditor/ProjectEditorWidget/' + (id | 0) + '/';
+                edit: function(id, parentid){
+                    return this.getURL('ws') + 'projecteditor/ProjectEditorWidget/' + (id | 0) + '/' + (parentid | 0) + '/';
                 },
                 view: function(id){
                     return this.getURL('ws') + 'projectview/ProjectViewWidget/' + (id | 0) + '/';
                 }
             },
             task: {
-                create: function(){
-                    return this.getURL('task.edit');
+                create: function(parentid){
+                    return this.getURL('task.edit', 0, parentid | 0);
                 },
-                edit: function(id){
-                    return this.getURL('ws') + 'taskeditor/TaskEditorWidget/' + (id | 0) + '/';
+                edit: function(id, parentid){
+                    return this.getURL('ws') + 'taskeditor/TaskEditorWidget/' + (id | 0) + '/' + (parentid | 0) + '/';
                 },
                 view: function(id){
                     return this.getURL('ws') + 'taskview/TaskViewWidget/' + (id | 0) + '/';

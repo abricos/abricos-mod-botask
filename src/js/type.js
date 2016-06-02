@@ -10,6 +10,11 @@ Component.entryPoint = function(NS){
         SYS = Brick.mod.sys;
 
     NS.TypeSelectWidget = Y.Base.create('TypeSelectWidget', SYS.AppWidget, [], {
+        buildTData: function(){
+            return {
+                parentTaskId: this.get('parentTaskId')
+            };
+        },
         onInitAppWidget: function(err, appInstance){
         },
         destructor: function(){
@@ -18,7 +23,14 @@ Component.entryPoint = function(NS){
         ATTRS: {
             component: {value: COMPONENT},
             templateBlockName: {value: 'widget'},
+            parentTaskId: {value: 0}
         },
         CLICKS: {},
+        parseURLParam: function(args){
+            args = args || [];
+            return {
+                parentTaskId: (args[0] | 0)
+            };
+        }
     });
 };
