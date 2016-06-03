@@ -74,6 +74,7 @@ Component.entryPoint = function(NS){
                 ch.isRemoved() ? removeCount++ : null;
 
             }
+            tp.toggleView(checks.length > 0, 'panelBody');
             tp.toggleView(removeCount > 0, 'recycle');
             tp.setHTML('removeCount', removeCount);
         },

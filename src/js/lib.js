@@ -154,6 +154,9 @@ Component.entryPoint = function(NS){
                 create: function(parentid){
                     return this.getURL('ws') + 'type/TypeSelectWidget/' + (parentid | 0) + '/';
                 },
+                edit: function(type, id, parentid){
+                    return this.getURL(type + '.edit', id, parentid);
+                },
                 view: function(type, id){
                     return this.getURL(type + '.view', id);
                 }

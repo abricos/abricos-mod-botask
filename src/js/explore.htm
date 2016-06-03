@@ -1,5 +1,4 @@
 <!--{widget}-->
-
 <div class="explore">
     <div class="panel panel-default">
         <div class="panel-heading">
@@ -55,17 +54,26 @@
         <div class="tkline {v#csstrem} {v#csstarch} ttype{v#cssttype}">
             <div class="ticon ticon{v#chdicon}"></div>
             <div id="{i#title}-{v#id}" class="ch-tl" title="{v#tl}">
-                <a href="{v#linkview}">{v#tl}</a>
+                <a data-url="item.view({v#type},{v#id})" href="#">
+                    {v#tl}
+                </a>
 
                 <div class="shadow"></div>
             </div>
             <div class="tkmenu">
-                <div id="{i#bedit}-{v#id}" class="b" title="{#mod.botask.explore.row.1}">
-                    <div id="{i#beditc}-{v#id}" class="bedit bc"></div>
-                </div>
-                <div id="{i#badd}-{v#id}" class="b" title="{#mod.botask.explore.row.2}">
-                    <div id="{i#baddc}-{v#id}" class="badd bc"></div>
-                </div>
+                <a href="#" id="{i#btnEdit}"
+                   data-url="item.edit({v#type},{v#id})"
+                   class="btn btn-default btn-xs"
+                   title="Редактировать">
+                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                </a>
+
+                <a href="#" id="{i#btnAddChildItem}"
+                   data-url="item.create({v#id})"
+                   class="btn btn-default btn-xs"
+                   title="Добавить подпроект/подзадачу">
+                    <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                </a>
             </div>
         </div>
         {v#child}
@@ -73,10 +81,10 @@
 </tr>
 
 <!--{rowuser}-->
-<tr class="trrow rowuser" data-click="shChildsUser" data-id="{v#id}">
+<tr class="trrow rowuser" data-id="{v#id}">
     <td class="{v#clst}">
         <div class="staticon">
-            <div class="chd {v#chdicon} {v#chdicoview}"></div>
+            <div data-click="shChildsUser" data-id="{v#id}" class="chd {v#chdicon} {v#chdicoview}"></div>
         </div>
     </td>
     <td>
@@ -85,7 +93,10 @@
                 <img src="{v#avatar}"/>
             </div>
             <div id="{i#title}-{v#id}" class="ch-tl" title="{v#tl}">
-                <a href="#" id="{i#btitle}-{v#id}">{v#tl}</a>
+
+                <a id="{i#btitle}-{v#id}" href="#" data-click="shChildsUser" data-id="{v#id}">
+                    {v#tl}
+                </a>
 
                 <div class="shadow"></div>
             </div>

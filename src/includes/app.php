@@ -1140,7 +1140,7 @@ class BotaskApp extends AbricosApplication {
     ////////////////////////////// Comments /////////////////////////////
 
     public function Comment_IsList($type, $ownerid){
-        if (!$this->IsViewRole() || $type !== 'content'){
+        if (!$this->IsViewRole() || $type !== 'task'){
             return false;
         }
 
@@ -1148,7 +1148,7 @@ class BotaskApp extends AbricosApplication {
     }
 
     public function Comment_IsWrite($type, $ownerid){
-        if (!$this->IsViewRole() || $type !== 'content'){
+        if (!$this->IsViewRole() || $type !== 'task'){
             return false;
         }
         return $this->TaskAccess($ownerid);
@@ -1168,7 +1168,7 @@ class BotaskApp extends AbricosApplication {
      * @param Comment $parentComment
      */
     public function Comment_SendNotify($type, $ownerid, $comment, $parentComment){
-        if (!$this->IsViewRole() || $type !== 'content' || !$this->TaskAccess($ownerid)){
+        if (!$this->IsViewRole() || $type !== 'task' || !$this->TaskAccess($ownerid)){
             return;
         }
 

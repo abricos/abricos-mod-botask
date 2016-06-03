@@ -45,20 +45,20 @@ Component.entryPoint = function(NS){
             if (tk.isUserRow){
                 var user = NS.taskManager.users.get(tk.userid);
                 return tp.replace('rowuser', {
-                    'id': tk.id,
+                    id: tk.id,
                     avatar: user.get('avatarSrc24'),
-                    'tl': user.get('viewName'),
-                    'linkview': '#',
-                    'child': sChild,
-                    'clst': islast ? 'ln' : 'tn',
-                    'chdicoview': tk.childs.count() == 0 ? 'hide' : 'none',
-                    'chdicon': cfg['shUsers'][tk.userid] ? 'chdcls' : 'chdexpd'
+                    tl: user.get('viewName'),
+                    linkview: '#',
+                    child: sChild,
+                    clst: islast ? 'ln' : 'tn',
+                    chdicoview: tk.childs.count() == 0 ? 'hide' : 'none',
+                    chdicon: cfg['shUsers'][tk.userid] ? 'chdcls' : 'chdexpd'
                 });
             } else {
                 return tp.replace('row', {
                     'id': tk.id,
                     'tl': tk.title,
-                    'linkview': NS.navigator.taskViewLink(tk),
+                    type: tk.type,
                     'csstrem': tk.isRemoved() ? 'strem' : '',
                     'csstarch': tk.isArhive() ? 'starch' : '',
                     'cssttype': tk.type,
@@ -166,8 +166,9 @@ Component.entryPoint = function(NS){
             });
 
             this.selectPath(this.selectedTask);
-        },
 
+            this.appURLUpdate();
+        },
         shChilds: function(taskid){
             var task = NS.taskManager.getTask(taskid);
             if (Y.Lang.isNull(task)){
@@ -178,16 +179,13 @@ Component.entryPoint = function(NS){
             task.expanded = !task.expanded;
             this.renderWidget();
         },
-
         shChildsUser: function(taskid){
             var shUsers = this.get('config')['shUsers'];
             shUsers[taskid] = !shUsers[taskid];
 
             this.renderWidget();
         },
-
         onClick: function(e){
-
             var node = e.defineTarget ? e.defineTarget : e.target,
                 id = node.getData('id');
 
@@ -200,7 +198,6 @@ Component.entryPoint = function(NS){
                     return true;
 
             }
-
 
             return;
 
@@ -243,7 +240,6 @@ Component.entryPoint = function(NS){
 
             return false;
         },
-
         editById: function(id){
             var task = NS.taskManager.list.get(id);
             if (Y.Lang.isNull(task)){
@@ -262,7 +258,6 @@ Component.entryPoint = function(NS){
                     break;
             }
         },
-
         shArhive: function(){
             var TM = this._TM, gel = function(n){
                 return TM.getEl('widget.' + n);
@@ -326,9 +321,9 @@ Component.entryPoint = function(NS){
                 }
 
                 if (find){
-                    tp.addClass('row.title-'+tk.id, 'seluser');
+                    tp.addClass('row.title-' + tk.id, 'seluser');
                 } else {
-                    tp.removeClass('row.title-'+tk.id, 'seluser');
+                    tp.removeClass('row.title-' + tk.id, 'seluser');
                 }
             }, false);
         },

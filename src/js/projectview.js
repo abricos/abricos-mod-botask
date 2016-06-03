@@ -64,7 +64,7 @@ Component.entryPoint = function(NS){
                     srcNode: tp.gel('comments'),
                     commentOwner: {
                         module: 'botask',
-                        type: 'content',
+                        type: 'task',
                         ownerid: task.id
                     },
                     readOnly: !NS.roles.isWrite
