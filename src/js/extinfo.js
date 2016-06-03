@@ -19,7 +19,10 @@ Component.entryPoint = function(NS){
             this.historyWidget = new NS.HistoryWidget({
                 srcNode: tp.one('history'),
                 history: task.history,
-                config: {'pagerow': 3}
+                config: {
+                    pagerow: 3,
+                    taskid: task.id
+                }
             });
 
             this.custatusWidget = new NS.CustomStatusWidget({

@@ -12,7 +12,9 @@ Component.entryPoint = function(NS){
 
     var LNG = this.language;
 
-    NS.HistoryWidget = Y.Base.create('HistoryWidget', SYS.AppWidget, [], {
+    NS.HistoryWidget = Y.Base.create('HistoryWidget', SYS.AppWidget, [
+        NS.UProfileWidgetExt
+    ], {
         onInitAppWidget: function(err, appInstance, options){
             this.renderHistory();
             NS.taskManager.historyChangedEvent.subscribe(this.onHistoryChanged, this, true);
@@ -21,12 +23,12 @@ Component.entryPoint = function(NS){
             NS.taskManager.historyChangedEvent.unsubscribe(this.onHistoryChanged);
         },
         onHistoryChanged: function(type, args){
-            var taskid = this.get('config')['taskid'] * 1,
+            var taskid = this.get('config')['taskid'] | 0,
                 isRender = taskid == 0;
 
             if (!isRender){
                 args[0].foreach(function(hst){
-                    if (hst['taskid'] * 1 == taskid * 1){
+                    if (hst['taskid'] * 1 == taskid){
                         isRender = true;
                         return true;
                     }
@@ -38,17 +40,15 @@ Component.entryPoint = function(NS){
         },
         buildRow: function(hst, ph){
             var tp = this.template,
-                appInstance = this.get('appInstance'),
-                userList = appInstance.getApp('uprofile').get('userList'),
-                user = userList.getById(hst.userid),
-                shead = "";
+                user = this.getUser(hst.userid),
+                taskid = this.get('config')['taskid'] | 0,
+                shead = "",
+                LNGA = LNG['act'],
+                TS = NS.TaskStatus,
+                fa = [];
 
-            if (this.get('config')['taskid'] * 1 > 0){
-                var sht = "", LNGA = LNG['act'];
-
-                var fa = [];
+            if (taskid > 0){
                 if (hst.isStatus){
-                    var TS = NS.TaskStatus;
                     if (hst.status == TS.OPEN){
                         if (hst.pstatus * 1 == 0){
                             fa[fa.length] = LNGA['new'];
@@ -86,13 +86,13 @@ Component.entryPoint = function(NS){
                     }
                 }
 
-                sht = fa.join('<br />');
-
-                shead = tp.replace('fhd', {'ht': sht});
+                shead = tp.replace('fhd', {
+                    ht: fa.join('<br />')
+                });
             } else {
 
 
-                if (!Y.Lang.isNull(ph) &&
+                if (ph &&
                     ph.userid == hst.userid &&
                     ph.status == hst.status &&
                     ph.taskid == hst.taskid){
@@ -113,10 +113,10 @@ Component.entryPoint = function(NS){
             }
 
             return tp.replace('item', {
-                'tl': hst.taskTitle,
-                'tid': hst.taskid,
-                'hd': shead,
-                'dl': Brick.dateExt.convert(hst.date.getTime() / 1000),
+                tl: hst.taskTitle,
+                tid: hst.taskid,
+                hd: shead,
+                dl: Brick.dateExt.convert(hst.date.getTime() / 1000),
                 uid: user.get('id'),
                 unm: user.get('viewName')
             });
@@ -125,14 +125,15 @@ Component.entryPoint = function(NS){
             var tp = this.template,
                 instance = this,
                 lst = "",
-
+                historyList = this.get('history'),
                 prevHst = null,
                 cfg = this.get('config'),
                 counter = 1,
                 limit = cfg['pagerow'] * cfg['page'];
 
-            this.get('history').foreach(function(hst){
+            historyList.foreach(function(hst){
                 var s = instance.buildRow(hst, prevHst);
+
                 prevHst = hst;
                 if (s == ""){
                     return;
@@ -146,30 +147,15 @@ Component.entryPoint = function(NS){
                 counter++;
             });
             tp.setHTML('list', lst);
-
-            if (this.get('history').isFullLoaded){
-                tp.hide('more');
-            }
-        },
-        onClick: function(el){
-            if (el.id == this._TId['widget']['bmore']){
-                this.loadMore();
-                return true;
-            }
-            return false;
+            tp.toggleView(!historyList.isFullLoaded, 'more');
         },
         loadMore: function(){
-            var TM = this._TM;
-            var elB = TM.getEl('widget.bmore'),
-                elL = TM.getEl('widget.load'),
-                history = this.get('history');
+            var history = this.get('history'),
+                cfg = this.get('config'),
+                limit = cfg['pagerow'] * cfg['page'],
+                isLoad = limit > history.count();
 
-            var cfg = this.get('config');
             cfg['page']++;
-
-            var counter = 1, limit = cfg['pagerow'] * cfg['page'];
-
-            var isLoad = limit > history.count();
 
             if (!isLoad && cfg['taskid'] * 1 == 0){
 
@@ -184,29 +170,24 @@ Component.entryPoint = function(NS){
 
             if (isLoad){
                 var instance = this;
-                Dom.setStyle(elB, 'display', 'none');
-                Dom.setStyle(elL, 'display', '');
+                this.set('waiting', true);
 
                 NS.taskManager.loadHistory(history, cfg['taskid'], function(){
-                    Dom.setStyle(elB, 'display', '');
-                    Dom.setStyle(elL, 'display', 'none');
+                    instance.set('waiting', true);
                     instance.renderHistory();
                 });
             } else {
                 this.renderHistory();
             }
-
-            // TM.getEl('widget.end').scrollIntoView(true);
         }
     }, {
         ATTRS: {
             component: {value: COMPONENT},
-            templateBlockName: {value: 'widget'},
+            templateBlockName: {value: 'widget,item,hd,fhd,act1,act2,act3,act4,act5,act6,act7,act8,act9'},
             history: {
                 value: null,
                 setter: function(val){
                     return val || NS.taskManager.history;
-
                 }
             },
             config: {
@@ -220,13 +201,9 @@ Component.entryPoint = function(NS){
                 }
             },
         },
-        CLICKS: {},
+        CLICKS: {
+            loadMore: 'loadMore'
+        },
     });
 
-    return;
-    var HistoryWidget = function(container, history, cfg){
-        this.init(container, history, cfg);
-    };
-    HistoryWidget.prototype = {};
-    NS.HistoryWidget = HistoryWidget;
 };
