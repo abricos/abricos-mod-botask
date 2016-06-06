@@ -1,56 +1,85 @@
 <!--{extinfo}-->
-<div class="pvextinfo">
-    <table class="eitable">
-        <tbody>
-        <tr>
-            <td class="eicol1">
-                <div class="eicoltl">{#mod.botask.extinfo.extinfo.1}</div>
+<div class="extInfo row">
+    <div class="col-md-4">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">История</h4>
+            </div>
+            <div class="panel-body">
                 <div id={i#history}></div>
-            </td>
-            <td class="eicol2">
-                <div class="eicoltl">{#mod.botask.extinfo.extinfo.2}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">Пользовательский статус</h4>
+            </div>
+            <div class="panel-body">
                 <div id={i#custatus}></div>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!--{cstat}-->
-<div class="cstat">
-    <div id="{i#list}"></div>
-    <div id="{i#btns}" class="btns" style="display: none">
-		<span id="{i#bact}">
-			<a href="#" id="{i#bsave}" class="bsave">{#mod.botask.extinfo.cstat.1}</a>
-			<a href="#" id="{i#bcancel}" class="bcancel">Отмена</a>
-		</span>
-		<span id="{i#saved}" style="display: none">
-			<img src="/images/loading.gif"/> {#mod.botask.extinfo.cstat.2}
-		</span>
+<!--{customStatusList}-->
+<div class="customStatusList">
+    <div class="row">
+        <div class="col-sm-5">
+            <img src="{v#avatar}"/>
+            <a href="#" class="show-user-profile user-{v#uid}">{v#unm}</a>
+        </div>
+        <div class="col-sm-7">
+            <div id="{i#editorPanel}" class="input-group">
+                <div class="input-group-btn">
+                    <button data-click="showSelect"
+                            class="btn btn-default btn-sm"
+                            title="Выбрать из списка">
+                        <i class="fa fa-list" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <input id="{i#input}" type="text" class="form-control input-sm"/>
+                <div class="input-group-btn">
+                    <button id="{i#saveButton}"
+                            data-click="save" class="btn btn-default btn-sm"
+                            disabled="disabled"
+                            title="OK">
+                        <i class="fa fa-floppy-o" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="{i#selectPanel}" class="input-group hide">
+                <select id="{i#select}" data-click="select" class="form-control input-sm"></select>
+                <div class="input-group-btn">
+                    <button data-click="select" class="btn btn-default btn-sm"
+                            title="OK">
+                        <i class="fa fa-check" aria-hidden="true"></i>
+                    </button>
+                    <button data-click="hideSelect" class="btn btn-default btn-sm"
+                            title="Отмена">
+                        <i class="fa fa-ban" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-    <div id="{i#sel}" class="slbox" style="display: none"></div>
+    <div id="{i#list}"></div>
 </div>
 
 <!--{user}-->
-<div class="userrow" id="{i#id}-{v#uid}" style="background-image: url('{v#avatar}');">
-    <div class="uc1">
+<div class="row">
+    <div class="col-sm-5">
+        <img src="{v#avatar}"/>
         <a href="#" class="show-user-profile user-{v#uid}">{v#unm}</a>
     </div>
-    <div class="uc2">
+    <div class="col-sm-7">
         {v#status}
     </div>
 </div>
 
-<!--{editor}-->
-<div class="edt">
-    <input id="{i#val}" type="text"/>
-</div>
+<!--{noStatus}-->
+<option value="">-- без статуса --</option>
 
-<!--{slrow}-->
-<div class="slrow" id="{i#id}-{v#id}">{v#tl}</div>
 
-<!--{myw}-->
-<div id="{i#id}">{v#rows}</div>
-
-<!--{myrow}-->
-<div class="myrow" id="{i#id}-{v#id}">{v#tl}</div>
+<!--{option}-->
+<option value="{v#id}">{v#title}</option>

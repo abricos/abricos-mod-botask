@@ -50,7 +50,7 @@ Component.entryPoint = function(NS){
                     if (!data){
                         return;
                     }
-                    var task = NS.taskManager.list.find(data['id']);
+                    var task = NS.taskManager.list.find(data.id);
                     if (!task){
                         return;
                     }
@@ -110,7 +110,13 @@ Component.entryPoint = function(NS){
             },
             checkListSave: {
                 args: ['taskid', 'data']
-            }
+            },
+            customStatusList: {
+
+            },
+            customStatusSave: {
+                args: ['taskid', 'value']
+            },
         },
         ATTRS: {
             isLoadAppStructure: {value: false},

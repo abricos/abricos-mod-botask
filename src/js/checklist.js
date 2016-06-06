@@ -64,7 +64,7 @@ Component.entryPoint = function(NS){
             this.cleanList();
 
             var tp = this.template,
-                checks = this.get('task').checks,
+                checks = this.get('task').checks || [],
                 removeCount = 0;
 
             tp.hide('btnSave,btnCancel');

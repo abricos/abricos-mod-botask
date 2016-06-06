@@ -103,12 +103,6 @@ class BotaskManager extends Ab_ModuleManager {
         return TIMENOW;
     }
 
-
-
-
-
-
-
     /*
     public function UserOptionList() {
         if (!$this->IsViewRole()) {
@@ -187,7 +181,7 @@ class BotaskManager extends Ab_ModuleManager {
     }
 
     public function Bos_MenuData(){
-        if (!$this->IsAdminRole()){
+        if (!$this->IsViewRole()){
             return null;
         }
         $i18n = $this->module->I18n();

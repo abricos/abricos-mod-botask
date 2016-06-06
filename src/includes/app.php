@@ -66,6 +66,8 @@ class BotaskApp extends AbricosApplication {
                 return $this->TaskShowCommentsToJSON($d->taskid, $d->value);
             case 'checkListSave':
                 return $this->CheckListSaveToJSON($d->taskid, $d->data);
+            case 'customStatusSave':
+                return $this->CustomStatusSaveToJSON($d->taskid, $d->value);
         }
         return null;
     }
@@ -312,42 +314,6 @@ class BotaskApp extends AbricosApplication {
         BotaskQuery::TaskRemovedClear($this->db, $taskid);
     }
 
-    public function CustatusList($taskid){
-        if (!$this->TaskAccess($taskid)){
-            return null;
-        }
-        $ret = new stdClass();
-        $ret->list = $this->ToArrayById(BotaskQuery::CustatusList($this->db, $taskid));
-        $ret->my = $this->ToArray(BotaskQuery::CustatusListByUser($this->db, Abricos::$user->id));
-
-        return $ret;
-    }
-
-    public function CustatusSave($sd){
-        if (!$this->TaskAccess($sd->taskid)){
-            return null;
-        }
-
-        $parser = Abricos::TextParser(true);
-        $sd->title = $parser->Parser($sd->title);
-        BotaskQuery::CustatusSave($this->db, $sd->taskid, Abricos::$user->id, $sd->title);
-
-        return $this->CustatusList($sd->taskid);
-    }
-
-    /**
-     * Список статусов всех пользователей общих проектов
-     */
-    public function CustatusFullList(){
-        if (!$this->IsViewRole()){
-            return null;
-        }
-
-
-        $rows = BotaskQuery::CustatusFullList($this->db, Abricos::$user->id);
-        return $this->ToArray($rows);
-    }
-
     public function CheckList($taskid, $retarray = false, $notCheckTaskAccess = false){
         if (!$this->IsViewRole()){
             return null;
@@ -465,7 +431,10 @@ class BotaskApp extends AbricosApplication {
         }
 
         $task['images'] = $this->ImageList($taskid, true);
-        $task['custatus'] = $this->CustatusList($taskid);
+
+        $task['custatus'] = new stdClass();
+        $task['custatus']->list = $this->ToArrayById(BotaskQuery::CustatusList($this->db, $taskid));
+        $task['custatus']->my = $this->ToArray(BotaskQuery::CustatusListByUser($this->db, Abricos::$user->id));
 
         $hst = array();
 
@@ -1105,6 +1074,51 @@ class BotaskApp extends AbricosApplication {
         return $ret;
     }
 
+    /* * * * * * * * * * * * * * * Custom Status * * * * * * * * * * * * */
+
+    public function CustomStatusSaveToJSON($taskid, $value){
+        $res = $this->CustomStatusSave($taskid, $value);
+        if (AbricosResponse::IsError($res)){
+            return $res;
+        }
+        return $this->ImplodeJSON(array(
+            $this->ResultToJSON('customStatusSave', $res),
+            $this->TaskToJSON($taskid)
+        ));
+    }
+
+    public function CustomStatusSave($taskid, $value){
+        if (!$this->TaskAccess($taskid)){
+            return null;
+        }
+
+        $parser = Abricos::TextParser(true);
+        $value = $parser->Parser($value);
+        BotaskQuery::CustatusSave($this->db, $taskid, Abricos::$user->id, $value);
+
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
+        $ret->value = $value;
+
+        return $ret;
+    }
+
+    public function CustomStatusFullListToJSON(){
+        $res = $this->CustomStatusFullList();
+        return $this->ResultToJSON('customStatusFullList', $res);
+    }
+
+    /**
+     * Список статусов всех пользователей общих проектов
+     */
+    public function CustomStatusFullList(){
+        if (!$this->IsViewRole()){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        $rows = BotaskQuery::CustatusFullList($this->db, Abricos::$user->id);
+        return $this->ToArray($rows);
+    }
 
     /* * * * * * * * * * * * * * * * * History * * * * * * * * * * * * * * */
 
