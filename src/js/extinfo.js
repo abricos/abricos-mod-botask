@@ -67,7 +67,7 @@ Component.entryPoint = function(NS){
                     user = this.getUser(userid),
                     status = this.getStatusFromTask(userid).tl;
 
-                if (userid === UID || status === ''){
+                if (userid === UID){
                     continue;
                 }
 
@@ -79,7 +79,9 @@ Component.entryPoint = function(NS){
                 });
 
             }
+            tp.toggleView(lst !== '', 'listPanel');
             tp.setHTML('list', lst);
+
 
             this._updateStatus();
 
