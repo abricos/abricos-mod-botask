@@ -449,17 +449,6 @@ Component.entryPoint = function(NS){
 
     return; // TODO: remove old functions
 
-    var Dom = YAHOO.util.Dom,
-        E = YAHOO.util.Event,
-        L = YAHOO.lang;
-
-    var TST = NS.TaskStatus;
-
-    var buildTemplate = this.buildTemplate;
-
-    // var LNG = Brick.util.Language.geta(['mod', '{C#MODNAME}'])
-
-
     var TaskListWidget = function(container, ptaskid, config){
         ptaskid = ptaskid || 0;
 

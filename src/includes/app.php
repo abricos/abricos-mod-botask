@@ -68,6 +68,8 @@ class BotaskApp extends AbricosApplication {
                 return $this->CheckListSaveToJSON($d->taskid, $d->data);
             case 'customStatusSave':
                 return $this->CustomStatusSaveToJSON($d->taskid, $d->value);
+            case 'customStatusFullList':
+                return $this->CustomStatusFullListToJSON();
         }
         return null;
     }

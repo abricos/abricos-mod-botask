@@ -6,6 +6,119 @@ Component.requires = {
 };
 Component.entryPoint = function(NS){
 
+    var Y = Brick.YUI,
+        COMPONENT = this,
+        SYS = Brick.mod.sys;
+
+    var LNG = this.language['{C#COMNAME}'];
+
+    NS.FilterByCustomStatusWidget = Y.Base.create('FilterByCustomStatusWidget', SYS.AppWidget, [
+        NS.ContainerWidgetExt,
+        NS.UProfileWidgetExt
+    ], {
+        onInitAppWidget: function(err, appInstance){
+            this.set('waiting', true);
+            appInstance.customStatusFullList(function(err, result){
+                this.set('waiting', false);
+                if (err){
+                    return;
+                }
+                this.set('statuses', result.customStatusFullList);
+                this._onLoadStatusesList();
+            }, this);
+        },
+        _onLoadStatusesList: function(){
+            var instance = this,
+                tp = this.template,
+                isUsers = {},
+                lstUsers = "";
+
+            NS.taskManager.list.foreach(function(tk){
+                for (var i = 0; i < tk.users.length; i++){
+                    var userid = tk.users[i] | 0;
+                    if (isUsers[userid]){
+                        continue;
+                    }
+                    isUsers[userid] = true;
+                    var user = instance.getUser(userid);
+                    if (!user){
+                        continue;
+                    }
+
+                    lstUsers += tp.replace('option', {
+                        id: userid,
+                        title: user.get('viewName')
+                    });
+                }
+            }, false);
+
+            tp.setHTML({
+                users: lstUsers
+            });
+
+            this._renderStatusList();
+
+            tp.one('users').on('change', this._renderStatusList, this);
+
+            this.addWidget('list', new NS.TaskListBoxWidget({
+                    srcNode: tp.gel('listWidget'),
+                    taskList: NS.taskManager.list,
+                    config: {
+                        sortclick: false,
+                        columns: 'name,favorite',
+                        childs: false,
+                        globalsort: true,
+                        showflagnew: false,
+                        boxtitle: LNG.boxtitle,
+                        funcfilter: function(tk){
+                            return true;
+                        }
+                    }
+                })
+            );
+        },
+        destructor: function(){
+            var tp = this.template;
+            tp.one('users').detachAll();
+        },
+        _renderStatusList: function(){
+            var tp = this.template,
+                userid = tp.getValue('users') | 0,
+                statuses = this.get('statuses'),
+                lst = "";
+
+            for (var i = 0, stat; i < statuses.length; i++){
+                stat = statuses[i];
+                stat.uid = stat.uid | 0;
+                if (stat.uid !== userid){
+                    continue;
+                }
+                lst += tp.replace('option', {
+                    id: stat.tl,
+                    title: stat.tl
+                });
+            }
+            tp.setHTML({
+                statuses: lst
+            });
+        },
+    }, {
+        ATTRS: {
+            component: {value: COMPONENT},
+            templateBlockName: {value: 'widget,option'},
+            statuses: {value: null}
+        },
+        CLICKS: {},
+        parseURLParam: function(args){
+            args = args || [];
+            return {
+                userid: (args[0] | 0)
+            };
+        }
+    });
+
+    return;
+
     var Dom = YAHOO.util.Dom,
         E = YAHOO.util.Event,
         L = YAHOO.lang;
@@ -158,17 +271,7 @@ Component.entryPoint = function(NS){
                 }
             });
         },
-        onClick: function(el){
 
-            var tp = this._TId['widget'];
-            switch (el.id) {
-                case tp['bsetfilter']:
-                    this.listWidget.render();
-                    return true;
-            }
-
-            return false;
-        }
     };
     NS.FilterWidget = FilterWidget;
 };

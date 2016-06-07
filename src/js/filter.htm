@@ -1,30 +1,36 @@
-<!--{widget}--><div id="{i#id}" class="filter">
+<!--{widget}-->
+<div class="filter panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">
+            Фильтр по резолюциям участников
+        </h3>
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-md-5">
+                <p>Участник</p>
+                <select id="{i#users}" class="form-control input-sm"
+                        data-wait="disable"></select>
+            </div>
+            <div class="col-md-5">
+                <p>Резолюция</p>
+                <select id="{i#statuses}" class="form-control input-sm"
+                        data-wait="disable"></select>
+            </div>
+            <div class="col-md-2">
+                <p>&nbsp;</p>
+                <button data-click="filterSet" class="btn btn-default btn-sm"
+                        data-wait="disable">
+                    Показать
+                </button>
+            </div>
+        </div>
 
-	<div class="setup">
-		<div class="dsc">
-			{#mod.botask.filter.widget.1}
-		</div>
-		<div id="{i#my}" class="my"></div>
-		<div class="right">
-			<input id="{i#bsetfilter}" type="button" class="btn" value="{#mod.botask.filter.widget.2}"/>
-		</div>
-	</div>
+        <hr/>
 
-	<div id="{i#list}"></div>
+        <div id="{i#listWidget}"></div>
+    </div>
 </div>
-<!--{frow}--><div id="{i#id}" class="frow">
 
-	<table>
-	<thead><tr>
-		<td class="seluser">{#mod.botask.filter.frow.1}</td>
-		<td class="selstat">{#mod.botask.filter.frow.2}</td>
-	</tr></thead>
-	<tbody>
-	<tr>
-	<td class="seluser">{v#users}</td>
-	<td id="{i#stats}" class="selstat"></td>
-	</tr></tbody></table>
-
-</div>
-<!--{sel}--><select id="{i#id}">{v#rows}</select>
-<!--{opt}--><option value="{v#id}">{v#v}</option>
+<!--{option}-->
+<option value="{v#id}">{v#title}</option>

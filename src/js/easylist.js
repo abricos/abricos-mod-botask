@@ -83,70 +83,60 @@ Component.entryPoint = function(NS){
     });
 
 
-    NS.EasyListWidget = Y.Base.create('EasyListWidget', SYS.AppWidget, [], {
+    NS.EasyListWidget = Y.Base.create('EasyListWidget', SYS.AppWidget, [
+        NS.ContainerWidgetExt
+    ], {
         onInitAppWidget: function(err, appInstance, options){
             var tp = this.template;
 
-            this.widgets = [];
-
-            this.widgets['work'] = new NS.TaskListBoxWidget({
-                srcNode: tp.gel('boxwork'),
-                taskList: NS.taskManager.list,
-                config: {
-                    sortclick: false,
-                    columns: 'name,deadline,priority,favorite,executant',
-                    childs: false,
-                    globalsort: true,
-                    showflagnew: false,
-                    boxtitle: LNG['boxtitle']['work'],
-                    funcfilter: function(tk){
-                        return tk.isInWorked() && !tk.isNew;
+            this.addWidget('work', new NS.TaskListBoxWidget({
+                    srcNode: tp.gel('boxwork'),
+                    taskList: NS.taskManager.list,
+                    config: {
+                        sortclick: false,
+                        columns: 'name,deadline,priority,favorite,executant',
+                        childs: false,
+                        globalsort: true,
+                        showflagnew: false,
+                        boxtitle: LNG['boxtitle']['work'],
+                        funcfilter: function(tk){
+                            return tk.isInWorked() && !tk.isNew;
+                        }
                     }
-                }
-            });
+                })
+            );
 
-            this.widgets['tasknew'] = new NS.TaskListBoxWidget({
-                srcNode: tp.gel('boxnew'),
-                taskList: NS.taskManager.list,
-                config: {
-                    columns: 'name,deadline,priority,favorite',
-                    globalsort: true,
-                    tasksort: 'date',
-                    childs: false,
-                    showflagnew: false,
-                    boxtitle: LNG['boxtitle']['new'],
-                    funcfilter: function(tk){
-                        return tk.isNew;
+            this.addWidget('tasknew', new NS.TaskListBoxWidget({
+                    srcNode: tp.gel('boxnew'),
+                    taskList: NS.taskManager.list,
+                    config: {
+                        columns: 'name,deadline,priority,favorite',
+                        globalsort: true,
+                        tasksort: 'date',
+                        childs: false,
+                        showflagnew: false,
+                        boxtitle: LNG['boxtitle']['new'],
+                        funcfilter: function(tk){
+                            return tk.isNew;
+                        }
                     }
-                }
-            });
+                })
+            );
 
-            this.widgets['cmtnew'] = new NS.TaskListBoxWidget({
-                srcNode: tp.gel('boxcmt'),
-                taskList: NS.taskManager.list,
-                config: {
-                    columns: 'name,deadline,priority,favorite',
-                    childs: false,
-                    showflagnew: false,
-                    boxtitle: LNG['boxtitle']['comment'],
-                    funcfilter: function(tk){
-                        return tk.isNewCmt && !tk.isNew;
+            this.addWidget('cmtnew', new NS.TaskListBoxWidget({
+                    srcNode: tp.gel('boxcmt'),
+                    taskList: NS.taskManager.list,
+                    config: {
+                        columns: 'name,deadline,priority,favorite',
+                        childs: false,
+                        showflagnew: false,
+                        boxtitle: LNG['boxtitle']['comment'],
+                        funcfilter: function(tk){
+                            return tk.isNewCmt && !tk.isNew;
+                        }
                     }
-                }
-            });
-
-            // this.widgets['journal'] = NS.API.taskJournalBoxWidget(this.get('srcFavorite'));
-        },
-        destructor: function(){
-            var ws = this.widgets;
-            for (var n in ws){
-                ws[n].destroy();
-            }
-        },
-        changeContainer: function(container){
-            var el = this._TM.getEl('widget.id');
-            el.parentNode.removeChild(el);
-            container.appendChild(el);
+                })
+            );
         },
     }, {
         ATTRS: {
@@ -157,75 +147,76 @@ Component.entryPoint = function(NS){
         CLICKS: {}
     });
 
-    /*
-     NS.API.taskCommentsBoxWidget = function(container){
-     return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
-     'columns': 'name,favorite,voting',
-     'globalsort': true,
-     'tasksort': 'voting',
-     'childs': false,
-     'showflagnew': false,
-     'boxtitle': LNG['boxtitle']['comment'],
-     'funcfilter': function(tk){
-     return tk.isNewCmt && !tk.isNew;
-     }
-     });
-     };
-     NS.API.taskUpdatingBoxWidget = function(container){
-     return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
-     'columns': 'name,favorite,voting',
-     'globalsort': true,
-     'tasksort': 'udate',
-     'childs': false,
-     'showflagnew': false,
-     'boxtitle': LNG['boxtitle']['update'],
-     'funcfilter': function(tk){
-     return tk.vDate < tk.uDate && !tk.isNew;
-     }
-     });
-     };
-     NS.API.taskIncomingBoxWidget = function(container){
-     return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
-     'columns': 'name,favorite,voting',
-     'globalsort': true,
-     'tasksort': 'date',
-     'childs': false,
-     'showflagnew': false,
-     'boxtitle': LNG['boxtitle']['new'],
-     'funcfilter': function(tk){
-     return tk.isNew;
-     }
-     });
-     };
-     NS.API.taskFavoriteBoxWidget = function(container){
-     return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
-     'columns': 'name,favorite,voting',
-     'globalsort': true,
-     'tasksort': 'voting',
-     'childs': false,
-     'showflagnew': false,
-     'boxtitle': LNG['boxtitle']['favorite'],
-     'funcfilter': function(tk){
-     return tk.favorite;
-     }
-     });
-     };
-     NS.API.taskJournalBoxWidget = function(container){
-     return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
-     'sortclick': false,
-     'columns': 'name,deadline,priority,favorite',
-     'countlabeltext': LNG['boxtitle']['journalext'],
-     'globalsort': true,
-     'limit': 10,
-     'tasksort': 'vdate',
-     'tasksortdesc': true,
-     'childs': false,
-     'showflagnew': false,
-     'boxtitle': LNG['boxtitle']['journal'],
-     'funcfilter': function(tk){
-     return !Y.Lang.isNull(tk.vDate);
-     }
-     });
-     };
-     /**/
+    return; // TODO: remove old functions
+
+    NS.API.taskCommentsBoxWidget = function(container){
+        return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
+            'columns': 'name,favorite,voting',
+            'globalsort': true,
+            'tasksort': 'voting',
+            'childs': false,
+            'showflagnew': false,
+            'boxtitle': LNG['boxtitle']['comment'],
+            'funcfilter': function(tk){
+                return tk.isNewCmt && !tk.isNew;
+            }
+        });
+    };
+    NS.API.taskUpdatingBoxWidget = function(container){
+        return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
+            'columns': 'name,favorite,voting',
+            'globalsort': true,
+            'tasksort': 'udate',
+            'childs': false,
+            'showflagnew': false,
+            'boxtitle': LNG['boxtitle']['update'],
+            'funcfilter': function(tk){
+                return tk.vDate < tk.uDate && !tk.isNew;
+            }
+        });
+    };
+    NS.API.taskIncomingBoxWidget = function(container){
+        return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
+            'columns': 'name,favorite,voting',
+            'globalsort': true,
+            'tasksort': 'date',
+            'childs': false,
+            'showflagnew': false,
+            'boxtitle': LNG['boxtitle']['new'],
+            'funcfilter': function(tk){
+                return tk.isNew;
+            }
+        });
+    };
+    NS.API.taskFavoriteBoxWidget = function(container){
+        return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
+            'columns': 'name,favorite,voting',
+            'globalsort': true,
+            'tasksort': 'voting',
+            'childs': false,
+            'showflagnew': false,
+            'boxtitle': LNG['boxtitle']['favorite'],
+            'funcfilter': function(tk){
+                return tk.favorite;
+            }
+        });
+    };
+    NS.API.taskJournalBoxWidget = function(container){
+        return new NS.TaskListBoxWidget(container, NS.taskManager.list, {
+            'sortclick': false,
+            'columns': 'name,deadline,priority,favorite',
+            'countlabeltext': LNG['boxtitle']['journalext'],
+            'globalsort': true,
+            'limit': 10,
+            'tasksort': 'vdate',
+            'tasksortdesc': true,
+            'childs': false,
+            'showflagnew': false,
+            'boxtitle': LNG['boxtitle']['journal'],
+            'funcfilter': function(tk){
+                return !Y.Lang.isNull(tk.vDate);
+            }
+        });
+    };
+    /**/
 };

@@ -111,11 +111,10 @@ Component.entryPoint = function(NS){
             checkListSave: {
                 args: ['taskid', 'data']
             },
-            customStatusList: {
-
-            },
             customStatusSave: {
                 args: ['taskid', 'value']
+            },
+            customStatusFullList: {
             },
         },
         ATTRS: {
@@ -165,6 +164,11 @@ Component.entryPoint = function(NS){
                 },
                 view: function(type, id){
                     return this.getURL(type + '.view', id);
+                }
+            },
+            filter: {
+                customStatus: function(){
+                    return this.getURL('ws') + 'filter/FilterByCustomStatusWidget/';
                 }
             }
         }
