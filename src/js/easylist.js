@@ -58,6 +58,9 @@ Component.entryPoint = function(NS){
                 this.taskTableWidget = null;
             }
         },
+        renderList: function(){
+            this.taskTableWidget.renderList();
+        }
     }, {
         ATTRS: {
             component: {value: COMPONENT},
