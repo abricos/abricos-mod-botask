@@ -114,8 +114,7 @@ Component.entryPoint = function(NS){
             customStatusSave: {
                 args: ['taskid', 'value']
             },
-            customStatusFullList: {
-            },
+            customStatusFullList: {},
         },
         ATTRS: {
             isLoadAppStructure: {value: false},
@@ -165,6 +164,9 @@ Component.entryPoint = function(NS){
                 view: function(type, id){
                     return this.getURL(type + '.view', id);
                 }
+            },
+            goById: function(){
+                return this.getURL('ws') + 'goById/GoByIdWidget/';
             },
             filter: {
                 customStatus: function(){

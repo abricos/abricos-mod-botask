@@ -200,63 +200,6 @@ Component.entryPoint = function(NS){
             }
 
             return;
-
-            switch (el.id) {
-                case tp['showrem']:
-                    this.shRemoved();
-                    return false;
-                case tp['showarch']:
-                    this.shArhive();
-                    return false;
-                case tp['btitle']:
-                    NS.navigator.taskHome();
-                    return true;
-
-                case tp['badd']:
-                case tp['baddc']:
-                    NS.navigator.add(0);
-                    return true;
-
-                case tp['bgo']:
-                case tp['bgoc']:
-                    this.showGoByIdPanel();
-                    return true;
-            }
-
-            tp = TId['row'];
-            switch (prefix) {
-                case (tp['badd'] + '-'):
-                case (tp['baddc'] + '-'):
-                    NS.navigator.add(numid);
-                    return true;
-
-                case (tp['bedit'] + '-'):
-                case (tp['beditc'] + '-'):
-                    this.editById(numid);
-                    return true;
-
-            }
-
-
-            return false;
-        },
-        editById: function(id){
-            var task = NS.taskManager.list.get(id);
-            if (Y.Lang.isNull(task)){
-                return;
-            }
-
-            switch (task.type) {
-                case 'folder':
-                    NS.navigator.folderEdit(id);
-                    break;
-                case 'project':
-                    NS.navigator.projectEdit(id);
-                    break;
-                case 'task':
-                    NS.navigator.taskEdit(id);
-                    break;
-            }
         },
         shArhive: function(){
             var TM = this._TM, gel = function(n){
@@ -327,23 +270,6 @@ Component.entryPoint = function(NS){
                 }
             }, false);
         },
-
-        showGoByIdPanel: function(){
-            new GoByIdPanel(function(task){
-                switch (task.type) {
-                    case 'folder':
-                        NS.navigator.folderView(task.id);
-                        break;
-                    case 'task':
-                        NS.navigator.taskView(task.id);
-                        break;
-                    case 'project':
-                        NS.navigator.projectView(task.id);
-                        break;
-                }
-
-            });
-        }
     }, {
         ATTRS: {
             component: {value: COMPONENT},
@@ -357,62 +283,6 @@ Component.entryPoint = function(NS){
             }
         },
         CLICKS: {}
-    });
-
-    return; // TODO: old functions
-
-    var Dom = YAHOO.util.Dom,
-        E = YAHOO.util.Event,
-        L = YAHOO.lang;
-
-    var UID = Brick.env.user.id;
-
-    ExploreWidget.prototype = {};
-    NS.ExploreWidget = ExploreWidget;
-
-    NS.GoByIdPanel = Y.Base.create('GoByIdPanel', SYS.Dialog, [], {
-        initializer: function(){
-            Y.after(this._syncUIGroupEditorDialog, this, 'syncUI');
-        },
-        _syncUIGroupEditorDialog: function(){
-        },
-        onClick: function(el){
-            var tp = this._TId['gopanel'];
-            switch (el.id) {
-                case tp['bcancel']:
-                    this.close();
-                    return true;
-                case tp['bok']:
-                    this.goById();
-                    return true;
-            }
-
-            return false;
-        },
-        goById: function(){
-            var TM = this._TM, gel = function(n){
-                return TM.getEl('gopanel.' + n);
-            };
-
-            var numid = gel('number').value;
-
-            var task = NS.taskManager.getTask(numid);
-
-            if (Y.Lang.isNull(task)){
-                gel('num').innerHTML = numid;
-                Dom.setStyle(gel('err'), 'display', '');
-                return;
-            }
-
-            this.close();
-            this.callback(task);
-        }
-    }, {
-        ATTRS: {
-            component: {value: COMPONENT},
-            templateBlockName: {value: 'gopanel'},
-            callback: {value: null},
-        }
     });
 
 };

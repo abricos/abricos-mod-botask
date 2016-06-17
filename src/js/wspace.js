@@ -11,7 +11,8 @@ Component.entryPoint = function(NS){
         SYS = Brick.mod.sys;
 
     NS.WorkspaceWidget = Y.Base.create('workspaceWidget', SYS.AppWidget, [
-        SYS.AppWorkspace
+        SYS.AppWorkspace,
+        NS.ContainerWidgetExt
     ], {
         onInitAppWidget: function(err, appInstance, options){
             var wsPage = new SYS.AppWorkspacePage(options.arguments[0].workspacePage);
@@ -25,44 +26,30 @@ Component.entryPoint = function(NS){
 
                     this._onBuildTaskManager();
 
-                    // appInstance.on('appResponses', this._onAppResponses, this);
-                    // this.on('workspaceWidgetChange', this._updateSelectedGroup, this);
-
                     this.showWorkspacePage(!wsPage.isEmpty() ? wsPage : null);
                 }, this);
             }, this);
         },
         destructor: function(){
             // this.get('appInstance').detach('appResponses', this._onAppResponses, this);
-
-            var widgets = this._widgets;
-            if (widgets){
-                for (var n in widgets){
-                    widgets[n].destroy();
-                }
-                this._widgets = null;
-            }
         },
         _onBuildTaskManager: function(){
             this.set('waiting', false);
             var tp = this.template;
-
-            this._widgets = {
-                explore: new NS.ExploreWidget({
-                    srcNode: tp.gel('explore')
-                }),
-                teamUsers: new NS.TeamUserListWidget({
-                    srcNode: tp.gel('teamusers')
-                }),
-            };
-
-            this._widgets.teamUsers.on('userSelectChangedEvent', this.onTeamUserSelectChanged, this);
+            this.addWidget('explore', new NS.ExploreWidget({
+                srcNode: tp.gel('explore')
+            }));
+            this.addWidget('teamUsers', new NS.TeamUserListWidget({
+                srcNode: tp.gel('teamusers')
+            }));
         },
+        /*
         onTeamUserSelectChanged: function(){
             var ws = this._widgets,
                 userid = ws.teamUsers.selectedUserId;
             ws.explore.selectUser(userid);
         },
+        /**/
     }, {
         ATTRS: {
             component: {value: COMPONENT},
@@ -77,5 +64,4 @@ Component.entryPoint = function(NS){
     });
 
     NS.ws = SYS.AppWorkspace.build('{C#MODNAME}', NS.WorkspaceWidget);
-
 };

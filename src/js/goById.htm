@@ -1,0 +1,26 @@
+<!--{widget}-->
+<div class="type panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">
+            Быстрый переход
+        </h3>
+    </div>
+
+    <div class="panel-body">
+        <p>
+            Быстрый переход к проекту/задачи/разделу по номеру:
+        </p>
+
+        <input id="{i#number}" type="text" class="form-control"
+               placeholder="Введите номер"/>
+    </div>
+
+    <div class="panel-footer text-right">
+        <div id="{i#error}" class="pull-left text-danger hide">
+            Элемент с номером <b id="{i#numberView}"></b> не найден или не достаточно прав для его просмотра
+        </div>
+        <button data-click="go" class="btn btn-default btn-sm" data-wait="disable">
+            Перейти
+        </button>
+    </div>
+</div>

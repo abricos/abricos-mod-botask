@@ -612,7 +612,7 @@ Component.entryPoint = function(NS){
      };
      /**/
 
-    var TaskManager = function(userOptions, initData){
+    var TaskManager = function(initData){
         initData = L.merge({
             'board': {},
             'users': {},
@@ -620,10 +620,10 @@ Component.entryPoint = function(NS){
             'cfg': {}
         }, initData || {});
 
-        this.init(userOptions, initData);
+        this.init(initData);
     };
     TaskManager.prototype = {
-        init: function(userOptions, initData){
+        init: function(initData){
 
             this.users = {
                 get: function(userid){
@@ -631,8 +631,6 @@ Component.entryPoint = function(NS){
                     return userList.getById(userid);
                 }
             };
-
-            this.userOptions = userOptions;
 
             // событие, когда прочитали новую задачу
             this.newTaskReadEvent = new YAHOO.util.CustomEvent("newTaskReadEvent");

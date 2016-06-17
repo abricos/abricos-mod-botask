@@ -17,13 +17,22 @@
 				)
 			</span>
 
-            <div class="tkmenu">
-                <div id="{i#bgo}" class="b" title="Перейти по номеру">
-                    <div id="{i#bgoc}" class="bgo bc"></div>
-                </div>
-                <div id="{i#badd}" class="b" title="{#mod.botask.explore.widget.7}">
-                    <div id="{i#baddc}" class="badd bc"></div>
-                </div>
+            <div class="pull-right">
+
+                <a href="#"
+                   data-url="goById"
+                   class="btn btn-default btn-xs"
+                   title="Перейти по номеру">
+                    <i class="fa fa-arrow-right" aria-hidden="true"></i>
+                </a>
+
+                <a href="#"
+                   data-url="item.create"
+                   class="btn btn-default btn-xs"
+                   title="Добавить подпроект/подзадачу">
+                    <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                </a>
+
             </div>
         </div>
         <div class="panel-body">
@@ -104,23 +113,6 @@
         {v#child}
     </td>
 </tr>
-<!--{iconuser}--><img src="{v#src}" title="{v#tl}" class="exicouser"/>
 
-<!--{gopanel}-->
-<div class='hd'>Быстрый переход</div>
-<div class='bd aw-botask'>
-    <div class="field">
-        <p>
-            Быстрый переход к проекту/задачи/разделу по номеру:
-            <input id="{i#number}" type="text"/>
-            <br/>
-            <span class="red" id="{i#err}" style="display: none">Проект/задача/раздел по номеру <span id="{i#num}"
-                                                                                                      class="bold"></span> не найден</span>
-        </p>
-
-        <div class="buttons right">
-            <input id="{i#bok}" value="Перейти" type="button"/>
-            <input id="{i#bcancel}" value="Отмена" type="button"/>
-        </div>
-    </div>
-</div>
+<!--{iconuser}-->
+<img src="{v#src}" title="{v#tl}" class="exicouser"/>
