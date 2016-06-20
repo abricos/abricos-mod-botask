@@ -11,33 +11,29 @@ Component.entryPoint = function(NS){
         COMPONENT = this,
         SYS = Brick.mod.sys;
 
-    NS.ExploreWidget = Y.Base.create('ExploreWidget', SYS.AppWidget, [], {
+    var UID = Brick.env.user.id | 0;
+
+    var _titleSortFn = function(tk1, tk2){
+        if (tk1.title < tk2.title){
+            return -1;
+        }
+        if (tk1.title > tk2.title){
+            return 1;
+        }
+        return 0;
+    };
+
+    NS.ExploreWidget = Y.Base.create('ExploreWidget', SYS.AppWidget, [
+        NS.UProfileWidgetExt
+    ], {
         onInitAppWidget: function(err, appInstance, options){
-            var tp = this.template,
-                cfg = this.get('config');
-
-            tp.setValue({
-                showarch: cfg.showArhive,
-                showrem: cfg.showRemoved
-            });
-
-            this.selectedTask = null;
-            this.selectedUserId = null;
+            var tp = this.template;
 
             this.renderWidget();
-
-            NS.taskManager.taskListChangedEvent.subscribe(this.onTaskListChanged, this, true);
-
         },
         destructor: function(){
-            NS.taskManager.taskListChangedEvent.unsubscribe(this.onTaskListChanged);
         },
-        onTaskListChanged: function(){
-            this.renderWidget();
-        },
-        buildRow: function(tk, level, first, islast){
-            this._taskRender[tk.id] = true;
-
+        _buildRow: function(task, level, isFirst, isLast){
             var tp = this.template,
                 cfg = this.get('config'),
                 sChild = tk.childs.count() > 0 ? this.buildRows(tk, tk.childs, level + 1) : '';
@@ -50,7 +46,7 @@ Component.entryPoint = function(NS){
                     tl: user.get('viewName'),
                     linkview: '#',
                     child: sChild,
-                    clst: islast ? 'ln' : 'tn',
+                    clst: isLast ? 'ln' : 'tn',
                     chdicoview: tk.childs.count() == 0 ? 'hide' : 'none',
                     chdicon: cfg['shUsers'][tk.userid] ? 'chdcls' : 'chdexpd'
                 });
@@ -63,13 +59,136 @@ Component.entryPoint = function(NS){
                     'csstarch': tk.isArhive() ? 'starch' : '',
                     'cssttype': tk.type,
                     'child': sChild,
-                    'clst': islast ? 'ln' : 'tn',
+                    'clst': isLast ? 'ln' : 'tn',
                     'chdicoview': tk.childs.count() == 0 ? 'hide' : 'none',
                     'chdicon': tk.expanded ? 'chdcls' : 'chdexpd'
                 });
             }
         },
-        buildRows: function(ptk, list, level){
+        _buildRows: function(taskList, level){
+            level = level | 0;
+
+            var tp = this.template,
+                appInstance = this.get('appInstance'),
+                isArhived = this.get('arhivedVisible'),
+                isRemoved = this.get('removedVisible'),
+                a = [],
+                anp = null;
+
+            taskList.each(function(task){
+                var status = task.get('status'),
+                    parentid = task.get('parentid'),
+                    parent = task.get('parent'),
+                    userid = task.get('userid'),
+                    user = this.getUser(userid);
+
+                if ((status === 'arhived' && !isArhived) ||
+                    (status === 'removed' && !isRemoved)){
+                    return;
+                }
+
+                if (level === 0 && userid !== UID
+                    // && ( || !parent && parentid > 0)
+                ){
+                    anp = anp || {};
+                    (anp[userid] = anp[userid] || {
+                            isUserRow: true,
+                            userid: userid,
+                            title: user.get('viewName'),
+                            childs: new NS.TaskList({
+                                appInstance: appInstance
+                            })
+                        }).childs.add(task);
+                } else {
+                    a[a.length] = task;
+                }
+            }, this);
+
+            if (anp){
+                var at = [];
+                for (var n in anp){
+                    at[at.length] = anp[n];
+                }
+                at = at.sort(_titleSortFn);
+                a = a.concat(at);
+                this.urows = anp;
+            }
+
+            var lst = "", isFirst, isLast, item, user;
+            for (var i = 0; i < a.length; i++){
+
+                item = a[i];
+                isFirst = i === 0;
+                isLast = i === (a.length - 1);
+
+                if (item.isUserRow){
+                    user = this.getUser(item.userid);
+                    lst += tp.replace('rowuser', {
+                        id: item.userid,
+                        avatar: user.get('avatarSrc24'),
+                        tl: user.get('viewName'),
+                        linkview: '#',
+                        child: this._buildRows(item.childs, level + 1),
+                        clst: isLast ? 'ln' : 'tn',
+                        // chdicoview: tk.childs.count() == 0 ? 'hide' : 'none',
+                        chdicon: 'chdexpd'
+                    });
+                }
+
+                // lst += this._buildRow(a[i], level, i === 0, i === (a.length - 1));
+            }
+
+            if (lst === ""){
+                return "";
+            } else if (!this._firstRenderRows){
+                this._firstRenderRows = true;
+
+                tp.toggleView(false, 'empty', 'table');
+            }
+
+            return tp.replace('table', {
+                rows: lst
+            });
+        },
+        renderWidget: function(){
+            var tp = this.template,
+                appInstance = this.get('appInstance'),
+                taskList = appInstance.get('taskList');
+
+            tp.toggleView(true, 'empty', 'table');
+
+            tp.setHTML({
+                table: this._buildRows(taskList)
+            });
+
+            this.appURLUpdate();
+        },
+        old_buildRow: function(tk, level, first, isLast){
+            this._taskRender[tk.id] = true;
+
+            var tp = this.template,
+                cfg = this.get('config'),
+                sChild = tk.childs.count() > 0 ? this.buildRows(tk, tk.childs, level + 1) : '';
+
+            if (tk.isUserRow){
+                var user = NS.taskManager.users.get(tk.userid);
+                return;
+            } else {
+                return tp.replace('row', {
+                    'id': tk.id,
+                    'tl': tk.title,
+                    type: tk.type,
+                    'csstrem': tk.isRemoved() ? 'strem' : '',
+                    'csstarch': tk.isArhive() ? 'starch' : '',
+                    'cssttype': tk.type,
+                    'child': sChild,
+                    'clst': isLast ? 'ln' : 'tn',
+                    'chdicoview': tk.childs.count() == 0 ? 'hide' : 'none',
+                    'chdicon': tk.expanded ? 'chdcls' : 'chdexpd'
+                });
+            }
+        },
+        old_buildRows: function(ptk, list, level){
             var appInstance = this.get('appInstance'),
                 tp = this.template,
                 cfg = this.get('config'),
@@ -82,7 +201,9 @@ Component.entryPoint = function(NS){
                     return;
                 }
 
-                if (level == 0 && ((Y.Lang.isNull(tk.parent) && tk.parentTaskId > 0) || tk.userid != UID)){
+                if (level == 0 &&
+                    ((Y.Lang.isNull(tk.parent)
+                    && tk.parentTaskId > 0) || tk.userid != UID)){
 
                     if (Y.Lang.isNull(anp)){
                         anp = {};
@@ -94,7 +215,7 @@ Component.entryPoint = function(NS){
                             'title': user.get('viewName'),
                             'userid': tk.userid,
                             'isUserRow': true,
-                            'childs': new NS.TaskList(),
+                            'childs': new NS.Old_TaskList(),
                             'expanded': cfg['shUsers'][tk.userid]
                         };
                     }
@@ -145,29 +266,21 @@ Component.entryPoint = function(NS){
                 'clshide': '',
                 'rows': lst
             };
-            if (!Y.Lang.isNull(ptk)){
+            if (ptk){
                 sRow['pid'] = ptk.id;
                 sRow['clshide'] = ptk.expanded ? '' : 'hide';
             }
 
             return tp.replace('table', sRow);
         },
-
-        renderWidget: function(){
+        old_renderWidget: function(){
             this.urows = null;
             this._firstRenderRows = true;
             this._taskRender = {};
 
-            var tp = this.template;
-            tp.show('empty');
-            tp.hide('table');
-            tp.setHTML({
-                table: this.buildRows(null, NS.taskManager.list, 0)
-            });
 
             this.selectPath(this.selectedTask);
 
-            this.appURLUpdate();
         },
         shChilds: function(taskid){
             var task = NS.taskManager.getTask(taskid);
@@ -274,13 +387,12 @@ Component.entryPoint = function(NS){
         ATTRS: {
             component: {value: COMPONENT},
             templateBlockName: {value: 'widget,table,row,rowuser'},
-            config: {
-                value: {
-                    showArhive: false,
-                    showRemoved: false,
-                    shUsers: {}
-                }
-            }
+            arhivedVisible: {
+                value: false
+            },
+            removedVisible: {
+                value: false
+            },
         },
         CLICKS: {}
     });

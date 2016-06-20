@@ -20,7 +20,6 @@ Component.entryPoint = function(NS){
         R = NS.roles;
 
     var SC = Brick.mod.social;
-    var UP = Brick.mod.uprofile;
 
     var buildTemplate = this.buildTemplate;
     buildTemplate({});
@@ -79,10 +78,10 @@ Component.entryPoint = function(NS){
     };
     NS.TaskStatus = TaskStatus;
 
-    var Task = function(data){
+    var Old_Task = function(data){
         this.init(data);
     };
-    Task.prototype = {
+    Old_Task.prototype = {
         init: function(d){
 
             d = L.merge({
@@ -100,7 +99,7 @@ Component.entryPoint = function(NS){
             }, d || {});
 
             this.update(d);
-            this.childs = new TaskList();	// подзадачи
+            this.childs = new Old_TaskList();	// подзадачи
             this.parent = null; 			// родительская задача
 
             this.history = null;
@@ -214,7 +213,7 @@ Component.entryPoint = function(NS){
             return "'" + this.title + "', Child: " + this.childs.count();
         }
     };
-    NS.Task = Task;
+    NS.Old_Task = Old_Task;
 
     var sortDate = function(d1, d2){ // Дата в порядке убывания
         var v1 = d1.getTime(), v2 = d2.getTime();
@@ -460,10 +459,10 @@ Component.entryPoint = function(NS){
         }
     };
 
-    var TaskList = function(){
-        TaskList.superclass.constructor.call(this);
+    var Old_TaskList = function(){
+        Old_TaskList.superclass.constructor.call(this);
     };
-    YAHOO.extend(TaskList, SC.SocialItemList, {
+    YAHOO.extend(Old_TaskList, SC.SocialItemList, {
 
         // пробег по всем элементам, включая дочерний - если nochild==false
         foreach: function(f, nochild, sortMethod, desc, globalsort, limit){
@@ -539,7 +538,7 @@ Component.entryPoint = function(NS){
             return !Y.Lang.isNull(this.find(taskid, true));
         }
     });
-    NS.TaskList = TaskList;
+    NS.Old_TaskList = Old_TaskList;
 
 
     var HItem = function(di){
@@ -644,7 +643,7 @@ Component.entryPoint = function(NS){
             this.userConfig = {};
             this.userConfigChangedEvent = new YAHOO.util.CustomEvent("userConfigChangedEvent");
 
-            this.list = new TaskList();
+            this.list = new Old_TaskList();
             this.socialUpdate(initData['board']);
 
             // глобальная коллекция истории
@@ -738,7 +737,7 @@ Component.entryPoint = function(NS){
                 var di = data[id];
                 var task = this.list.find(id);
                 if (Y.Lang.isNull(task)){ // новая задача
-                    task = new Task(di);
+                    task = new Old_Task(di);
                 } else {
                     task.update(di);
                 }

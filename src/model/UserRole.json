@@ -1,0 +1,29 @@
+{
+  "version": "0.1.0",
+  "type": "model",
+  "fields": {
+    "id": {
+      "type": "int",
+      "dbField": "userroleid"
+    },
+    "taskid": {
+      "type": "int",
+      "json": "tid"
+    },
+    "userid": {
+      "type": "int",
+      "json": "uid"
+    },
+    "viewdate": {
+      "type": "date"
+    },
+    "favorite": {
+      "type": "bool",
+      "json": "f"
+    },
+    "expanded": {
+      "type": "bool",
+      "json": "e"
+    }
+  }
+}

@@ -15,16 +15,25 @@ Component.entryPoint = function(NS){
         NS.ContainerWidgetExt
     ], {
         onInitAppWidget: function(err, appInstance, options){
-            var wsPage = new SYS.AppWorkspacePage(options.arguments[0].workspacePage);
+            var wsPage = new SYS.AppWorkspacePage(options.arguments[0].workspacePage),
+                tp = this.template;
 
             this.set('waiting', true);
 
-            Brick.appFunc('user', 'userOptionList', '{C#MODNAME}', function(uErr, uRes){
+            appInstance.taskList(function(err, res){
+
                 appInstance.boardData(0, function(err, res){
+                    this.set('waiting', false);
 
-                    NS.taskManager = new NS.TaskManager(res.userOptionList, res.boardData);
+                    NS.taskManager = new NS.TaskManager(res.boardData);
 
-                    this._onBuildTaskManager();
+                    this.addWidget('explore', new NS.ExploreWidget({
+                        srcNode: tp.gel('explore')
+                    }));
+
+                    this.addWidget('teamUsers', new NS.TeamUserListWidget({
+                        srcNode: tp.gel('teamusers')
+                    }));
 
                     this.showWorkspacePage(!wsPage.isEmpty() ? wsPage : null);
                 }, this);
@@ -33,23 +42,6 @@ Component.entryPoint = function(NS){
         destructor: function(){
             // this.get('appInstance').detach('appResponses', this._onAppResponses, this);
         },
-        _onBuildTaskManager: function(){
-            this.set('waiting', false);
-            var tp = this.template;
-            this.addWidget('explore', new NS.ExploreWidget({
-                srcNode: tp.gel('explore')
-            }));
-            this.addWidget('teamUsers', new NS.TeamUserListWidget({
-                srcNode: tp.gel('teamusers')
-            }));
-        },
-        /*
-        onTeamUserSelectChanged: function(){
-            var ws = this._widgets,
-                userid = ws.teamUsers.selectedUserId;
-            ws.explore.selectUser(userid);
-        },
-        /**/
     }, {
         ATTRS: {
             component: {value: COMPONENT},

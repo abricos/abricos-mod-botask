@@ -71,7 +71,7 @@ Component.entryPoint = function(NS){
                 if (this._taskNewCache){
                     return this._taskNewCache;
                 }
-                return this._taskNewCache = new NS.Task();
+                return this._taskNewCache = new NS.Old_Task();
             }
         }
     };

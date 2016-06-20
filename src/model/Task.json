@@ -1,0 +1,88 @@
+{
+  "version": "0.1.0",
+  "type": "model",
+  "fields": {
+    "id": {
+      "type": "int",
+      "dbField": "topicid"
+    },
+    "parentid": {
+      "type": "int",
+      "dbField": "pid",
+      "json": "pid"
+    },
+    "iType": {
+      "type": "int",
+      "dbField": "tp",
+      "json": "tp"
+    },
+    "userid": {
+      "type": "int",
+      "dbField": "uid",
+      "json": "uid"
+    },
+    "iStatus": {
+      "type": "int",
+      "dbField": "st",
+      "json": "st"
+    },
+    "statusDate": {
+      "type": "date",
+      "dbField": "stdl",
+      "json": "stdl"
+    },
+    "title": {
+      "type": "string",
+      "dbField": "tl",
+      "json": "tl"
+    },
+    "descript": {
+      "type": "string",
+      "dbField": "db",
+      "json": "bd"
+    },
+    "users": {
+      "type": "modelList:UserRoleList",
+      "notNULL": true
+    },
+    "dateline": {
+      "type": "date",
+      "dbField": "dl",
+      "json": "dl"
+    },
+    "updateDate": {
+      "type": "date",
+      "dbField": "udl",
+      "json": "udl"
+    },
+    "removeDate": {
+      "type": "date",
+      "dbField": "rdl",
+      "json": "rdl"
+    },
+    "deadline": {
+      "type": "date",
+      "dbField": "ddl",
+      "json": "ddl"
+    },
+    "deadlineTime": {
+      "type": "bool",
+      "dbField": "ddlt",
+      "json": "ddlt"
+    },
+    "commentStatistic": {
+      "type": "model:comment:Statistic",
+      "json": "cmtstat"
+    },
+    "priority": {
+      "type": "int",
+      "dbField": "prt",
+      "json": "prt"
+    },
+    "order": {
+      "type": "int",
+      "dbField": "o",
+      "json": "o"
+    }
+  }
+}

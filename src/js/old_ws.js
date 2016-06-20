@@ -167,7 +167,7 @@ Component.entryPoint = function(NS){
                         var task = null;
 
                         var showEditor = function(){
-                            task = Y.Lang.isNull(task) ? new NS.Task() : task;
+                            task = Y.Lang.isNull(task) ? new NS.Old_Task() : task;
                             hidewait();
                             wExplore.selectPath(task.parent);
 
@@ -183,7 +183,7 @@ Component.entryPoint = function(NS){
                         if (wsMode == 'taskadd' || wsMode == 'projectadd' || wsMode == 'folderadd'){
                             var ptaskid = gcfg['p1'] * 1;
 
-                            task = new NS.Task();
+                            task = new NS.Old_Task();
 
                             if (ptaskid * 1 > 0){
                                 var ptask = NS.taskManager.list.find(ptaskid);

@@ -255,7 +255,7 @@ Component.entryPoint = function(NS){
 
             if (selTPage == 'monthchart' && formonth){
                 if (Y.Lang.isNull(this._taskListForChart)){
-                    this._taskListForChart = new NS.TaskList();
+                    this._taskListForChart = new NS.Old_TaskList();
                 }
                 this._taskListForChart.add(tk);
             }

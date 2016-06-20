@@ -2,7 +2,7 @@ var Component = new Brick.Component();
 Component.requires = {
     mod: [
         {name: 'sys', files: ['application.js']},
-        {name: '{C#MODNAME}', files: ['old_lib.js', 'base.js']}
+        {name: '{C#MODNAME}', files: ['old_lib.js', 'base.js', 'model.js']}
     ]
 };
 Component.entryPoint = function(NS){
@@ -30,7 +30,29 @@ Component.entryPoint = function(NS){
             uprofile: {},
             comment: {},
         },
+        ATTRS: {
+            isLoadAppStructure: {value: true},
+            Task: {value: NS.Task},
+            TaskList: {value: NS.TaskList},
+            UserRole: {value: NS.UserRole},
+            UserRoleList: {value: NS.UserRoleList},
+        },
         REQS: {
+
+            taskList: {
+                attribute: true,
+                type: 'modelList:TaskList',
+                onResponse: function(taskList){
+                    var userIds = taskList.get('userIds');
+
+                    return function(callback, context){
+                        this.getApp('uprofile').userListByIds(userIds, function(err, result){
+                            callback.call(context || null);
+                        }, context);
+                    };
+                }
+            },
+
             boardData: {
                 args: ['hlid'],
                 attribute: false,
@@ -115,9 +137,6 @@ Component.entryPoint = function(NS){
                 args: ['taskid', 'value']
             },
             customStatusFullList: {},
-        },
-        ATTRS: {
-            isLoadAppStructure: {value: false},
         },
         URLS: {
             ws: "#app={C#MODNAMEURI}/wspace/ws/",

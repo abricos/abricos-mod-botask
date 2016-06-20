@@ -15,11 +15,16 @@
 class BotaskApp extends AbricosApplication {
 
     protected function GetClasses(){
-        return array();
+        return array(
+            "Task" => "BotaskTask",
+            "TaskList" => "BotaskTaskList",
+            "UserRole" => "BotaskUserRole",
+            "UserRoleList" => "BotaskUserRoleList",
+        );
     }
 
     protected function GetStructures(){
-        return '';
+        return 'Task,UserRole';
     }
 
     public function IsAdminRole(){
@@ -36,6 +41,9 @@ class BotaskApp extends AbricosApplication {
 
     public function ResponseToJSON($d){
         switch ($d->do){
+            case 'taskList':
+                return $this->TaskListToJSON();
+
             case 'boardData':
                 return $this->BoardDataToJSON($d->hlid);
             case 'task':
@@ -73,6 +81,41 @@ class BotaskApp extends AbricosApplication {
         }
         return null;
     }
+
+    public function TaskListToJSON(){
+        $res = $this->TaskList();
+        return $this->ResultToJSON('taskList', $res);
+    }
+
+    public function TaskList(){
+        if (!$this->manager->IsViewRole()){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        /** @var BotaskTaskList $list */
+        $list = $this->InstanceClass('TaskList');
+
+        $rows = BotaskQuery::TaskList($this->db);
+        while (($d = $this->db->fetch_array($rows))){
+            $list->Add($this->InstanceClass('Task', $d));
+        }
+
+        /** @var CommentApp $commentApp */
+        $commentApp = Abricos::GetApp('comment');
+
+        $taskIds = $list->Ids();
+        $commentStatList = $commentApp->StatisticList('botask', 'task', $taskIds);
+        $list->SetCommentStatistics($commentStatList);
+
+        $rows = BotaskQuery::UserRoleList($this->db, $taskIds);
+        while (($d = $this->db->fetch_array($rows))){
+            $task = $list->Get($d['taskid']);
+            $task->users->Add($this->InstanceClass('UserRole', $d));
+        }
+
+        return $list;
+    }
+
 
     /**
      * Очистить удаленные задачи из системы

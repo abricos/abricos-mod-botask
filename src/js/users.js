@@ -10,61 +10,25 @@ Component.entryPoint = function(NS){
         COMPONENT = this,
         SYS = Brick.mod.sys;
 
-    // var LNG = Brick.util.Language.geta(['mod', '{C#MODNAME}', '{C#COMNAME}']);
     var LNG = this.language['{C#COMNAME}'];
 
-    NS.TeamUserListWidget = Y.Base.create('TeamUserListWidget', SYS.AppWidget, [], {
+    NS.TeamUserListWidget = Y.Base.create('TeamUserListWidget', SYS.AppWidget, [
+        NS.UProfileWidgetExt
+    ], {
         onInitAppWidget: function(err, appInstance, options){
-            this.selectedUserId = null;
-            this.filter = null;
-            this._users = [];
-
-            this.publish('userSelectChangedEvent');
-
             this.renderWidget();
         },
         destructor: function(){
         },
         renderWidget: function(){
             var tp = this.template,
-                users = {},
-                isFilter = !Y.Lang.isNull(this.filter);
-
-            var fetchUsers = function(tk){
-                for (var i = 0; i < tk.users.length; i++){
-                    var uid = tk.users[i] | 0;
-                    users[uid] = !users[uid] ? 1 : users[uid] + 1;
-                }
-            };
-
-            if (!isFilter){
-                NS.taskManager.list.foreach(function(tk){
-                    fetchUsers(tk);
-                }, false);
-            } else {
-                fetchUsers(this.filter);
-            }
-
-            var a = [];
-            for (var n in users){
-                if (isFilter || (!isFilter && Brick.env.user.id * 1 != n * 1)){
-                    a[a.length] = {uid: n, 'count': users[n]};
-                }
-            }
-            a = a.sort(function(u1, u2){
-                if (u1.count > u2.count){
-                    return -1;
-                }
-                if (u1.count < u2.count){
-                    return 1;
-                }
-                return 0;
-            });
-            this._users = a;
+                appInstance = this.get('appInstance'),
+                taskList = appInstance.get('taskList'),
+                userIds = taskList.get('userIds');
 
             var lst = "";
-            for (var i = 0; i < a.length; i++){
-                var user = NS.taskManager.users.get(a[i]['uid']);
+            for (var i = 0; i < userIds.length; i++){
+                var user = this.getUser(userIds[i]);
                 lst += tp.replace('user', {
                     avatar: user.get('avatarSrc24'),
                     uid: user.get('id'),
@@ -74,8 +38,8 @@ Component.entryPoint = function(NS){
 
             tp.setHTML({
                 table: lst,
-                cnt: a.length,
-                tl: LNG['boxtitle'][isFilter ? 'filter' : 'all']
+                cnt: userIds.length,
+                tl: LNG['boxtitle']['all']
             });
 
             tp.toggleView(lst === "", 'empty');
@@ -123,14 +87,12 @@ Component.entryPoint = function(NS){
         },
         setFilter: function(task){
             this.selectUser(null);
-            this.filter = task;
             this.renderWidget();
         }
     }, {
         ATTRS: {
             component: {value: COMPONENT},
             templateBlockName: {value: 'widget,user'},
-            config: {}
         },
         CLICKS: {}
     });

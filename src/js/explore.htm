@@ -1,51 +1,46 @@
 <!--{widget}-->
-<div class="explore">
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <a id="{i#btitle}" class="title" href="#" title="{#mod.botask.explore.widget.1}">{#mod.botask.explore.widget.2}</a>
+<div class="explore panel panel-default">
+    <div class="panel-heading">
+        <a class="title" href="#" data-url="ws"
+           title="Перейти на главную">
+            Проводник
+        </a>
+        <div class="pull-right">
+            <a href="#"
+               data-url="goById"
+               class="btn btn-default btn-xs"
+               title="Перейти по номеру">
+                <i class="fa fa-arrow-right" aria-hidden="true"></i>
+            </a>
 
-            <span class="shgroup">
-				(
-				<label for="{i#showarch}" class="arch" title="{#mod.botask.explore.widget.3}">
-                    {#mod.botask.explore.widget.4}
-                    <input id="{i#showarch}" type="checkbox"/>
-                </label>
-				<label for="{i#showrem}" title="{#mod.botask.explore.widget.5}">
-                    {#mod.botask.explore.widget.6}
-                    <input id="{i#showrem}" type="checkbox"/>
-                </label>
-				)
-			</span>
-
-            <div class="pull-right">
-
-                <a href="#"
-                   data-url="goById"
-                   class="btn btn-default btn-xs"
-                   title="Перейти по номеру">
-                    <i class="fa fa-arrow-right" aria-hidden="true"></i>
-                </a>
-
-                <a href="#"
-                   data-url="item.create"
-                   class="btn btn-default btn-xs"
-                   title="Добавить подпроект/подзадачу">
-                    <i class="fa fa-plus-circle" aria-hidden="true"></i>
-                </a>
-
-            </div>
-        </div>
-        <div class="panel-body">
-
-            <div id="{i#table}" class="list"></div>
-            <div id="{i#empty}" class="text-center">
-                <div>{#mod.botask.explore.widget.8}</div>
-                <a href="#app=botask/ws/showWorkspacePanel/add/0/">{#mod.botask.explore.widget.9}</a>
-            </div>
-
+            <a href="#"
+               data-url="item.create"
+               class="btn btn-default btn-xs"
+               title="Добавить подпроект/подзадачу">
+                <i class="fa fa-plus-circle" aria-hidden="true"></i>
+            </a>
         </div>
     </div>
+    <div class="panel-body">
+        <div id="{i#table}" class="list"></div>
+        <div id="{i#empty}" class="text-center">
+            <div>{#mod.botask.explore.widget.8}</div>
+            <a href="#app=botask/ws/showWorkspacePanel/add/0/">{#mod.botask.explore.widget.9}</a>
+        </div>
+    </div>
+    <div class="panel-footer">
+        <label for="{i#showarch}" title="Показать/скрыть архив">
+            <input id="{i#showarch}" type="checkbox"/>
+            В архиве
+        </label>
+        <br />
+        <label for="{i#showrem}" title="Показать/скрыть удаленные">
+            <input id="{i#showrem}" type="checkbox"/>
+            Удаленные
+        </label>
+    </div>
 </div>
+
 
 <!--{table}-->
 <table id="{i#id}-{v#pid}" class="{v#clshide}">

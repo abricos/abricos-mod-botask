@@ -12,6 +12,52 @@
  */
 class BotaskQuery {
 
+    public static function TaskList(Ab_Database $db){
+        $sql = "
+			SELECT
+			    p.taskid as id,
+                p.parenttaskid as pid,
+                p.tasktype as tp,
+                p.userid as uid,
+
+                p.status as st,
+                p.statdate as stdl,
+
+                p.title as tl,
+
+                p.dateline as dl,
+                p.updatedate as udl,
+                p.deldate as rdl
+			FROM ".$db->prefix."btk_userrole ur
+			INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
+			WHERE ur.userid=".bkint(Abricos::$user->id)." AND p.deldate=0
+		";
+        return $db->query_read($sql);
+    }
+
+    public static function UserRoleList(Ab_Database $db, $taskIds){
+        $aw = array();
+        $count = count($taskIds);
+        if ($count === 0){
+            return null;
+        }
+
+        for ($i = 0; $i < $count; $i++){
+            $aw[] = "taskid=".bkint($taskIds[$i]);
+        }
+
+        $sql = "
+			SELECT *
+            FROM ".$db->prefix."btk_userrole ur
+			WHERE ".implode(" OR ", $aw)."
+		";
+        return $db->query_read($sql);
+    }
+
+    /******************************************************/
+    // TODO: refactoring source
+    /******************************************************/
+
     const TASK_FIELDS = "
 		p.taskid as id,
 		p.parenttaskid as pid,
