@@ -124,7 +124,7 @@ Component.entryPoint = function(NS){
             taskVoting: {
                 args: ['taskid', 'value']
             },
-            taksExpand: {
+            taskExpand: {
                 args: ['taskid', 'value']
             },
             taskShowComments: {

@@ -20,8 +20,8 @@ class BotaskTask extends AbricosModel {
 /**
  * Class BotaskTaskList
  *
- * @method BotaskTask Get($id)
- * @method BotaskTask GetByIndex($i)
+ * @method BotaskTask Get(int $id)
+ * @method BotaskTask GetByIndex(int $i)
  */
 class BotaskTaskList extends AbricosModelList {
 

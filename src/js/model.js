@@ -2,7 +2,8 @@ var Component = new Brick.Component();
 Component.entryPoint = function(NS){
 
     var Y = Brick.YUI,
-        SYS = Brick.mod.sys;
+        SYS = Brick.mod.sys,
+        UID = Brick.env.user.id | 0;
 
     NS.Task = Y.Base.create('task', SYS.AppModel, [], {
         structureName: 'Task'
@@ -39,7 +40,7 @@ Component.entryPoint = function(NS){
                 readOnly: true,
                 getter: function(){
                     var childs = new NS.TaskList({
-                        appInstance: appInstance
+                        appInstance: this.appInstance
                     });
                     this.get('taskList').each(function(task){
                         if (task.get('parentid') === this.get('id')){
@@ -47,6 +48,20 @@ Component.entryPoint = function(NS){
                         }
                     }, this);
                     return childs;
+                }
+            },
+            userRole: {
+                readOnly: true,
+                getter: function(){
+                    if (this._userRole){
+                        return this._userRole;
+                    }
+                    this.get('users').each(function(userRole){
+                        if (userRole.get('userid') === UID){
+                            this._userRole = userRole;
+                        }
+                    }, this);
+                    return this._userRole;
                 }
             }
         },
@@ -100,7 +115,7 @@ Component.entryPoint = function(NS){
                 readOnly: true,
                 getter: function(){
                     var userid = this.get('userid');
-                    return this.getApp('uprofile').get('userList').getById(userid);
+                    return this.appInstance.getApp('uprofile').get('userList').getById(userid);
                 }
             }
         }

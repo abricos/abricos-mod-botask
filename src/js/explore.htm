@@ -29,13 +29,13 @@
         </div>
     </div>
     <div class="panel-footer">
-        <label for="{i#showarch}" title="Показать/скрыть архив">
-            <input id="{i#showarch}" type="checkbox"/>
+        <label for="{i#isArhivedVisible}" title="Показать/скрыть архив">
+            <input id="{i#isArhivedVisible}" type="checkbox"/>
             В архиве
         </label>
-        <br />
-        <label for="{i#showrem}" title="Показать/скрыть удаленные">
-            <input id="{i#showrem}" type="checkbox"/>
+        <br/>
+        <label for="{i#isRemovedVisible}" title="Показать/скрыть удаленные">
+            <input id="{i#isRemovedVisible}" type="checkbox"/>
             Удаленные
         </label>
     </div>
@@ -51,7 +51,8 @@
 <tr class="trrow">
     <td class="{v#clst}">
         <div class="staticon">
-            <div data-click="shChilds" data-id="{v#id}" class="chd {v#chdicon} {v#chdicoview}"></div>
+            <div data-click="childsVisible"
+                 data-id="{v#id}" class="chd {v#chdicon} {v#chdicoview}"></div>
         </div>
     </td>
     <td>
@@ -88,7 +89,8 @@
 <tr class="trrow rowuser" data-id="{v#id}">
     <td class="{v#clst}">
         <div class="staticon">
-            <div data-click="shChildsUser" data-id="{v#id}" class="chd {v#chdicon} {v#chdicoview}"></div>
+            <div data-click="userChildsVisible"
+                 data-id="{v#userid}" class="chd {v#chdicon}"></div>
         </div>
     </td>
     <td>
@@ -96,12 +98,11 @@
             <div class="ticon">
                 <img src="{v#avatar}"/>
             </div>
-            <div id="{i#title}-{v#id}" class="ch-tl" title="{v#tl}">
-
-                <a id="{i#btitle}-{v#id}" href="#" data-click="shChildsUser" data-id="{v#id}">
+            <div data-click="userChildsVisible" data-id="{v#userid}"
+                 class="ch-tl" title="{v#tl}">
+                <div>
                     {v#tl}
-                </a>
-
+                </div>
                 <div class="shadow"></div>
             </div>
         </div>

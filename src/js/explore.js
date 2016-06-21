@@ -30,42 +30,35 @@ Component.entryPoint = function(NS){
             var tp = this.template;
 
             this.renderWidget();
+
+            tp.one('isArhivedVisible').on('change', function(e){
+                var val = tp.getValue('isArhivedVisible');
+                this.set('arhivedVisible', val);
+                this.renderWidget();
+            }, this);
+
+            tp.one('isRemovedVisible').on('change', function(e){
+                var val = tp.getValue('isRemovedVisible');
+                this.set('removedVisible', val);
+                this.renderWidget();
+            }, this);
         },
         destructor: function(){
         },
-        _buildRow: function(task, level, isFirst, isLast){
+        renderWidget: function(){
             var tp = this.template,
-                cfg = this.get('config'),
-                sChild = tk.childs.count() > 0 ? this.buildRows(tk, tk.childs, level + 1) : '';
+                appInstance = this.get('appInstance'),
+                taskList = appInstance.get('taskList');
 
-            if (tk.isUserRow){
-                var user = NS.taskManager.users.get(tk.userid);
-                return tp.replace('rowuser', {
-                    id: tk.id,
-                    avatar: user.get('avatarSrc24'),
-                    tl: user.get('viewName'),
-                    linkview: '#',
-                    child: sChild,
-                    clst: isLast ? 'ln' : 'tn',
-                    chdicoview: tk.childs.count() == 0 ? 'hide' : 'none',
-                    chdicon: cfg['shUsers'][tk.userid] ? 'chdcls' : 'chdexpd'
-                });
-            } else {
-                return tp.replace('row', {
-                    'id': tk.id,
-                    'tl': tk.title,
-                    type: tk.type,
-                    'csstrem': tk.isRemoved() ? 'strem' : '',
-                    'csstarch': tk.isArhive() ? 'starch' : '',
-                    'cssttype': tk.type,
-                    'child': sChild,
-                    'clst': isLast ? 'ln' : 'tn',
-                    'chdicoview': tk.childs.count() == 0 ? 'hide' : 'none',
-                    'chdicon': tk.expanded ? 'chdcls' : 'chdexpd'
-                });
-            }
+            tp.toggleView(true, 'empty', 'table');
+
+            tp.setHTML({
+                table: this._buildRows(taskList)
+            });
+
+            this.appURLUpdate();
         },
-        _buildRows: function(taskList, level){
+        _buildRows: function(taskList, level, isUserLevel){
             level = level | 0;
 
             var tp = this.template,
@@ -87,9 +80,7 @@ Component.entryPoint = function(NS){
                     return;
                 }
 
-                if (level === 0 && userid !== UID
-                    // && ( || !parent && parentid > 0)
-                ){
+                if ((level === 0 && userid !== UID)){
                     anp = anp || {};
                     (anp[userid] = anp[userid] || {
                             isUserRow: true,
@@ -99,7 +90,7 @@ Component.entryPoint = function(NS){
                                 appInstance: appInstance
                             })
                         }).childs.add(task);
-                } else {
+                } else if ((level === 0 && !parent) || (level > 0 && parent) || isUserLevel){
                     a[a.length] = task;
                 }
             }, this);
@@ -111,12 +102,14 @@ Component.entryPoint = function(NS){
                 }
                 at = at.sort(_titleSortFn);
                 a = a.concat(at);
-                this.urows = anp;
             }
 
-            var lst = "", isFirst, isLast, item, user;
-            for (var i = 0; i < a.length; i++){
+            var lst = "",
+                isFirst, isLast,
+                item, user, childs, userRole,
+                userChildsVisible = this.get('userChildsVisible');
 
+            for (var i = 0; i < a.length; i++){
                 item = a[i];
                 isFirst = i === 0;
                 isLast = i === (a.length - 1);
@@ -124,212 +117,45 @@ Component.entryPoint = function(NS){
                 if (item.isUserRow){
                     user = this.getUser(item.userid);
                     lst += tp.replace('rowuser', {
-                        id: item.userid,
+                        userid: item.userid,
                         avatar: user.get('avatarSrc24'),
                         tl: user.get('viewName'),
-                        linkview: '#',
-                        child: this._buildRows(item.childs, level + 1),
+                        child: userChildsVisible[item.userid] ? this._buildRows(item.childs, level + 1, true) : '',
                         clst: isLast ? 'ln' : 'tn',
-                        // chdicoview: tk.childs.count() == 0 ? 'hide' : 'none',
                         chdicon: 'chdexpd'
                     });
-                }
+                } else {
+                    childs = item.get('childs');
+                    userRole = item.get('userRole');
 
-                // lst += this._buildRow(a[i], level, i === 0, i === (a.length - 1));
+                    lst += tp.replace('row', {
+                        id: item.get('id'),
+                        tl: item.get('title'),
+                        type: item.get('type'),
+                        csstrem: item.get('status') === 'removed' ? 'strem' : '',
+                        csstarch: item.get('status') === 'arhived' ? 'starch' : '',
+                        cssttype: item.get('type'),
+                        child: childs.size() > 0 && userRole.get('expanded')
+                            ? this._buildRows(childs, level + 1) : '',
+                        clst: isLast ? 'ln' : 'tn',
+                        chdicoview: childs.size() == 0 ? 'hide' : 'none',
+                        chdicon: userRole.get('expanded') ? 'chdcls' : 'chdexpd'
+                    })
+                }
             }
 
             if (lst === ""){
                 return "";
-            } else if (!this._firstRenderRows){
-                this._firstRenderRows = true;
-
-                tp.toggleView(false, 'empty', 'table');
             }
+
+            tp.toggleView(false, 'empty', 'table');
 
             return tp.replace('table', {
                 rows: lst
             });
         },
-        renderWidget: function(){
-            var tp = this.template,
-                appInstance = this.get('appInstance'),
-                taskList = appInstance.get('taskList');
 
-            tp.toggleView(true, 'empty', 'table');
-
-            tp.setHTML({
-                table: this._buildRows(taskList)
-            });
-
-            this.appURLUpdate();
-        },
-        old_buildRow: function(tk, level, first, isLast){
-            this._taskRender[tk.id] = true;
-
-            var tp = this.template,
-                cfg = this.get('config'),
-                sChild = tk.childs.count() > 0 ? this.buildRows(tk, tk.childs, level + 1) : '';
-
-            if (tk.isUserRow){
-                var user = NS.taskManager.users.get(tk.userid);
-                return;
-            } else {
-                return tp.replace('row', {
-                    'id': tk.id,
-                    'tl': tk.title,
-                    type: tk.type,
-                    'csstrem': tk.isRemoved() ? 'strem' : '',
-                    'csstarch': tk.isArhive() ? 'starch' : '',
-                    'cssttype': tk.type,
-                    'child': sChild,
-                    'clst': isLast ? 'ln' : 'tn',
-                    'chdicoview': tk.childs.count() == 0 ? 'hide' : 'none',
-                    'chdicon': tk.expanded ? 'chdcls' : 'chdexpd'
-                });
-            }
-        },
-        old_buildRows: function(ptk, list, level){
-            var appInstance = this.get('appInstance'),
-                tp = this.template,
-                cfg = this.get('config'),
-                a = [],
-                anp = null;
-
-            list.foreach(function(tk){
-                if ((tk.isArhive() && !cfg.showArhive)
-                    || (tk.isRemoved() && !cfg.showRemoved)){
-                    return;
-                }
-
-                if (level == 0 &&
-                    ((Y.Lang.isNull(tk.parent)
-                    && tk.parentTaskId > 0) || tk.userid != UID)){
-
-                    if (Y.Lang.isNull(anp)){
-                        anp = {};
-                    }
-                    if (!anp[tk.userid]){
-                        var user = NS.taskManager.users.get(tk.userid);
-                        anp[tk.userid] = {
-                            'id': tk.userid,
-                            'title': user.get('viewName'),
-                            'userid': tk.userid,
-                            'isUserRow': true,
-                            'childs': new NS.Old_TaskList(),
-                            'expanded': cfg['shUsers'][tk.userid]
-                        };
-                    }
-                    anp[tk.userid].childs.add(tk);
-                } else {
-                    a[a.length] = tk;
-                }
-            }, true, 'name');
-
-            if (!Y.Lang.isNull(anp)){
-                var at = [];
-                for (var n in anp){
-                    at[at.length] = anp[n];
-                }
-                at = at.sort(function(tk1, tk2){
-                    if (tk1.title < tk2.title){
-                        return -1;
-                    }
-                    if (tk1.title > tk2.title){
-                        return 1;
-                    }
-                    return 0;
-                });
-                for (var i = 0; i < at.length; i++){
-                    a[a.length] = at[i];
-                }
-                this.urows = anp;
-            }
-
-            var lst = "";
-            for (var i = 0; i < a.length; i++){
-                lst += this.buildRow(a[i], level, i == 0, i == a.length - 1);
-            }
-
-            if (lst == ""){
-                return "";
-            }
-
-            if (this._firstRenderRows){
-                this._firstRenderRows = false;
-
-                tp.hide('empty');
-                tp.show('table');
-            }
-
-            var sRow = {
-                'pid': 0,
-                'clshide': '',
-                'rows': lst
-            };
-            if (ptk){
-                sRow['pid'] = ptk.id;
-                sRow['clshide'] = ptk.expanded ? '' : 'hide';
-            }
-
-            return tp.replace('table', sRow);
-        },
-        old_renderWidget: function(){
-            this.urows = null;
-            this._firstRenderRows = true;
-            this._taskRender = {};
-
-
-            this.selectPath(this.selectedTask);
-
-        },
-        shChilds: function(taskid){
-            var task = NS.taskManager.getTask(taskid);
-            if (Y.Lang.isNull(task)){
-                return;
-            }
-
-            NS.taskManager.taskExpand(taskid);
-            task.expanded = !task.expanded;
-            this.renderWidget();
-        },
-        shChildsUser: function(taskid){
-            var shUsers = this.get('config')['shUsers'];
-            shUsers[taskid] = !shUsers[taskid];
-
-            this.renderWidget();
-        },
-        onClick: function(e){
-            var node = e.defineTarget ? e.defineTarget : e.target,
-                id = node.getData('id');
-
-            switch (e.dataClick) {
-                case 'shChilds':
-                    this.shChilds(id);
-                    return true;
-                case 'shChildsUser':
-                    this.shChildsUser(id);
-                    return true;
-
-            }
-
-            return;
-        },
-        shArhive: function(){
-            var TM = this._TM, gel = function(n){
-                return TM.getEl('widget.' + n);
-            };
-            this.get('config')['showArhive'] = gel('showarch').checked;
-            this.renderWidget();
-        },
-        shRemoved: function(){
-            var TM = this._TM, gel = function(n){
-                return TM.getEl('widget.' + n);
-            };
-            this.get('config')['showRemoved'] = gel('showrem').checked;
-            this.renderWidget();
-        },
-
-        selectPathMethod: function(task){
+        old_selectPathMethod: function(task){
             if (Y.Lang.isNull(task)){
                 return;
             }
@@ -345,7 +171,7 @@ Component.entryPoint = function(NS){
             this.selectPathMethod(task.parent);
         },
 
-        selectPath: function(task){
+        old_selectPath: function(task){
             this.selectedTask = task;
 
             var tp = this.template;
@@ -362,7 +188,7 @@ Component.entryPoint = function(NS){
         },
 
         // выделить все задачи, где участвует этот пользователь
-        selectUser: function(userid){
+        old_selectUser: function(userid){
             this.selectedUserId = userid;
             var tp = this.template;
 
@@ -383,6 +209,7 @@ Component.entryPoint = function(NS){
                 }
             }, false);
         },
+
     }, {
         ATTRS: {
             component: {value: COMPONENT},
@@ -393,8 +220,41 @@ Component.entryPoint = function(NS){
             removedVisible: {
                 value: false
             },
+            userChildsVisible: {
+                value: {}
+            }
         },
-        CLICKS: {}
+        CLICKS: {
+            childsVisible: {
+                event: function(e){
+                    var node = e.defineTarget ? e.defineTarget : e.target,
+                        taskid = node.getData('id') | 0,
+                        appInstance = this.get('appInstance'),
+                        taskList = appInstance.get('taskList'),
+                        task = taskList.getById(taskid);
+
+                    if (!task){
+                        return;
+                    }
+
+                    var role = task.get('userRole'),
+                        expaned = !role.get('expanded');
+                    role.set('expanded', expaned);
+                    this.renderWidget();
+                    appInstance.taskExpand(taskid, expaned);
+                }
+            },
+            userChildsVisible: {
+                event: function(e){
+                    var node = e.defineTarget ? e.defineTarget : e.target,
+                        userid = node.getData('id') | 0,
+                        userChildsVisible = this.get('userChildsVisible');
+
+                    userChildsVisible[userid] = !userChildsVisible[userid];
+                    this.renderWidget();
+                }
+            },
+        }
     });
 
 };
