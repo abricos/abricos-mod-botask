@@ -21,26 +21,20 @@ Component.entryPoint = function(NS){
             this.set('waiting', true);
 
             appInstance.taskList(function(err, res){
+                this.set('waiting', false);
 
-                appInstance.boardData(0, function(err, res){
-                    this.set('waiting', false);
+                this.addWidget('explore', new NS.ExploreWidget({
+                    srcNode: tp.gel('explore')
+                }));
 
-                    NS.taskManager = new NS.TaskManager(res.boardData);
+                this.addWidget('teamUsers', new NS.TeamUserListWidget({
+                    srcNode: tp.gel('teamusers')
+                }));
 
-                    this.addWidget('explore', new NS.ExploreWidget({
-                        srcNode: tp.gel('explore')
-                    }));
-
-                    this.addWidget('teamUsers', new NS.TeamUserListWidget({
-                        srcNode: tp.gel('teamusers')
-                    }));
-
-                    this.showWorkspacePage(!wsPage.isEmpty() ? wsPage : null);
-                }, this);
+                this.showWorkspacePage(!wsPage.isEmpty() ? wsPage : null);
             }, this);
         },
         destructor: function(){
-            // this.get('appInstance').detach('appResponses', this._onAppResponses, this);
         },
     }, {
         ATTRS: {

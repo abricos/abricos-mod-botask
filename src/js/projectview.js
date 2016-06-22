@@ -38,26 +38,32 @@ Component.entryPoint = function(NS){
         NS.UProfileWidgetExt
     ], {
         buildTData: function(){
-            var task = this.get('task');
-
-            if (!task){
-                return; // TODO: show 404 (task not found)
-            }
-
             return {
-                id: task.id,
-                tl: task.title
+                id: this.get('taskid')
             };
         },
         onInitAppWidget: function(err, appInstance){
-            var taskid = this.get('taskid');
+            var taskid = this.get('taskid'),
+                task = appInstance.get('taskList').getById(taskid);
+
+            if (!task){
+                // TODO: show 404
+                return;
+            }
+
+            this.set('waiting', true);
+
             appInstance.task(taskid, this._onLoadTask, this)
         },
         destructor: function(){
         },
         _onLoadTask: function(){
+            this.set('waiting', false);
+
             var tp = this.template,
-                task = this.get('task');
+                appInstance = this.get('appInstance'),
+                taskid = this.get('taskid'),
+                task = appInstance.get('taskList').getById('taskid');
 
             this.addWidget('comments',
                 new Brick.mod.comment.CommentTreeWidget({

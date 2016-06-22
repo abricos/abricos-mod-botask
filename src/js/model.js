@@ -5,10 +5,151 @@ Component.entryPoint = function(NS){
         SYS = Brick.mod.sys,
         UID = Brick.env.user.id | 0;
 
+    var sortDate = function(d1, d2){ // Дата в порядке убывания
+        var v1 = d1.getTime(), v2 = d2.getTime();
+        if (v1 > v2){
+            return 1;
+        }
+        if (v1 < v2){
+            return -1;
+        }
+        return 0;
+    };
+
+    var sortDateDesc = function(d1, d2){
+        return sortDate(d2, d1);
+    };
+
+    var sortPriority = function(tk1, tk2){
+        var v1 = tk1.get('priority'), v2 = tk2.get('priority');
+        if (v1 > v2){
+            return 1;
+        }
+        if (v1 < v2){
+            return -1;
+        }
+        return 0;
+    };
+
+    var sortClosed = function(tk1, tk2){
+        var v1 = tk1.isClosed() ? 1 : 0,
+            v2 = tk2.isClosed() ? 1 : 0;
+
+        if (v1 > v2){
+            return 1;
+        }
+        if (v1 < v2){
+            return -1;
+        }
+        return 0;
+    };
+
+    var sortOrder = function(tk1, tk2){
+        if (tk1.order < tk2.order){
+            return 1;
+        }
+        if (tk1.order > tk2.order){
+            return -1;
+        }
+        return 0;
+    };
+
+    var sortDeadline = function(tk1, tk2){
+        var t1 = Y.Lang.isNull(tk1.deadline) || tk1.isClosed() ? 9999999999999 : tk1.deadline.getTime();
+        var t2 = Y.Lang.isNull(tk2.deadline) || tk2.isClosed() ? 9999999999999 : tk2.deadline.getTime();
+
+        if (t1 < t2){
+            return -1;
+        }
+        if (t1 > t2){
+            return 1;
+        }
+        return 0;
+    };
+
+    var sortVDate = function(tk1, tk2){
+        var t1 = Y.Lang.isNull(tk1.vDate) ? 0 : tk1.vDate.getTime();
+        var t2 = Y.Lang.isNull(tk2.vDate) ? 0 : tk2.vDate.getTime();
+
+        if (t1 < t2){
+            return -1;
+        }
+        if (t1 > t2){
+            return 1;
+        }
+        return 0;
+    };
+
+    var sortFavorite = function(tk1, tk2){
+        var v1 = tk1.favorite ? 1 : 0, v2 = tk2.favorite ? 1 : 0;
+
+        if (v1 < v2){
+            return 1;
+        }
+        if (v1 > v2){
+            return -1;
+        }
+        return 0;
+    };
+
+    var sortDCPD = function(tk1, tk2){
+        var v = sortDeadline(tk1, tk2);
+        if (v != 0){
+            return v;
+        }
+
+        v = sortPriority(tk1, tk2);
+        if (v != 0){
+            return v;
+        }
+        v = sortOrder(tk1, tk2);
+        if (v != 0){
+            return v;
+        }
+
+        var isClosed = tk1.isClosed() && tk2.isClosed();
+
+        if (!isClosed){
+            return sortPriority(tk1, tk2);
+        }
+        v = sortDate(tk1.get('date'), tk2.get('date'));
+        if (v != 0){
+            return v;
+        }
+
+        return sortDate(tk1.stDate, tk2.stDate);
+    };
+
     NS.Task = Y.Base.create('task', SYS.AppModel, [], {
-        structureName: 'Task'
+        structureName: 'Task',
+        isNew: function(){
+            var role = this.get('userRole');
+            return !role.get('viewdate');
+        },
+        isExpired: function(){
+
+        },
+        isInWorked: function(){
+
+        },
+        isClosed: function(){
+
+        },
+        isArhived: function(){
+
+        },
+        isRemoved: function(){
+
+        },
     }, {
         ATTRS: {
+            author: {
+                readOnly: true,
+                getter: function(){
+                    var userid = this.get('userid');
+                    return this.appInstance.getApp('uprofile').get('userList').getById(userid);
+                }
+            },
             status: {
                 readOnly: true,
                 getter: function(){
@@ -63,7 +204,24 @@ Component.entryPoint = function(NS){
                     }, this);
                     return this._userRole;
                 }
-            }
+            },
+            userIds: {
+                readOnly: true,
+                getter: function(){
+                    var users = {};
+                    this.get('users').each(function(userRole){
+                        var userid = userRole.get('userid') | 0;
+                        users[userid] = users[userid] || {count: 0};
+                        users[userid].count++;
+                    }, this);
+
+                    var ret = [];
+                    for (var userid in users){
+                        ret[ret.length] = userid;
+                    }
+                    return ret;
+                }
+            },
         },
         STATUS: {
             1: 'opened',
@@ -90,11 +248,12 @@ Component.entryPoint = function(NS){
                 getter: function(){
                     var users = {};
                     this.each(function(task){
-                        task.get('users').each(function(userRole){
-                            var userid = userRole.get('userid') | 0;
+                        var a = task.get('userIds');
+                        for (var i = 0, userid; i < a.length; i++){
+                            userid = a[i];
                             users[userid] = users[userid] || {count: 0};
                             users[userid].count++;
-                        }, this);
+                        }
                     }, this);
 
                     var ret = [];
@@ -104,6 +263,136 @@ Component.entryPoint = function(NS){
                     return ret;
                 }
             }
+        },
+        COMPARE: {
+            'default': function(tk1, tk2){ // сортировка: Наименьший срок, наивысший приоритет
+                var v = sortClosed(tk1, tk2);
+                if (v != 0){
+                    return v;
+                }
+
+                return sortDCPD(tk1, tk2);
+            },
+            date: function(tk1, tk2){
+                return sortDate(tk1.get('date'), tk2.get('date'));
+            },
+            dateDesc: function(tk1, tk2){
+                return sortDateDesc(tk1.get('date'), tk2.get('date'));
+            },
+            updateDate: function(tk1, tk2){
+                return sortDate(tk1.get('updateDate'), tk2.get('updateDate'));
+            },
+            updateDateDesc: function(tk1, tk2){
+                return sortDateDesc(tk1.get('updateDate'), tk2.get('updateDate'));
+            },
+
+            deadline: function(tk1, tk2){
+                return NS.TaskList.COMPARE.default(tk1, tk2);
+            },
+            deadlineDesc: function(tk1, tk2){
+                return NS.TaskList.COMPARE.default(tk2, tk1);
+            },
+            title: function(tk1, tk2){
+                if (tk1.get('title') == tk2.get('title')){
+                    return 0;
+                }
+                return (tk1.get('title') < tk2.get('title')) ? -1 : 1;
+            },
+            titleDesc: function(tk1, tk2){
+                return NS.TaskList.COMPARE.title(tk2, tk1);
+            },
+            priority: function(tk1, tk2){
+
+                var v = sortClosed(tk1, tk2);
+                if (v != 0){
+                    return v;
+                }
+
+                var v1 = tk1.get('priority'), v2 = tk2.get('priority');
+                if (v1 < v2){
+                    return -1;
+                }
+                if (v1 > v2){
+                    return 1;
+                }
+
+                return 0;
+            },
+            priorityDesc: function(tk2, tk1){
+                var v = sortClosed(tk2, tk1);
+                if (v != 0){
+                    return v;
+                }
+
+                var v1 = tk1.get('priority'), v2 = tk2.get('priority');
+                if (v1 < v2){
+                    return -1;
+                }
+                if (v1 > v2){
+                    return 1;
+                }
+                return 0;
+            },
+            favorite: function(tk1, tk2){
+                var v = sortClosed(tk1, tk2);
+                if (v != 0){
+                    return v;
+                }
+                v = sortFavorite(tk1, tk2);
+                if (v != 0){
+                    return v;
+                }
+                return sortDCPD(tk1, tk2);
+            },
+            favoriteDesc: function(tk1, tk2){
+                var v = sortClosed(tk1, tk2);
+                if (v != 0){
+                    return v;
+                }
+                v = sortFavorite(tk2, tk1);
+                if (v != 0){
+                    return v;
+                }
+                return sortDCPD(tk2, tk1);
+            },
+            voting: function(tk1, tk2){
+                var v = sortClosed(tk1, tk2);
+                if (v != 0){
+                    return v;
+                }
+                v = sortOrder(tk1, tk2);
+                if (v != 0){
+                    return v;
+                }
+                return sortDCPD(tk1, tk2);
+            },
+            votingDesc: function(tk1, tk2){
+                var v = sortClosed(tk1, tk2);
+                if (v != 0){
+                    return v;
+                }
+                v = sortOrder(tk2, tk1);
+                if (v != 0){
+                    return v;
+                }
+                return sortDCPD(tk2, tk1);
+            },
+            /*
+            'vdate': function(tk1, tk2){
+                var v = sortVDate(tk1, tk2);
+                if (v != 0){
+                    return v;
+                }
+                return sortDCPD(tk1, tk2);
+            },
+            'vdatedesc': function(tk1, tk2){
+                var v = sortVDate(tk2, tk1);
+                if (v != 0){
+                    return v;
+                }
+                return sortDCPD(tk2, tk1);
+            }
+            /**/
         }
     });
 

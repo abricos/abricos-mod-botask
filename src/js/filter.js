@@ -70,7 +70,7 @@ Component.entryPoint = function(NS){
                         globalsort: true,
                         showflagnew: false,
                         boxtitle: LNG.boxtitle,
-                        funcfilter: function(tk){
+                        filterFn: function(tk){
                             return instance._checkTask(tk);
                         }
                     }

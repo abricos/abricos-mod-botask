@@ -45,7 +45,7 @@
       "type": "modelList:UserRoleList",
       "notNULL": true
     },
-    "dateline": {
+    "date": {
       "type": "date",
       "dbField": "dl",
       "json": "dl"
@@ -78,11 +78,6 @@
       "type": "int",
       "dbField": "prt",
       "json": "prt"
-    },
-    "order": {
-      "type": "int",
-      "dbField": "o",
-      "json": "o"
     }
   }
 }

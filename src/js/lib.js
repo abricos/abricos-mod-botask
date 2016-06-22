@@ -53,47 +53,27 @@ Component.entryPoint = function(NS){
                 }
             },
 
-            boardData: {
-                args: ['hlid'],
-                attribute: false,
-                onResponse: function(data){
-                    return function(callback, context){
-                        this.getApp('uprofile').userListByIds(data.users, function(err, result){
-
-                            callback.call(context || null);
-                        }, context);
-                    };
-                }
-            },
             task: {
                 args: ['taskid'],
                 attribute: false,
-                onResponse: function(data){
-                    if (!data){
-                        return;
-                    }
-                    var task = NS.taskManager.list.find(data.id);
-                    if (!task){
-                        return;
-                    }
-
-                    var isNew = task.isNew;
-                    task.setData(data);
-
-                    NS.taskManager.historyUpdate(data['hst']);
-
-                    if (isNew){
-                        NS.taskManager.newTaskReadEvent.fire(task);
-                    }
+                type: 'model:Task',
+                onResponse: function(task){
+                    var taskList = this.get('taskList'),
+                        taskid = task.get('id'),
+                        userIds = task.get('userIds');
 
                     return function(callback, context){
-                        this.getApp('uprofile').userListByIds(data.users, function(err, result){
+                        this.getApp('uprofile').userListByIds(userIds, function(err, result){
+
+                            taskList.removeById(taskid);
+                            taskList.add(task);
 
                             callback.call(context || null);
                         }, context);
                     };
                 }
             },
+
             taskSave: {
                 args: ['data']
             },

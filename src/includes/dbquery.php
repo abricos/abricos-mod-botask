@@ -24,6 +24,7 @@ class BotaskQuery {
                 p.statdate as stdl,
 
                 p.title as tl,
+                p.priority as prt,
 
                 p.dateline as dl,
                 p.updatedate as udl,

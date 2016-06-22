@@ -20,40 +20,22 @@ Component.entryPoint = function(NS){
                 config = this.get('config');
 
             tp.setHTML({
-                tl: config.boxtitle
+                tl: this.get('boxTitle')
             });
 
             this.addWidget('table', new NS.TaskTableWidget({
-                    srcNode: tp.one('table'),
-                    config: config,
-                    taskList: this.get('taskList'),
-                    onBeforeRenderListFn: function(){
-                        this.countRows = 0;
-                    },
-                    isRenderChildFn: function(tk){
-                        return false;
-                    },
-                    isChildExpandedFn: function(tk){
-                        return null;
-                    },
-                    isRenderTaskFn: function(tk){
-                        var isr = this.get('config').funcfilter(tk);
-                        if (isr){
-                            this.countRows++;
-                        }
-                        return isr;
-                    },
-                    onAfterRenderListFn: function(){
-                        var cfg = this.get('config');
+                srcNode: tp.one('table'),
+                taskList: this.get('taskList'),
+                columns: this.get('columns'),
+                filterFn: this.get('filterFn'),
+            }));
 
-                        tp.toggleView(this.countRows > 0, 'tlist', 'empty');
-                        tp.toggleView(!cfg['hidecountlabel'], 'countlabel');
-                        tp.setHTML({
-                            cnt: config['countlabeltext'] != '' ? config['countlabeltext'] : this.countRows
-                        });
-                    }
-                })
-            );
+            tp.toggleView(true, 'tlist', 'empty');
+            tp.toggleView(true, 'countlabel');
+            tp.setHTML({
+                cnt: 1000
+            });
+
         },
         renderList: function(){
             this.get('table').renderList();
@@ -62,60 +44,42 @@ Component.entryPoint = function(NS){
         ATTRS: {
             component: {value: COMPONENT},
             templateBlockName: {value: 'boxitem'},
-            taskList: {
-                value: null
-            },
-            config: {
-                value: {},
-                setter: function(val){
-                    return Y.merge({
-                        boxstate: '',
-                        boxtitle: '',
-                        countlabeltext: '',
-                        funcfilter: function(){
-                            return false;
-                        }
-                    }, val || {});
-                }
-            }
+            boxTitle: {value: ""},
+            taskList: {value: null},
+            columns: 'title,favorite',
+            filterFn: {value: null},
         },
         CLICKS: {},
-
     });
 
     NS.EasyListWidget = Y.Base.create('EasyListWidget', SYS.AppWidget, [
         NS.ContainerWidgetExt
     ], {
         onInitAppWidget: function(err, appInstance, options){
-            var tp = this.template;
+            var tp = this.template,
+                taskList = appInstance.get('taskList');
 
             this.addWidget('tasknew', new NS.TaskListBoxWidget({
-                    srcNode: tp.gel('boxnew'),
-                    taskList: NS.taskManager.list,
-                    config: {
-                        columns: 'name,deadline,priority,favorite',
-                        globalsort: true,
-                        tasksort: 'date',
-                        childs: false,
-                        showflagnew: false,
-                        boxtitle: LNG['boxtitle']['new'],
-                        funcfilter: function(tk){
-                            return tk.isNew;
-                        }
-                    }
-                })
-            );
+                srcNode: tp.gel('boxnew'),
+                taskList: taskList,
+                boxTitle: LNG['boxtitle']['new'],
+                columns: 'title,favorite',
+                filterFn: function(task){
+                    return task.isNew();
+                },
+            }));
+
+            return;
 
             this.addWidget('cmtnew', new NS.TaskListBoxWidget({
                     srcNode: tp.gel('boxcmt'),
-                    taskList: NS.taskManager.list,
+                    taskList: taskList,
                     config: {
-                        columns: 'name,deadline,priority,favorite',
-                        childs: false,
-                        showflagnew: false,
+                        columns: 'title,deadline,priority,favorite',
                         boxtitle: LNG['boxtitle']['comment'],
-                        funcfilter: function(tk){
-                            return tk.isNewCmt && !tk.isNew;
+                        filterFn: function(task){
+                            return true;
+                            // return task.isNewCmt && !task.isNew;
                         }
                     }
                 })
@@ -123,16 +87,14 @@ Component.entryPoint = function(NS){
 
             this.addWidget('work', new NS.TaskListBoxWidget({
                     srcNode: tp.gel('boxwork'),
-                    taskList: NS.taskManager.list,
+                    taskList: taskList,
                     config: {
                         sortclick: false,
-                        columns: 'name,deadline,priority,favorite,executant',
-                        childs: false,
-                        globalsort: true,
-                        showflagnew: false,
+                        columns: 'title,deadline,priority,favorite,executant',
                         boxtitle: LNG['boxtitle']['work'],
-                        funcfilter: function(tk){
-                            return tk.isInWorked() && !tk.isNew;
+                        filterFn: function(task){
+                            //return task.isInWorked() && !task.isNew;
+                            return true;
                         }
                     }
                 })
