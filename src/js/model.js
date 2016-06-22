@@ -55,8 +55,8 @@ Component.entryPoint = function(NS){
     };
 
     var sortDeadline = function(tk1, tk2){
-        var t1 = Y.Lang.isNull(tk1.deadline) || tk1.isClosed() ? 9999999999999 : tk1.deadline.getTime();
-        var t2 = Y.Lang.isNull(tk2.deadline) || tk2.isClosed() ? 9999999999999 : tk2.deadline.getTime();
+        var t1 = Y.Lang.isNull(tk1.get('deadline')) || tk1.isClosed() ? 9999999999999 : tk1.get('deadline').getTime();
+        var t2 = Y.Lang.isNull(tk2.get('deadline')) || tk2.isClosed() ? 9999999999999 : tk2.get('deadline').getTime();
 
         if (t1 < t2){
             return -1;

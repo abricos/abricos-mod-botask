@@ -23,17 +23,19 @@ Component.entryPoint = function(NS){
                 tl: this.get('boxTitle')
             });
 
-            this.addWidget('table', new NS.TaskTableWidget({
+            var tableWidget = this.addWidget('table', new NS.TaskTableWidget({
                 srcNode: tp.one('table'),
                 taskList: this.get('taskList'),
                 columns: this.get('columns'),
                 filterFn: this.get('filterFn'),
             }));
 
-            tp.toggleView(true, 'tlist', 'empty');
+            var countRows = tableWidget.get('renderRowCount');
+
+            tp.toggleView(countRows > 0, 'tlist', 'empty');
             tp.toggleView(true, 'countlabel');
             tp.setHTML({
-                cnt: 1000
+                cnt: countRows
             });
 
         },
@@ -69,36 +71,25 @@ Component.entryPoint = function(NS){
                 },
             }));
 
-            return;
-
             this.addWidget('cmtnew', new NS.TaskListBoxWidget({
-                    srcNode: tp.gel('boxcmt'),
-                    taskList: taskList,
-                    config: {
-                        columns: 'title,deadline,priority,favorite',
-                        boxtitle: LNG['boxtitle']['comment'],
-                        filterFn: function(task){
-                            return true;
-                            // return task.isNewCmt && !task.isNew;
-                        }
-                    }
-                })
-            );
+                srcNode: tp.gel('boxcmt'),
+                taskList: taskList,
+                boxTitle: LNG['boxtitle']['comment'],
+                columns: 'title,favorite',
+                filterFn: function(task){
+                    // return task.isNewCmt && !task.isNew;
+                }
+            }));
 
             this.addWidget('work', new NS.TaskListBoxWidget({
-                    srcNode: tp.gel('boxwork'),
-                    taskList: taskList,
-                    config: {
-                        sortclick: false,
-                        columns: 'title,deadline,priority,favorite,executant',
-                        boxtitle: LNG['boxtitle']['work'],
-                        filterFn: function(task){
-                            //return task.isInWorked() && !task.isNew;
-                            return true;
-                        }
-                    }
-                })
-            );
+                srcNode: tp.gel('boxwork'),
+                taskList: taskList,
+                columns: 'title,favorite',
+                boxTitle: LNG['boxtitle']['work'],
+                filterFn: function(task){
+                    //return task.isInWorked() && !task.isNew;
+                }
+            }));
         },
     }, {
         ATTRS: {

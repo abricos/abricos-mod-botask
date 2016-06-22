@@ -22,7 +22,7 @@ Component.entryPoint = function(NS){
         _eachColumn: function(fn){
             var aviable = 'title,deadline,priority,favorite'.split(','),
                 columns = this.get('columns'),
-                name, isSort, isDesc;
+                name, isSort;
 
             for (var i = 0; i < aviable.length; i++){
                 name = aviable[i];
@@ -36,6 +36,8 @@ Component.entryPoint = function(NS){
             }
         },
         renderList: function(){
+            this._renderRowsCount = 0;
+
             var tp = this.template,
                 headCols = "",
                 rows = "";
@@ -46,8 +48,18 @@ Component.entryPoint = function(NS){
                 });
             });
 
+            var filterFn = this.get('filterFn');
+            filterFn = Y.Lang.isFunction(filterFn) ? filterFn : function(){
+                return true;
+            }
+
             this.get('taskList').each(function(task){
+                if (!filterFn.call(this, task)){
+                    return;
+                }
+
                 rows += this._buildRow(task);
+                this._renderRowsCount++;
             }, this, this.get('compareFn'));
 
 
@@ -166,73 +178,6 @@ Component.entryPoint = function(NS){
              /**/
         },
 
-        /*
-         onClick: function(e){
-         var node = e.defineTarget ? e.defineTarget : e.target,
-         taskid = node.getData('id'),
-         taskType = node.getData('type');
-
-         switch (e.dataClick) {
-         case 'sortname':
-         this.sort('name');
-         return true;
-         case 'sortdeadline':
-         this.sort('deadline');
-         return true;
-         case 'sortpriority':
-         this.sort('priority');
-         return true;
-         case 'sortfavorite':
-         this.sort('favorite');
-         return true;
-         case 'sortvoting':
-         this.sort('voting');
-         return true;
-         case 'favorite':
-         this.taskFavorite(taskid);
-         return true;
-         case 'itemView':
-         return false;
-         }
-         },
-         /**/
-        sort: function(field){
-            var cfg = NS.taskManager.userConfig,
-                desc = cfg.tasksort == field;
-
-            this.get('config')['tasksort'] = cfg.tasksort = field;
-            this.get('config')['tasksortdesc'] = cfg['tasksortdesc'] = desc ? !cfg['tasksortdesc'] : false;
-
-            NS.taskManager.userConfigSave();
-            this.renderList();
-        },
-        taskFavorite: function(taskid){
-            NS.taskManager.taskFavorite(taskid);
-            var task = NS.taskManager.list.find(taskid);
-            task.favorite = !task.favorite;
-            this.renderList();
-        },
-        shChilds: function(taskid){
-            var task = NS.taskManager.getTask(taskid);
-            if (Y.Lang.isNull(task)){
-                return;
-            }
-            var TM = this.t._TM;
-
-            var elRow = Dom.get(TM.getElId('row.id') + '-' + taskid);
-            if (Y.Lang.isNull(elRow)){
-                return;
-            }
-            if (task.childs.count() == 0){
-                Dom.removeClass(elRow, 'expanded');
-                Dom.addClass(elRow, 'nochild');
-                return;
-            }
-            NS.taskManager.taskExpand(taskid);
-            task.expanded = !task.expanded;
-
-            this.renderList();
-        },
         _isHistoryChanged: function(list, ids){
             var instance = this, find = false;
             list.foreach(function(task){
@@ -269,9 +214,8 @@ Component.entryPoint = function(NS){
                 ',hcoltitle,hcoldeadline,hcolpriority,hcolfavorite,hcolvoting,hcolwork,hcolexec' +
                 ',rcoltitle,rcoldeadline,rcolpriority,rcolfavorite,rcolvoting,rcolwork,rcolexec'
             },
-            taskList: {
-                value: null
-            },
+            taskList: {value: null},
+            filterFn: {value: null},
             columns: {
                 value: 'title,deadline,priority,favorite,voting', // executant
                 setter: function(val){
@@ -309,11 +253,37 @@ Component.entryPoint = function(NS){
                     return NS.TaskList.COMPARE[compareName];
                 }
             },
+            renderRowCount: {
+                readOnly: true,
+                getter: function(){
+                    return this._renderRowsCount;
+                }
+            }
         },
         CLICKS: {
             sortTitle: {
                 event: function(){
                     this._setSortByClick('title');
+                }
+            },
+            sortFavorite: {
+                event: function(){
+                    this._setSortByClick('favorite');
+                }
+            },
+            favorite: {
+                event: function(e){
+                    var appInstance = this.get('appInstance'),
+                        taskid = e.defineTarget.getData('id'),
+                        task = this.get('taskList').getById(taskid),
+                        userRole = task.get('userRole'),
+                        favorite = !userRole.get('favorite');
+
+                    userRole.set('favorite', favorite);
+
+                    appInstance.taskFavorite(taskid, favorite);
+
+                    this.renderList();
                 }
             }
         }
