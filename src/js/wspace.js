@@ -36,6 +36,30 @@ Component.entryPoint = function(NS){
         },
         destructor: function(){
         },
+        renderWidget: function(){
+
+            var tp = this.template,
+                favoriteCount = 0,
+                newCount = 0,
+                changedCount = 0,
+                newCommentCount = 0;
+
+            this.get('appInstance').get('taskList').each(function(task){
+                if (task.get('type') === 'folder'){
+                    return;
+                }
+
+                newCount += task.isNew() ? 1 : 0;
+
+            }, this);
+
+            tp.setHTML({
+                favoriteCount: favoriteCount,
+                newCount: newCount,
+                changedCount: changedCount,
+                newCommentCount: newCommentCount
+            });
+        }
     }, {
         ATTRS: {
             component: {value: COMPONENT},
