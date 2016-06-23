@@ -3,7 +3,8 @@ Component.entryPoint = function(NS){
 
     var Y = Brick.YUI,
         SYS = Brick.mod.sys,
-        UID = Brick.env.user.id | 0;
+        UID = Brick.env.user.id | 0,
+        I18N = this.language;
 
     var sortDate = function(d1, d2){ // Дата в порядке убывания
         var v1 = d1.getTime(), v2 = d2.getTime();
@@ -123,8 +124,15 @@ Component.entryPoint = function(NS){
     NS.Task = Y.Base.create('task', SYS.AppModel, [], {
         structureName: 'Task',
         isNew: function(){
+            if (this.get('type') === 'folder'){
+                return false;
+            }
             var role = this.get('userRole');
             return !role.get('viewdate');
+        },
+        isFavorite: function(){
+            var role = this.get('userRole');
+            return role.get('favorite');
         },
         isExpired: function(){
 
@@ -133,14 +141,24 @@ Component.entryPoint = function(NS){
 
         },
         isClosed: function(){
-
+            return this.get('status') === 'closed';
         },
         isArhived: function(){
-
+            return this.get('status') === 'arhived';
         },
         isRemoved: function(){
-
+            return this.get('status') === 'removed';
         },
+        isNewComment: function(){
+            if (this.get('type') === 'folder'){
+                return false;
+            }
+            var stat = this.get('commentStatistic');
+            if (!stat){
+                return false;
+            }
+            return stat.get('lastid') > stat.get('viewid');
+        }
     }, {
         ATTRS: {
             author: {
@@ -162,6 +180,12 @@ Component.entryPoint = function(NS){
                 getter: function(){
                     var val = this.get('iType');
                     return NS.Task.TYPE[val];
+                }
+            },
+            priorityTitle: {
+                readOnly: true,
+                getter: function(){
+                    return I18N.get('model.priority.' + this.get('priority'));
                 }
             },
             parent: {
@@ -378,21 +402,21 @@ Component.entryPoint = function(NS){
                 return sortDCPD(tk2, tk1);
             },
             /*
-            'vdate': function(tk1, tk2){
-                var v = sortVDate(tk1, tk2);
-                if (v != 0){
-                    return v;
-                }
-                return sortDCPD(tk1, tk2);
-            },
-            'vdatedesc': function(tk1, tk2){
-                var v = sortVDate(tk2, tk1);
-                if (v != 0){
-                    return v;
-                }
-                return sortDCPD(tk2, tk1);
-            }
-            /**/
+             'vdate': function(tk1, tk2){
+             var v = sortVDate(tk1, tk2);
+             if (v != 0){
+             return v;
+             }
+             return sortDCPD(tk1, tk2);
+             },
+             'vdatedesc': function(tk1, tk2){
+             var v = sortVDate(tk2, tk1);
+             if (v != 0){
+             return v;
+             }
+             return sortDCPD(tk2, tk1);
+             }
+             /**/
         }
     });
 

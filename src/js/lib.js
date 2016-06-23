@@ -2,7 +2,8 @@ var Component = new Brick.Component();
 Component.requires = {
     mod: [
         {name: 'sys', files: ['application.js']},
-        {name: '{C#MODNAME}', files: ['old_lib.js', 'base.js', 'model.js']}
+        {name: 'filemanager', files: ['attachment.js']},
+        {name: '{C#MODNAME}', files: ['base.js', 'model.js']}
     ]
 };
 Component.entryPoint = function(NS){
@@ -120,6 +121,23 @@ Component.entryPoint = function(NS){
         },
         URLS: {
             ws: "#app={C#MODNAMEURI}/wspace/ws/",
+            boxList: {
+                filter: function(filter){
+                    return this.getURL('ws') + 'easylist/TaskListBoxWidget/' + filter + '/';
+                },
+                isFavorite: function(){
+                    return this.getURL('boxList.filter', 'isFavorite');
+                },
+                isNew: function(){
+                    return this.getURL('boxList.filter', 'isNew');
+                },
+                isChnaged: function(){
+                    return this.getURL('boxList.filter', 'isChanged');
+                },
+                isNewComment: function(){
+                    return this.getURL('boxList.filter', 'isNewComment');
+                },
+            },
             folder: {
                 create: function(parentid){
                     return this.getURL('folder.edit', 0, parentid | 0);

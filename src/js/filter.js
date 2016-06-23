@@ -10,8 +10,6 @@ Component.entryPoint = function(NS){
         COMPONENT = this,
         SYS = Brick.mod.sys;
 
-    var LNG = this.language['{C#COMNAME}'];
-
     NS.FilterByCustomStatusWidget = Y.Base.create('FilterByCustomStatusWidget', SYS.AppWidget, [
         NS.ContainerWidgetExt,
         NS.UProfileWidgetExt
@@ -28,29 +26,30 @@ Component.entryPoint = function(NS){
             }, this);
         },
         _onLoadStatusesList: function(){
-            var instance = this,
-                tp = this.template,
+            var tp = this.template,
+                taskList = this.get('appInstance').get('taskList'),
                 isUsers = {},
                 lstUsers = "";
 
-            NS.taskManager.list.foreach(function(tk){
-                for (var i = 0; i < tk.users.length; i++){
-                    var userid = tk.users[i] | 0;
+            taskList.each(function(task){
+                task.get('users').each(function(role){
+                    var userid = role.get('userid');
                     if (isUsers[userid]){
-                        continue;
+                        return;
                     }
                     isUsers[userid] = true;
-                    var user = instance.getUser(userid);
+                    var user = this.getUser(userid);
                     if (!user){
-                        continue;
+                        return;
                     }
 
                     lstUsers += tp.replace('option', {
                         id: userid,
                         title: user.get('viewName')
                     });
-                }
-            }, false);
+
+                }, this);
+            }, this);
 
             tp.setHTML({
                 users: lstUsers
@@ -61,21 +60,12 @@ Component.entryPoint = function(NS){
             tp.one('users').on('change', this._renderStatusList, this);
 
             this.addWidget('list', new NS.TaskListBoxWidget({
-                    srcNode: tp.gel('listWidget'),
-                    taskList: NS.taskManager.list,
-                    config: {
-                        sortclick: false,
-                        columns: 'name,favorite',
-                        childs: false,
-                        globalsort: true,
-                        showflagnew: false,
-                        boxtitle: LNG.boxtitle,
-                        filterFn: function(tk){
-                            return instance._checkTask(tk);
-                        }
-                    }
-                })
-            );
+                srcNode: tp.gel('listWidget'),
+                taskList: taskList,
+                columns: 'name,favorite',
+                boxTitle: this.language.get('boxTitle'),
+                filterFn: this._checkTask
+            }));
 
             this._applyFilter();
         },
@@ -122,7 +112,7 @@ Component.entryPoint = function(NS){
             this.getWidget('list').renderList();
         },
         _checkTask: function(tk){
-            return this._filterTasks && this._filterTasks[tk.id|0];
+            return this._filterTasks && this._filterTasks[tk.id | 0];
         }
     }, {
         ATTRS: {

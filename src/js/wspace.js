@@ -32,6 +32,7 @@ Component.entryPoint = function(NS){
                 }));
 
                 this.showWorkspacePage(!wsPage.isEmpty() ? wsPage : null);
+                this.renderWidget();
             }, this);
         },
         destructor: function(){
@@ -45,12 +46,9 @@ Component.entryPoint = function(NS){
                 newCommentCount = 0;
 
             this.get('appInstance').get('taskList').each(function(task){
-                if (task.get('type') === 'folder'){
-                    return;
-                }
-
                 newCount += task.isNew() ? 1 : 0;
-
+                newCommentCount += task.isNewComment() ? 1 : 0;
+                favoriteCount += task.isFavorite() ? 1 : 0;
             }, this);
 
             tp.setHTML({

@@ -71,7 +71,7 @@ Component.entryPoint = function(NS){
                     commentOwner: {
                         module: 'botask',
                         type: 'task',
-                        ownerid: task.id
+                        ownerid: taskid
                     },
                     readOnly: !NS.roles.isWrite
                 })

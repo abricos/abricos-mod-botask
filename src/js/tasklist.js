@@ -15,6 +15,8 @@ Component.entryPoint = function(NS){
 
     NS.TaskTableWidget = Y.Base.create('TaskTableWidget', SYS.AppWidget, [], {
         onInitAppWidget: function(err, appInstance, options){
+            this.publish('renderList');
+
             this.renderList();
         },
         destructor: function(){
@@ -36,6 +38,12 @@ Component.entryPoint = function(NS){
             }
         },
         renderList: function(){
+            this._renderList();
+            this.fire('renderList', {
+                renderRowsCount: this.get('renderRowsCount')
+            });
+        },
+        _renderList: function(){
             this._renderRowsCount = 0;
 
             var tp = this.template,
@@ -94,7 +102,7 @@ Component.entryPoint = function(NS){
                     });
                 } else if (name === 'priority'){
                     lst += tp.replace('rcol' + name, {
-                        prts: LNG['priority'][task.get('priority')]
+                        prts: task.get('priorityTitle')
                     });
                 } else if (name === 'favorite'){
                     lst += tp.replace('rcol' + name, {

@@ -10,14 +10,41 @@ Component.entryPoint = function(NS){
         COMPONENT = this,
         SYS = Brick.mod.sys;
 
-    var LNG = this.language['{C#COMNAME}'];
-
     NS.TaskListBoxWidget = Y.Base.create('TaskListBoxWidget', SYS.AppWidget, [
         NS.ContainerWidgetExt
     ], {
         onInitAppWidget: function(err, appInstance, options){
             var tp = this.template,
-                config = this.get('config');
+                mode = this.get('mode'),
+                i18n = this.language;
+
+            if (!this.get('taskList')){
+                this.set('taskList', appInstance.get('taskList'));
+            }
+
+            switch (mode) {
+                case 'isFavorite':
+                    this.set('boxTitle', i18n.get('boxTitle.' + mode));
+                    this.set('columns', 'title,favorite');
+                    this.set('filterFn', function(task){
+                        return task.isFavorite();
+                    });
+                    break;
+                case 'isNew':
+                    this.set('boxTitle', i18n.get('boxTitle.' + mode));
+                    this.set('columns', 'title,favorite');
+                    this.set('filterFn', function(task){
+                        return task.isNew();
+                    });
+                    break;
+                case 'isNewComment':
+                    this.set('boxTitle', i18n.get('boxTitle.' + mode));
+                    this.set('columns', 'title,favorite');
+                    this.set('filterFn', function(task){
+                        return task.isNewComment();
+                    });
+                    break;
+            }
 
             tp.setHTML({
                 tl: this.get('boxTitle')
@@ -29,29 +56,41 @@ Component.entryPoint = function(NS){
                 columns: this.get('columns'),
                 filterFn: this.get('filterFn'),
             }));
+            this._onTableRenderList();
 
-            var countRows = tableWidget.get('renderRowCount');
+            tableWidget.on('renderList', this._onTableRenderList, this);
+        },
+        _onTableRenderList: function(){
+            var tp = this.template,
+                tableWidget = this.getWidget('table'),
+                countRows = tableWidget.get('renderRowCount');
 
             tp.toggleView(countRows > 0, 'tlist', 'empty');
             tp.toggleView(true, 'countlabel');
             tp.setHTML({
                 cnt: countRows
             });
-
         },
         renderList: function(){
-            this.get('table').renderList();
+            this.getWidget('table').renderList();
         }
     }, {
         ATTRS: {
             component: {value: COMPONENT},
             templateBlockName: {value: 'boxitem'},
-            boxTitle: {value: ""},
             taskList: {value: null},
+            mode: {value: ""},
+            boxTitle: {value: ""},
             columns: 'title,favorite',
             filterFn: {value: null},
         },
         CLICKS: {},
+        parseURLParam: function(args){
+            args = args || [];
+            return {
+                mode: args[0]
+            };
+        }
     });
 
     NS.EasyListWidget = Y.Base.create('EasyListWidget', SYS.AppWidget, [
@@ -61,34 +100,17 @@ Component.entryPoint = function(NS){
             var tp = this.template,
                 taskList = appInstance.get('taskList');
 
-            this.addWidget('tasknew', new NS.TaskListBoxWidget({
-                srcNode: tp.gel('boxnew'),
+
+            this.addWidget('isNewList', new NS.TaskListBoxWidget({
+                srcNode: tp.gel('isNewList'),
                 taskList: taskList,
-                boxTitle: LNG['boxtitle']['new'],
-                columns: 'title,favorite',
-                filterFn: function(task){
-                    return task.isNew();
-                },
+                mode: 'isNew',
             }));
 
-            this.addWidget('cmtnew', new NS.TaskListBoxWidget({
-                srcNode: tp.gel('boxcmt'),
+            this.addWidget('isNewCommentList', new NS.TaskListBoxWidget({
+                srcNode: tp.gel('isNewCommentList'),
                 taskList: taskList,
-                boxTitle: LNG['boxtitle']['comment'],
-                columns: 'title,favorite',
-                filterFn: function(task){
-                    // return task.isNewCmt && !task.isNew;
-                }
-            }));
-
-            this.addWidget('work', new NS.TaskListBoxWidget({
-                srcNode: tp.gel('boxwork'),
-                taskList: taskList,
-                columns: 'title,favorite',
-                boxTitle: LNG['boxtitle']['work'],
-                filterFn: function(task){
-                    //return task.isInWorked() && !task.isNew;
-                }
+                mode: 'isNewComment',
             }));
         },
     }, {
