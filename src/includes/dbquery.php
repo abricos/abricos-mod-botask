@@ -37,12 +37,12 @@ class BotaskQuery {
     }
 
     public static function UserRoleList(Ab_Database $db, $taskIds){
-        $aw = array();
         $count = count($taskIds);
         if ($count === 0){
             return null;
         }
 
+        $aw = array();
         for ($i = 0; $i < $count; $i++){
             $aw[] = "taskid=".bkint($taskIds[$i]);
         }
@@ -50,6 +50,47 @@ class BotaskQuery {
         $sql = "
 			SELECT *
             FROM ".$db->prefix."btk_userrole ur
+			WHERE ".implode(" OR ", $aw)."
+		";
+        return $db->query_read($sql);
+    }
+
+    public static function ResolutionList(Ab_Database $db){
+        $sql = "
+            SELECT r.*
+            FROM  ".$db->prefix."btk_resolution r
+            WHERE r.userid=".intval(Abricos::$user->id)."
+            
+            UNION
+
+			SELECT r.*
+			FROM (
+				SELECT ur.taskid
+				FROM ".$db->prefix."btk_userrole ur
+				INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
+				WHERE ur.userid=".intval(Abricos::$user->id)." AND p.deldate=0
+			) t
+			INNER JOIN ".$db->prefix."btk_resolutionInTask rt ON rt.taskid=t.taskid
+            INNER JOIN ".$db->prefix."btk_resolution r ON r.resolutionid=rt.resolutionid
+            WHERE r.userid<>".intval(Abricos::$user->id)."
+		";
+        return $db->query_read($sql);
+    }
+
+    public static function ResolutionInTaskList(Ab_Database $db, $taskIds){
+        $count = count($taskIds);
+        if ($count === 0){
+            return null;
+        }
+
+        $aw = array();
+        for ($i = 0; $i < $count; $i++){
+            $aw[] = "taskid=".bkint($taskIds[$i]);
+        }
+
+        $sql = "
+			SELECT *
+            FROM ".$db->prefix."btk_resolutionInTask
 			WHERE ".implode(" OR ", $aw)."
 		";
         return $db->query_read($sql);
@@ -758,38 +799,6 @@ class BotaskQuery {
 		";
         return $db->query_read($sql);
     }
-
-    public static function CustatusList(Ab_Database $db, $taskid){
-        $sql = "
-			SELECT
-				userid as id,
-				title as tl,
-				dateline as dl
-			FROM ".$db->prefix."btk_custatus
-			WHERE taskid=".bkint($taskid)."
-		";
-        return $db->query_read($sql);
-    }
-
-    public static function CustatusFullList(Ab_Database $db, $userid){
-        $limit = "";
-        $where = BotaskQuery::BoardWhere(0, 0, 0);
-        $sql = "
-			SELECT
-				t.taskid as tid,
-				s.userid as uid,
-				s.title as tl
-			FROM (
-				SELECT ur.taskid
-				FROM ".$db->prefix."btk_userrole ur
-				INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
-				WHERE ur.userid=".bkint($userid)." AND p.deldate=0 ".$where."
-			) t
-			INNER JOIN ".$db->prefix."btk_custatus s ON t.taskid=s.taskid
-		";
-        return $db->query_read($sql);
-    }
-
 
     public static function CustatusSave(Ab_Database $db, $taskid, $userid, $title){
         $sql = "

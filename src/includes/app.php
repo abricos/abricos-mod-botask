@@ -20,11 +20,15 @@ class BotaskApp extends AbricosApplication {
             "TaskList" => "BotaskTaskList",
             "UserRole" => "BotaskUserRole",
             "UserRoleList" => "BotaskUserRoleList",
+            "Resolution" => "BotaskResolution",
+            "ResolutionList" => "BotaskResolutionList",
+            "ResolutionInTask" => "BotaskResolutionInTask",
+            "ResolutionInTaskList" => "BotaskResolutionInTaskList",
         );
     }
 
     protected function GetStructures(){
-        return 'Task,UserRole';
+        return 'Task,UserRole,Resolution,ResolutionInTask';
     }
 
     public function IsAdminRole(){
@@ -43,6 +47,8 @@ class BotaskApp extends AbricosApplication {
         switch ($d->do){
             case 'taskList':
                 return $this->TaskListToJSON();
+            case 'resolutionList':
+                return $this->ResolutionListToJSON();
 
             case 'boardData':
                 return $this->BoardDataToJSON($d->hlid);
@@ -74,10 +80,6 @@ class BotaskApp extends AbricosApplication {
                 return $this->TaskShowCommentsToJSON($d->taskid, $d->value);
             case 'checkListSave':
                 return $this->CheckListSaveToJSON($d->taskid, $d->data);
-            case 'customStatusSave':
-                return $this->CustomStatusSaveToJSON($d->taskid, $d->value);
-            case 'customStatusFullList':
-                return $this->CustomStatusFullListToJSON();
         }
         return null;
     }
@@ -104,6 +106,7 @@ class BotaskApp extends AbricosApplication {
         $commentApp = Abricos::GetApp('comment');
 
         $taskIds = $list->Ids();
+
         $commentStatList = $commentApp->StatisticList('botask', 'task', $taskIds);
         $list->SetCommentStatistics($commentStatList);
 
@@ -113,9 +116,14 @@ class BotaskApp extends AbricosApplication {
             $task->users->Add($this->InstanceClass('UserRole', $d));
         }
 
+        $rows = BotaskQuery::ResolutionInTaskList($this->db, $taskIds);
+        while (($d = $this->db->fetch_array($rows))){
+            $task = $list->Get($d['taskid']);
+            $task->resolutions->Add($this->InstanceClass('ResolutionInTask', $d));
+        }
+
         return $list;
     }
-
 
     /**
      * Очистить удаленные задачи из системы
@@ -1119,20 +1127,42 @@ class BotaskApp extends AbricosApplication {
         return $ret;
     }
 
-    /* * * * * * * * * * * * * * * Custom Status * * * * * * * * * * * * */
+    /* * * * * * * * * * * * * * * Resolutions * * * * * * * * * * * * */
 
-    public function CustomStatusSaveToJSON($taskid, $value){
-        $res = $this->CustomStatusSave($taskid, $value);
+    public function ResolutionListToJSON(){
+        $res = $this->ResolutionList();
+        return $this->ResultToJSON('resolutionList', $res);
+    }
+
+    public function ResolutionList(){
+        if (!$this->IsViewRole()){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        /** @var BotaskResolutionList $list */
+        $list = $this->InstanceClass('ResolutionList');
+
+        $rows = BotaskQuery::ResolutionList($this->db);
+        while (($d = $this->db->fetch_array($rows))){
+            $list->Add($this->InstanceClass('Resolution', $d));
+        }
+
+        return $list;
+    }
+
+
+    public function ResolutionSaveToJSON($taskid, $value){
+        $res = $this->ResolutionSave($taskid, $value);
         if (AbricosResponse::IsError($res)){
             return $res;
         }
         return $this->ImplodeJSON(array(
-            $this->ResultToJSON('customStatusSave', $res),
+            $this->ResultToJSON('resolutionSave', $res),
             $this->TaskToJSON($taskid)
         ));
     }
 
-    public function CustomStatusSave($taskid, $value){
+    public function ResolutionSave($taskid, $value){
         if (!$this->TaskAccess($taskid)){
             return null;
         }
@@ -1146,23 +1176,6 @@ class BotaskApp extends AbricosApplication {
         $ret->value = $value;
 
         return $ret;
-    }
-
-    public function CustomStatusFullListToJSON(){
-        $res = $this->CustomStatusFullList();
-        return $this->ResultToJSON('customStatusFullList', $res);
-    }
-
-    /**
-     * Список статусов всех пользователей общих проектов
-     */
-    public function CustomStatusFullList(){
-        if (!$this->IsViewRole()){
-            return AbricosResponse::ERR_FORBIDDEN;
-        }
-
-        $rows = BotaskQuery::CustatusFullList($this->db, Abricos::$user->id);
-        return $this->ToArray($rows);
     }
 
     /* * * * * * * * * * * * * * * * * History * * * * * * * * * * * * * * */

@@ -186,7 +186,31 @@ if ($updateManager->isUpdate('0.2.2')){
     );
 }
 
-if ($updateManager->isUpdate('0.2.2.1')){
+if ($updateManager->isUpdate('0.3.1')){
+    $db->query_write("
+		CREATE TABLE IF NOT EXISTS ".$pfx."btk_resolution (
+            resolutionid int(10) unsigned NOT NULL auto_increment COMMENT '',
+		  	userid int(10) unsigned NOT NULL DEFAULT 0 COMMENT '',
+		  	title varchar(250) NOT NULL DEFAULT '' COMMENT '',
+            PRIMARY KEY (resolutionid),
+            KEY userid (userid)
+		)".$charset
+    );
+    $db->query_write("
+		CREATE TABLE IF NOT EXISTS ".$pfx."btk_resolutionInTask (
+            resolutionInTaskId int(10) unsigned NOT NULL auto_increment COMMENT '',
+			taskid int(10) unsigned NOT NULL DEFAULT 0 COMMENT '',
+		  	resolutionid int(10) unsigned NOT NULL DEFAULT 0 COMMENT '',
+			dateline int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время',
+            PRIMARY KEY (resolutionInTaskId),
+            KEY taskid (taskid)
+		)".$charset
+    );
+}
+
+if ($updateManager->isUpdate('0.3.1') && !$updateManager->isInstall()){
+
+    /* Old table
     $db->query_write("
 		CREATE TABLE IF NOT EXISTS ".$pfx."btk_custatus (
 			taskid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор',
@@ -196,9 +220,25 @@ if ($updateManager->isUpdate('0.2.2.1')){
 		UNIQUE KEY custatus (taskid,userid)
 		)".$charset
     );
-}
+    /**/
 
-if ($updateManager->isUpdate('0.3.1') && !$updateManager->isInstall()){
+    $db->query_write("
+        INSERT INTO ".$pfx."btk_resolution (userid, title)
+        SELECT DISTINCT userid, title
+        FROM ".$pfx."btk_custatus
+	");
+
+    $db->query_write("
+        INSERT INTO ".$pfx."btk_resolutionInTask (taskid, resolutionid, dateline)
+        SELECT 
+            s.taskid, 
+            r.resolutionid,
+            s.dateline
+        FROM ".$pfx."btk_custatus s
+        INNER JOIN ".$pfx."btk_resolution r ON r.title=s.title AND r.userid=s.userid
+	");
+
+    $db->query_write("DROP TABLE ".$pfx."btk_custatus");
 
     Abricos::GetModule('comment');
 

@@ -11,6 +11,7 @@
  * Class BotaskTask
  *
  * @property BotaskUserRoleList $users
+ * @property BotaskResolutionInTaskList $resolutions
  */
 class BotaskTask extends AbricosModel {
     protected $_structModule = 'botask';
@@ -50,4 +51,20 @@ class BotaskUserRole extends AbricosModel {
 }
 
 class BotaskUserRoleList extends AbricosModelList {
+}
+
+class BotaskResolution extends AbricosModel {
+    protected $_structModule = 'botask';
+    protected $_structName = 'Resolution';
+}
+
+class BotaskResolutionList extends AbricosModelList {
+}
+
+class BotaskResolutionInTask extends AbricosModel {
+    protected $_structModule = 'botask';
+    protected $_structName = 'ResolutionInTask';
+}
+
+class BotaskResolutionInTaskList extends AbricosModelList {
 }

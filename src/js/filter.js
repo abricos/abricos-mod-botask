@@ -15,40 +15,22 @@ Component.entryPoint = function(NS){
         NS.UProfileWidgetExt
     ], {
         onInitAppWidget: function(err, appInstance){
-            this.set('waiting', true);
-            appInstance.customStatusFullList(function(err, result){
-                this.set('waiting', false);
-                if (err){
-                    return;
-                }
-                this.set('statuses', result.customStatusFullList);
-                this._onLoadStatusesList();
-            }, this);
-        },
-        _onLoadStatusesList: function(){
             var tp = this.template,
-                taskList = this.get('appInstance').get('taskList'),
                 isUsers = {},
                 lstUsers = "";
 
-            taskList.each(function(task){
-                task.get('users').each(function(role){
-                    var userid = role.get('userid');
-                    if (isUsers[userid]){
-                        return;
-                    }
-                    isUsers[userid] = true;
-                    var user = this.getUser(userid);
-                    if (!user){
-                        return;
-                    }
+            appInstance.get('resolutionList').each(function(resolution){
+                var user = resolution.get('user');
+                if (!user || isUsers[user.get('id')]){
+                    return;
+                }
+                isUsers[user.get('id')] = true;
 
-                    lstUsers += tp.replace('option', {
-                        id: userid,
-                        title: user.get('viewName')
-                    });
+                lstUsers += tp.replace('option', {
+                    id: user.get('id'),
+                    title: user.get('viewName')
+                });
 
-                }, this);
             }, this);
 
             tp.setHTML({
@@ -59,15 +41,15 @@ Component.entryPoint = function(NS){
 
             tp.one('users').on('change', this._renderStatusList, this);
 
+            var instance = this;
             this.addWidget('list', new NS.TaskListBoxWidget({
                 srcNode: tp.gel('listWidget'),
-                taskList: taskList,
-                columns: 'name,favorite',
+                columns: 'title,favorite',
                 boxTitle: this.language.get('boxTitle'),
-                filterFn: this._checkTask
+                filterFn: function(task){
+                    return instance._checkTask(task);
+                }
             }));
-
-            this._applyFilter();
         },
         destructor: function(){
             var tp = this.template;
@@ -76,49 +58,43 @@ Component.entryPoint = function(NS){
         _renderStatusList: function(){
             var tp = this.template,
                 userid = tp.getValue('users') | 0,
-                statuses = this.get('statuses'),
                 lst = "";
 
-            for (var i = 0, stat; i < statuses.length; i++){
-                stat = statuses[i];
-                stat.uid = stat.uid | 0;
-                if (stat.uid !== userid){
-                    continue;
+            this.get('appInstance').get('resolutionList').each(function(resolution){
+                if (resolution.get('userid') !== userid){
+                    return;
                 }
                 lst += tp.replace('option', {
-                    id: stat.tl,
-                    title: stat.tl
+                    id: resolution.get('id'),
+                    title: resolution.get('title')
                 });
-            }
+            }, this);
+
             tp.setHTML({
-                statuses: lst
+                resolutions: lst
             });
         },
         _applyFilter: function(){
-            var tp = this.template,
-                userid = tp.getValue('users') | 0,
-                status = tp.getValue('statuses'),
-                statuses = this.get('statuses'),
-                tasks = {};
-
-            for (var i = 0, sti; i < statuses.length; i++){
-                sti = statuses[i];
-                if ((sti.uid | 0) === userid && status === sti.tl){
-                    tasks[sti.tid | 0] = true;
-                }
-            }
-            this._filterTasks = tasks;
-
             this.getWidget('list').renderList();
         },
-        _checkTask: function(tk){
-            return this._filterTasks && this._filterTasks[tk.id | 0];
+        _checkTask: function(task){
+            var tp = this.template,
+                resolutionid = tp.getValue('resolutions') | 0,
+                find = false;
+
+            task.get('resolutions').some(function(resolutionInTask){
+                console.log(task.get('title'));
+                if (resolutionInTask.get('resolutionid') === resolutionid){
+                    return find = true;
+                }
+            }, this);
+
+            return find;
         }
     }, {
         ATTRS: {
             component: {value: COMPONENT},
             templateBlockName: {value: 'widget,option'},
-            statuses: {value: null}
         },
         CLICKS: {
             applyFilter: '_applyFilter'

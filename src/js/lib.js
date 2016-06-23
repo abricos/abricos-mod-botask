@@ -37,11 +37,16 @@ Component.entryPoint = function(NS){
             TaskList: {value: NS.TaskList},
             UserRole: {value: NS.UserRole},
             UserRoleList: {value: NS.UserRoleList},
+            Resolution: {value: NS.Resolution},
+            ResolutionList: {value: NS.ResolutionList},
+            ResolutionInTask: {value: NS.ResolutionInTask},
+            ResolutionInTaskList: {value: NS.ResolutionInTaskList},
         },
         REQS: {
 
             taskList: {
                 attribute: true,
+                attach: 'resolutionList',
                 type: 'modelList:TaskList',
                 onResponse: function(taskList){
                     var userIds = taskList.get('userIds');
@@ -114,10 +119,11 @@ Component.entryPoint = function(NS){
             checkListSave: {
                 args: ['taskid', 'data']
             },
-            customStatusSave: {
-                args: ['taskid', 'value']
+
+            resolutionList: {
+                attribute: true,
+                type: 'modelList:ResolutionList',
             },
-            customStatusFullList: {},
         },
         URLS: {
             ws: "#app={C#MODNAMEURI}/wspace/ws/",

@@ -45,6 +45,10 @@
       "type": "modelList:UserRoleList",
       "notNULL": true
     },
+    "resolutions": {
+      "type": "modelList:ResolutionInTaskList",
+      "notNULL": true
+    },
     "date": {
       "type": "date",
       "dbField": "dl",

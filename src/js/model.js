@@ -437,4 +437,32 @@ Component.entryPoint = function(NS){
     NS.UserRoleList = Y.Base.create('userRoleList', SYS.AppModelList, [], {
         appItem: NS.UserRole,
     });
+
+
+    NS.Resolution = Y.Base.create('resolution', SYS.AppModel, [], {
+        structureName: 'Resolution'
+    }, {
+        ATTRS: {
+            user: {
+                readOnly: true,
+                getter: function(){
+                    var userid = this.get('userid');
+                    return this.appInstance.getApp('uprofile').get('userList').getById(userid);
+                }
+            }
+        }
+    });
+
+    NS.ResolutionList = Y.Base.create('resolutionList', SYS.AppModelList, [], {
+        appItem: NS.Resolution,
+    });
+
+    NS.ResolutionInTask = Y.Base.create('resolutionInTask', SYS.AppModel, [], {
+        structureName: 'ResolutionInTask'
+    });
+
+    NS.ResolutionInTaskList = Y.Base.create('resolutionInTaskList', SYS.AppModelList, [], {
+        appItem: NS.ResolutionInTask,
+    });
+
 };
