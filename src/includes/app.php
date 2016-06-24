@@ -24,11 +24,15 @@ class BotaskApp extends AbricosApplication {
             "ResolutionList" => "BotaskResolutionList",
             "ResolutionInTask" => "BotaskResolutionInTask",
             "ResolutionInTaskList" => "BotaskResolutionInTaskList",
+            "File" => "BotaskFile",
+            "FileList" => "BotaskFileList",
+            "Image" => "BotaskImage",
+            "ImageList" => "BotaskImageList",
         );
     }
 
     protected function GetStructures(){
-        return 'Task,UserRole,Resolution,ResolutionInTask';
+        return 'Task,UserRole,Resolution,ResolutionInTask,File,Image';
     }
 
     public function IsAdminRole(){
@@ -49,11 +53,11 @@ class BotaskApp extends AbricosApplication {
                 return $this->TaskListToJSON();
             case 'resolutionList':
                 return $this->ResolutionListToJSON();
+            case 'task':
+                return $this->TaskToJSON($d->taskid);
 
             case 'boardData':
                 return $this->BoardDataToJSON($d->hlid);
-            case 'task':
-                return $this->TaskToJSON($d->taskid);
             case 'taskSave':
                 return $this->TaskSaveToJSON($d->data);
             case 'taskSetExec':
@@ -82,6 +86,23 @@ class BotaskApp extends AbricosApplication {
                 return $this->CheckListSaveToJSON($d->taskid, $d->data);
         }
         return null;
+    }
+
+    public function TaskAccess($taskid){
+        if (!$this->IsViewRole()){
+            return false;
+        }
+
+        if (!isset($this->_cache['TaskAccess'])){
+            $this->_cache['TaskAccess'] = array();
+        }
+        if (isset($this->_cache['TaskAccess'][$taskid])){
+            return $this->_cache['TaskAccess'][$taskid];
+        }
+
+        $d = BotaskQuery::UserRole($this->db, $taskid);
+
+        return $this->_cache['TaskAccess'][$taskid] = !empty($d);
     }
 
     public function TaskListToJSON(){
@@ -125,6 +146,166 @@ class BotaskApp extends AbricosApplication {
         return $list;
     }
 
+    public function TaskToJSON($taskid){
+        $res = $this->Task($taskid);
+        return $this->ResultToJSON('task', $res);
+    }
+
+    public function Task($taskid){
+        if (!$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        BotaskQuery::TaskUpdateLastView($this->db, $taskid, Abricos::$user->id);
+
+        $d = BotaskQuery::Task($this->db, $taskid, Abricos::$user->id, true);
+
+        if (empty($d)){
+            return AbricosResponse::ERR_NOT_FOUND;
+        }
+
+        /** @var BotaskTask $task */
+        $task = $this->InstanceClass('Task', $d);
+
+        /** @var CommentApp $commentApp */
+        $commentApp = Abricos::GetApp('comment');
+        $task->commentStatistic = $commentApp->Statistic($task->GetCommentOwner());
+
+        $rows = BotaskQuery::UserRoleList($this->db, array($taskid));
+        while (($d = $this->db->fetch_array($rows))){
+            $task->users->Add($this->InstanceClass('UserRole', $d));
+        }
+
+        $rows = BotaskQuery::ResolutionInTaskList($this->db, array($taskid));
+        while (($d = $this->db->fetch_array($rows))){
+            $task->resolutions->Add($this->InstanceClass('ResolutionInTask', $d));
+        }
+
+        $task->files = $this->FileList($taskid);
+        $task->images = $this->ImageList($taskid);
+
+        return $task;
+
+        $task['images'] = $this->ImageList($taskid, true);
+
+        $task['custatus'] = new stdClass();
+        $task['custatus']->list = $this->ToArrayById(BotaskQuery::CustatusList($this->db, $taskid));
+        $task['custatus']->my = $this->ToArray(BotaskQuery::CustatusListByUser($this->db, Abricos::$user->id));
+
+        $hst = array();
+
+        $rows = BotaskQuery::TaskHistory($this->db, $taskid);
+        while (($row = $this->db->fetch_array($rows))){
+            $hst[] = $row;
+        }
+        $task['hst'] = $hst;
+
+        // чек-лист
+        $task['chlst'] = $this->CheckList($taskid, true, true);
+
+        return $task;
+    }
+
+    /* * * * * * * * * * * * * * * * Image * * * * * * * * * * * * * * */
+
+    public function FileListToJSON($taskid){
+        $res = $this->FileList($taskid);
+        return $this->ResultToJSON('fileList', $res);
+    }
+
+    public function FileList($taskid){
+        if (!$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        /** @var BotaskFileList $list */
+        $list = $this->InstanceClass('FileList');
+
+        $rows = BotaskQuery::FileList($this->db, $taskid);
+        while (($d = $this->db->fetch_array($rows))){
+            $list->Add($this->InstanceClass('File', $d));
+        }
+
+        return $list;
+    }
+
+    public function FileRemove($taskid, $fileid){
+        Abricos::GetModule('filemanager');
+        $fmanager = FileManagerModule::$instance->GetManager();
+        $fmanager->RolesDisable();
+
+        $finfo = $fmanager->GetFileInfo($fileid);
+        $rows = BotaskQuery::TaskUserList($this->db, $taskid);
+        $find = false;
+        while (($row = $this->db->fetch_array($rows))){
+            if ($row['id'] == $finfo['uid']){
+                $find = true;
+                break;
+            }
+        }
+        if ($find){
+            $fmanager->FileRemove($fileid);
+            BotaskQuery::TaskFileRemove($this->db, $taskid, $fileid);
+        }
+        $fmanager->RolesEnable();
+    }
+
+    /* * * * * * * * * * * * * * * * Image * * * * * * * * * * * * * * */
+
+    public function ImageListToJSON($taskid){
+        $res = $this->ImageList($taskid);
+        return $this->ResultToJSON('imageList', $res);
+    }
+
+    public function ImageList($taskid){
+        if (!$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        /** @var BotaskImageList $list */
+        $list = $this->InstanceClass('ImageList');
+
+        $rows = BotaskQuery::ImageList($this->db, $taskid);
+        while (($d = $this->db->fetch_array($rows))){
+            $d['d'] = json_decode($d['d']);
+            $list->Add($this->InstanceClass('Image', $d));
+        }
+
+        return $list;
+    }
+
+
+    public function old_ImageList($taskid){
+        if (!$this->TaskAccess($taskid)){
+            return null;
+        }
+        $rows = BotaskQuery::ImageList($this->db, $taskid);
+        $ret = array();
+        while (($row = $this->db->fetch_array($rows))){
+            $row['d'] = json_decode($row['d']);
+            $ret[] = $row;
+        }
+        return $ret;
+    }
+
+    public function TaskImageRemove($taskid, $image){
+        $d = json_decode($image['d']);
+        foreach ($d->canvas->ls as $lr){
+            foreach ($lr->fs as $fe){
+                if ($fe->tp == 'image'){
+                    $arr = explode("filemanager/i/", $fe->src);
+                    if (count($arr) == 2){
+                        $fileid = explode("/", $arr[1]);
+                        $this->TaskFileRemove($taskid, $fileid[0]);
+                    }
+                }
+            }
+        }
+        BotaskQuery::ImageRemove($this->db, $image['id']);
+    }
+
+
+
     /**
      * Очистить удаленные задачи из системы
      */
@@ -136,30 +317,6 @@ class BotaskApp extends AbricosApplication {
         }
     }
 
-    public function ToArrayById($rows, $field = "id"){
-        $ret = array();
-        while (($row = $this->db->fetch_array($rows))){
-            $ret[$row[$field]] = $row;
-        }
-        return $ret;
-    }
-
-    public function ToArray($rows, &$ids1 = "", $fnids1 = 'uid', &$ids2 = "", $fnids2 = '', &$ids3 = "", $fnids3 = ''){
-        $ret = array();
-        while (($row = $this->db->fetch_array($rows))){
-            $ret[] = $row;
-            if (is_array($ids1)){
-                $ids1[$row[$fnids1]] = $row[$fnids1];
-            }
-            if (is_array($ids2)){
-                $ids2[$row[$fnids2]] = $row[$fnids2];
-            }
-            if (is_array($ids3)){
-                $ids3[$row[$fnids3]] = $row[$fnids3];
-            }
-        }
-        return $ret;
-    }
 
     public function BoardDataToJSON($lastHId = 0){
         $res = $this->BoardData($lastHId);
@@ -254,87 +411,6 @@ class BotaskApp extends AbricosApplication {
         return $ret;
     }
 
-    public function TaskAccess($taskid){
-        if (!$this->IsViewRole()){
-            return false;
-        }
-        $row = BotaskQuery::UserRole($this->db, $taskid, Abricos::$user->id, true);
-        $isAccess = !empty($row);
-
-        return $isAccess;
-    }
-
-    public function TaskUserList($taskid, $retarray = false){
-        if (!$this->IsViewRole()){
-            return null;
-        }
-        $rows = BotaskQuery::TaskUserList($this->db, $taskid);
-        if (!$retarray){
-            return $rows;
-        }
-        return $this->ToArrayById($rows);
-    }
-
-    public function ImageList($taskid){
-        if (!$this->TaskAccess($taskid)){
-            return null;
-        }
-        $rows = BotaskQuery::ImageList($this->db, $taskid);
-        $ret = array();
-        while (($row = $this->db->fetch_array($rows))){
-            $row['d'] = json_decode($row['d']);
-            $ret[] = $row;
-        }
-        return $ret;
-    }
-
-    public function TaskFiles($taskid, $retarray = false){
-        if (!$this->IsViewRole()){
-            return null;
-        }
-        $rows = BotaskQuery::TaskFiles($this->db, $taskid);
-        if (!$retarray){
-            return $rows;
-        }
-        return $this->ToArrayById($rows);
-    }
-
-    public function TaskFileRemove($taskid, $fileid){
-        Abricos::GetModule('filemanager');
-        $fmanager = FileManagerModule::$instance->GetManager();
-        $fmanager->RolesDisable();
-
-        $finfo = $fmanager->GetFileInfo($fileid);
-        $rows = BotaskQuery::TaskUserList($this->db, $taskid);
-        $find = false;
-        while (($row = $this->db->fetch_array($rows))){
-            if ($row['id'] == $finfo['uid']){
-                $find = true;
-                break;
-            }
-        }
-        if ($find){
-            $fmanager->FileRemove($fileid);
-            BotaskQuery::TaskFileRemove($this->db, $taskid, $fileid);
-        }
-        $fmanager->RolesEnable();
-    }
-
-    public function TaskImageRemove($taskid, $image){
-        $d = json_decode($image['d']);
-        foreach ($d->canvas->ls as $lr){
-            foreach ($lr->fs as $fe){
-                if ($fe->tp == 'image'){
-                    $arr = explode("filemanager/i/", $fe->src);
-                    if (count($arr) == 2){
-                        $fileid = explode("/", $arr[1]);
-                        $this->TaskFileRemove($taskid, $fileid[0]);
-                    }
-                }
-            }
-        }
-        BotaskQuery::ImageRemove($this->db, $image['id']);
-    }
 
     private function TaskRemovedClear($task){
         $taskid = $task['taskid'];
@@ -458,50 +534,6 @@ class BotaskApp extends AbricosApplication {
         return $this->Task($taskid);
     }
 
-    public function TaskToJSON($taskid){
-        $res = $this->Task($taskid);
-        return $this->ResultToJSON('task', $res);
-    }
-
-    public function Task($taskid){
-        if (!$this->TaskAccess($taskid)){
-            return AbricosResponse::ERR_FORBIDDEN;
-        }
-
-        BotaskQuery::TaskUpdateLastView($this->db, $taskid, Abricos::$user->id);
-
-        $task = BotaskQuery::Task($this->db, $taskid, Abricos::$user->id, true);
-        $task['users'] = array();
-        $users = $this->TaskUserList($taskid, true);
-        foreach ($users as $user){
-            $task['users'][] = $user['id'];
-        }
-
-        $task['files'] = array();
-        $files = $this->TaskFiles($taskid, true);
-        foreach ($files as $file){
-            $task['files'][] = $file;
-        }
-
-        $task['images'] = $this->ImageList($taskid, true);
-
-        $task['custatus'] = new stdClass();
-        $task['custatus']->list = $this->ToArrayById(BotaskQuery::CustatusList($this->db, $taskid));
-        $task['custatus']->my = $this->ToArray(BotaskQuery::CustatusListByUser($this->db, Abricos::$user->id));
-
-        $hst = array();
-
-        $rows = BotaskQuery::TaskHistory($this->db, $taskid);
-        while (($row = $this->db->fetch_array($rows))){
-            $hst[] = $row;
-        }
-        $task['hst'] = $hst;
-
-        // чек-лист
-        $task['chlst'] = $this->CheckList($taskid, true, true);
-
-        return $task;
-    }
 
     public function TaskSaveToJSON($d){
         $res = $this->TaskSave($d);

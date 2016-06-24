@@ -41,6 +41,10 @@ Component.entryPoint = function(NS){
             ResolutionList: {value: NS.ResolutionList},
             ResolutionInTask: {value: NS.ResolutionInTask},
             ResolutionInTaskList: {value: NS.ResolutionInTaskList},
+            File: {value: NS.File},
+            FileList: {value: NS.FileList},
+            Image: {value: NS.Image},
+            ImageList: {value: NS.ImageList},
         },
         REQS: {
 

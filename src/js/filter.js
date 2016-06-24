@@ -83,7 +83,6 @@ Component.entryPoint = function(NS){
                 find = false;
 
             task.get('resolutions').some(function(resolutionInTask){
-                console.log(task.get('title'));
                 if (resolutionInTask.get('resolutionid') === resolutionid){
                     return find = true;
                 }

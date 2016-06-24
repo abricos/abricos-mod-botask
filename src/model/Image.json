@@ -1,0 +1,17 @@
+{
+  "version": "0.1.0",
+  "type": "model",
+  "fields": {
+    "id": {
+      "type": "int"
+    },
+    "title": {
+      "type": "string",
+      "dbField": "tl"
+    },
+    "data": {
+      "type": "object",
+      "dbField": "d"
+    }
+  }
+}

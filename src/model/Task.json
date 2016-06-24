@@ -49,6 +49,12 @@
       "type": "modelList:ResolutionInTaskList",
       "notNULL": true
     },
+    "files": {
+      "type": "modelList:FileList"
+    },
+    "images": {
+      "type": "modelList:ImageList"
+    },
     "date": {
       "type": "date",
       "dbField": "dl",

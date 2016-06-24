@@ -31,9 +31,45 @@ class BotaskQuery {
                 p.deldate as rdl
 			FROM ".$db->prefix."btk_userrole ur
 			INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
-			WHERE ur.userid=".bkint(Abricos::$user->id)." AND p.deldate=0
+			WHERE ur.userid=".intval(Abricos::$user->id)." AND p.deldate=0
 		";
         return $db->query_read($sql);
+    }
+
+    public static function Task(Ab_Database $db, $taskid){
+        $sql = "
+			SELECT
+                p.taskid as id,
+                p.parenttaskid as pid,
+                p.tasktype as tp,
+                p.userid as uid,
+
+                p.status as st,
+                p.statdate as stdl,
+
+                p.title as tl,
+                p.priority as prt,
+
+                p.dateline as dl,
+                p.updatedate as udl,
+                p.deldate as rdl,
+				p.body as bd
+			FROM ".$db->prefix."btk_task p
+			INNER JOIN ".$db->prefix."btk_userrole ur ON p.taskid=ur.taskid AND ur.userid=".intval(Abricos::$user->id)."
+			WHERE p.taskid=".intval($taskid)."
+			LIMIT 1
+		";
+        return $db->query_first($sql);
+    }
+
+    public static function UserRole(Ab_Database $db, $taskid){
+        $sql = "
+			SELECT *
+			FROM ".$db->prefix."btk_userrole ur
+			WHERE ur.taskid=".intval($taskid)." AND ur.userid=".intval(Abricos::$user->id)."
+			LIMIT 1
+		";
+        return $db->query_first($sql);
     }
 
     public static function UserRoleList(Ab_Database $db, $taskIds){
@@ -44,7 +80,7 @@ class BotaskQuery {
 
         $aw = array();
         for ($i = 0; $i < $count; $i++){
-            $aw[] = "taskid=".bkint($taskIds[$i]);
+            $aw[] = "taskid=".intval($taskIds[$i]);
         }
 
         $sql = "
@@ -53,6 +89,33 @@ class BotaskQuery {
 			WHERE ".implode(" OR ", $aw)."
 		";
         return $db->query_read($sql);
+    }
+
+    public static function UserRoleAppend(Ab_Database $db, $taskid, $userid){
+        $sql = "
+			INSERT IGNORE INTO ".$db->prefix."btk_userrole (taskid, userid) VALUES
+			(
+				".intval($taskid).",
+				".intval($userid)."
+			)
+		";
+        $db->query_write($sql);
+    }
+
+    public static function UserRoleRemove(Ab_Database $db, $taskid, $userid){
+        $sql = "
+			DELETE FROM ".$db->prefix."btk_userrole
+			WHERE taskid=".intval($taskid)." AND userid=".intval($userid)."
+		";
+        $db->query_write($sql);
+    }
+
+    public static function UserRoleAllRemove(Ab_Database $db, $taskid){
+        $sql = "
+			DELETE FROM ".$db->prefix."btk_userrole
+			WHERE taskid=".intval($taskid)."
+		";
+        $db->query_write($sql);
     }
 
     public static function ResolutionList(Ab_Database $db){
@@ -85,7 +148,7 @@ class BotaskQuery {
 
         $aw = array();
         for ($i = 0; $i < $count; $i++){
-            $aw[] = "taskid=".bkint($taskIds[$i]);
+            $aw[] = "taskid=".intval($taskIds[$i]);
         }
 
         $sql = "
@@ -95,6 +158,88 @@ class BotaskQuery {
 		";
         return $db->query_read($sql);
     }
+
+    /* * * * * * * * * * * * * * * * File * * * * * * * * * * * * * * */
+
+    public static function FileList(Ab_Database $db, $taskid){
+        $sql = "
+			SELECT 
+				bf.filehash as id,
+				f.filename as nm,
+				f.filesize as sz
+			FROM ".$db->prefix."btk_file bf
+			INNER JOIN ".$db->prefix."fm_file f ON bf.filehash=f.filehash
+			WHERE bf.taskid=".intval($taskid)."
+		";
+        return $db->query_read($sql);
+    }
+
+    public static function FileAppend(Ab_Database $db, $taskid, $filehash, $userid){
+        $sql = "
+			INSERT INTO ".$db->prefix."btk_file (taskid, filehash, userid) VALUES
+			(
+				".intval($taskid).",
+				'".bkstr($filehash)."',
+				".intval($userid)."
+			)
+		";
+        $db->query_write($sql);
+    }
+
+    public static function FileRemove(Ab_Database $db, $taskid, $filehash){
+        $sql = "
+			DELETE FROM ".$db->prefix."btk_file
+			WHERE taskid=".intval($taskid)." AND filehash='".bkstr($filehash)."' 
+		";
+        $db->query_write($sql);
+    }
+
+    /* * * * * * * * * * * * * * * * Image * * * * * * * * * * * * * * */
+
+    public static function ImageList(Ab_Database $db, $taskid){
+        $sql = "
+			SELECT
+				imageid as id,
+				title as tl,
+				data as d
+			FROM ".$db->prefix."btk_image
+			WHERE taskid=".intval($taskid)."
+			ORDER BY imageid
+		";
+        return $db->query_read($sql);
+    }
+
+    public static function ImageAppend(Ab_Database $db, $taskid, $title, $data){
+        $sql = "
+			INSERT INTO ".$db->prefix."btk_image (taskid, title, data) VALUES (
+				".intval($taskid).",
+				'".bkstr($title)."',
+				'".bkstr($data)."'
+			)
+		";
+        $db->query_write($sql);
+    }
+
+    public static function ImageUpdate(Ab_Database $db, $imageid, $title, $data){
+        $sql = "
+			UPDATE ".$db->prefix."btk_image
+			SET title='".bkstr($title)."',
+				data='".bkstr($data)."'
+				WHERE imageid=".intval($imageid)."
+			LIMIT 1
+		";
+        $db->query_write($sql);
+    }
+
+    public static function ImageRemove(Ab_Database $db, $imageid){
+        $sql = "
+			DELETE FROM ".$db->prefix."btk_image
+			WHERE imageid=".intval($imageid)."
+			LIMIT 1
+		";
+        $db->query_write($sql);
+    }
+
 
     /******************************************************/
     // TODO: refactoring source
@@ -126,10 +271,10 @@ class BotaskQuery {
     private static function BoardWhere($lastupdate = 0, $parenttaskid = 0, $status = 0){
         $where = "";
         if ($lastupdate > 0){
-            $where = " AND p.updatedate >= ".bkint($lastupdate);
+            $where = " AND p.updatedate >= ".intval($lastupdate);
         }
         if ($parenttaskid > 0){
-            $where .= " AND p.parenttaskid = ".bkint($parenttaskid);
+            $where .= " AND p.parenttaskid = ".intval($parenttaskid);
         }
         return $where;
     }
@@ -158,8 +303,8 @@ class BotaskQuery {
 			INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
 			LEFT JOIN ".$db->prefix."comment_userview cmtl
 			    ON p.taskid=cmtl.ownerid AND cmtl.ownerModule='botask' AND cmtl.ownerType='task'
-			        AND cmtl.userid=".bkint($userid)."
-			WHERE ur.userid=".bkint($userid)." AND p.deldate=0 ".$where."
+			        AND cmtl.userid=".intval($userid)."
+			WHERE ur.userid=".intval($userid)." AND p.deldate=0 ".$where."
 		";
         return $db->query_read($sql);
     }
@@ -181,8 +326,8 @@ class BotaskQuery {
 					) as cmt
 				FROM ".$db->prefix."btk_userrole ur
 				INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
-				LEFT JOIN ".$db->prefix."cmt_lastview cmtl ON p.contentid=cmtl.contentid AND cmtl.userid=".bkint($userid)."
-				WHERE ur.userid=".bkint($userid)." AND p.deldate=0
+				LEFT JOIN ".$db->prefix."cmt_lastview cmtl ON p.contentid=cmtl.contentid AND cmtl.userid=".intval($userid)."
+				WHERE ur.userid=".intval($userid)." AND p.deldate=0
 			) a
 			WHERE a.cmt > a.cmtv OR a.n > 0
 		";
@@ -207,7 +352,7 @@ class BotaskQuery {
 				SELECT ur.taskid
 				FROM ".$db->prefix."btk_userrole ur
 				INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
-				WHERE ur.userid=".bkint($userid)." AND p.deldate=0 ".$where."
+				WHERE ur.userid=".intval($userid)." AND p.deldate=0 ".$where."
 			) ps
 			LEFT JOIN ".$db->prefix."btk_userrole ur1 ON ps.taskid=ur1.taskid
 			WHERE ur1.userid>0
@@ -224,7 +369,7 @@ class BotaskQuery {
     public static function BoardUsers(Ab_Database $db, $userid, $lastupdate = 0, $autors = array()){
         $where = "";
         if ($lastupdate > 0){
-            $where = " AND p.updatedate >= ".bkint($lastupdate);
+            $where = " AND p.updatedate >= ".intval($lastupdate);
         }
 
         $whereu = "";
@@ -233,8 +378,8 @@ class BotaskQuery {
             $sa = array();
             $san = array();
             foreach ($autors as $id => $v){
-                $sa[] = " u.userid = ".bkint($id);
-                $san[] = " u.userid <> ".bkint($id);
+                $sa[] = " u.userid = ".intval($id);
+                $san[] = " u.userid <> ".intval($id);
             }
             $whereu = "WHERE ".implode(" OR ", $sa);
             $whereun = "WHERE ".implode(" OR ", $san);
@@ -251,7 +396,7 @@ class BotaskQuery {
 				SELECT DISTINCT ur.taskid
 				FROM ".$db->prefix."btk_userrole ur
 				INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
-				WHERE ur.userid=".bkint($userid)." AND p.deldate=0 ".$where."
+				WHERE ur.userid=".intval($userid)." AND p.deldate=0 ".$where."
 			) ps
 			LEFT JOIN ".$db->prefix."btk_userrole ur1 ON ps.taskid=ur1.taskid
 			INNER JOIN ".$db->prefix."user u ON ur1.userid=u.userid
@@ -286,7 +431,7 @@ class BotaskQuery {
 				u.lastname as lnm,
 				u.avatar as avt
 			FROM ".$db->prefix."user u
-			WHERE u.userid=".bkint($userid)."
+			WHERE u.userid=".intval($userid)."
 			LIMIT 1
 		";
         return $retArray ? $db->query_first($sql) : $db->query_read($sql);
@@ -307,32 +452,32 @@ class BotaskQuery {
 				priority,priorityc,
 				useradded, userremoved) VALUES (
 
-				".bkint($h->taskid).",
-				".bkint($h->userid).",
+				".intval($h->taskid).",
+				".intval($h->userid).",
 				".TIMENOW.",
-				".bkint($h->parenttaskid).",
-				".bkint($h->parenttaskidc).",
+				".intval($h->parenttaskid).",
+				".intval($h->parenttaskidc).",
 				'".bkstr($h->title)."',
-				".bkint($h->titlec).",
+				".intval($h->titlec).",
 				'".bkstr($h->body)."',
-				".bkint($h->bodyc).",
+				".intval($h->bodyc).",
 
 				'".bkstr($h->imagedata)."',
-				".bkint($h->imagedatac).",
+				".intval($h->imagedatac).",
 
 				'".bkstr($h->check)."',
-				".bkint($h->checkc).",
-				".bkint($h->deadline).",
-				".bkint($h->deadlinec).",
-				".bkint($h->deadlinebytime).",
-				".bkint($h->deadlinebytimec).",
+				".intval($h->checkc).",
+				".intval($h->deadline).",
+				".intval($h->deadlinec).",
+				".intval($h->deadlinebytime).",
+				".intval($h->deadlinebytimec).",
 
-				".bkint($h->status).",
-				".bkint($h->prevstatus).",
-				".bkint($h->statuserid).",
+				".intval($h->status).",
+				".intval($h->prevstatus).",
+				".intval($h->statuserid).",
 
-				".bkint($h->priority).",
-				".bkint($h->priorityc).",
+				".intval($h->priority).",
+				".intval($h->priorityc).",
 
 				'".bkstr($h->useradded)."',
 				'".bkstr($h->userremoved)."'
@@ -367,8 +512,8 @@ class BotaskQuery {
 	";
 
     public static function BoardHistory(Ab_Database $db, $userid, $lastHId = 0, $firstHId = 0){
-        $lastHId = bkint($lastHId);
-        $firstHId = bkint($firstHId);
+        $lastHId = intval($lastHId);
+        $firstHId = intval($firstHId);
         $where = "";
         if ($lastHId > 0){
             $where = " AND h.historyid > ".$lastHId;
@@ -383,7 +528,7 @@ class BotaskQuery {
 			FROM ".$db->prefix."btk_userrole ur
 			INNER JOIN ".$db->prefix."btk_task p ON ur.taskid=p.taskid
 			INNER JOIN ".$db->prefix."btk_history h ON ur.taskid=h.taskid
-			WHERE ur.userid=".bkint($userid)." AND p.deldate=0 ".$where."
+			WHERE ur.userid=".intval($userid)." AND p.deldate=0 ".$where."
 			ORDER BY h.dateline DESC
 			LIMIT 15
 		";
@@ -391,7 +536,7 @@ class BotaskQuery {
     }
 
     public static function TaskHistory(Ab_Database $db, $taskid, $firstHId = 0){
-        $firstHId = bkint($firstHId);
+        $firstHId = intval($firstHId);
         $where = "";
         if ($firstHId > 0){
             $where = " AND h.historyid < ".$firstHId;
@@ -402,7 +547,7 @@ class BotaskQuery {
 				".BotaskQuery::HISTORY_FIELDS."
 			FROM ".$db->prefix."btk_history h
 			INNER JOIN ".$db->prefix."btk_task p ON h.taskid=p.taskid
-			WHERE h.taskid=".bkint($taskid)." ".$where."
+			WHERE h.taskid=".intval($taskid)." ".$where."
 			ORDER BY h.dateline DESC
 			LIMIT 7
 		";
@@ -415,25 +560,12 @@ class BotaskQuery {
 				".BotaskQuery::HISTORY_FIELDS."
 			FROM ".$db->prefix."btk_history h
 			INNER JOIN ".$db->prefix."btk_task p ON h.taskid=p.taskid
-			WHERE h.taskid=".bkint($taskid)."
-				AND h.status>0 AND h.status<>".bkint($curst)."
+			WHERE h.taskid=".intval($taskid)."
+				AND h.status>0 AND h.status<>".intval($curst)."
 			ORDER BY h.dateline DESC
 			LIMIT 1
 		";
         return $db->query_first($sql);
-    }
-
-    public static function Task(Ab_Database $db, $taskid, $userid, $retArray = false){
-        $sql = "
-			SELECT
-				".BotaskQuery::TASK_FIELDS.",
-				p.body as bd
-			FROM ".$db->prefix."btk_task p
-			INNER JOIN ".$db->prefix."btk_userrole ur ON p.taskid=ur.taskid AND ur.userid=".bkint($userid)."
-			WHERE p.taskid=".bkint($taskid)."
-			LIMIT 1
-		";
-        return $retArray ? $db->query_first($sql) : $db->query_read($sql);
     }
 
     public static function TaskAppend(Ab_Database $db, $tk, $pubkey){
@@ -441,19 +573,19 @@ class BotaskQuery {
 			INSERT INTO ".$db->prefix."btk_task (
 				userid, parenttaskid, tasktype, title, status, statdate, pubkey, body,
 				deadline, deadlinebytime, dateline, updatedate, priority) VALUES (
-				".bkint($tk->uid).",
-				".bkint($tk->pid).",
-				".bkint($tk->typeid).",
+				".intval($tk->uid).",
+				".intval($tk->pid).",
+				".intval($tk->typeid).",
 				'".bkstr($tk->tl)."',
 				".BotaskStatus::TASK_OPEN.",
 				".TIMENOW.",
 				'".bkstr($pubkey)."',
 				'".bkstr($tk->bd)."',
-				".bkint($tk->ddl).",
-				".bkint($tk->ddlt).",
+				".intval($tk->ddl).",
+				".intval($tk->ddlt).",
 				".TIMENOW.",
 				".TIMENOW.",
-				".bkint($tk->prt)."
+				".intval($tk->prt)."
 			)
 		";
         $db->query_write($sql);
@@ -466,12 +598,12 @@ class BotaskQuery {
 			SET
 				title='".bkstr($tk->tl)."',
 				body='".bkstr($tk->bd)."',
-				parenttaskid=".bkint($tk->pid).",
-				deadline=".bkint($tk->ddl).",
-				deadlinebytime=".bkint($tk->ddlt).",
+				parenttaskid=".intval($tk->pid).",
+				deadline=".intval($tk->ddl).",
+				deadlinebytime=".intval($tk->ddlt).",
 				updatedate=".TIMENOW.",
-				priority=".bkint($tk->prt)."
-			WHERE taskid=".bkint($tk->id)."
+				priority=".intval($tk->prt)."
+			WHERE taskid=".intval($tk->id)."
 		";
         $db->query_write($sql);
     }
@@ -480,10 +612,10 @@ class BotaskQuery {
         $sql = "
 			UPDATE ".$db->prefix."btk_task
 			SET
-				status=".bkint($status).",
-				statuserid=".bkint($statuserid).",
+				status=".intval($status).",
+				statuserid=".intval($statuserid).",
 				statdate=".TIMENOW."
-			WHERE taskid=".bkint($taskid)."
+			WHERE taskid=".intval($taskid)."
 		";
         $db->query_write($sql);
     }
@@ -492,7 +624,7 @@ class BotaskQuery {
         $sql = "
 			UPDATE ".$db->prefix."btk_task
 			SET status=".BotaskStatus::TASK_OPEN.", statuserid=0, statdate=0
-			WHERE taskid=".bkint($taskid)."
+			WHERE taskid=".intval($taskid)."
 		";
         $db->query_write($sql);
     }
@@ -512,7 +644,7 @@ class BotaskQuery {
 				u.lastname as lnm
 			FROM ".$db->prefix."btk_userrole p
 			INNER JOIN ".$db->prefix."user u ON p.userid=u.userid
-			WHERE p.taskid=".bkint($taskid)."
+			WHERE p.taskid=".intval($taskid)."
 		";
         return $db->query_read($sql);
     }
@@ -533,49 +665,12 @@ class BotaskQuery {
 				u.email
 			FROM ".$db->prefix."btk_userrole p
 			INNER JOIN ".$db->prefix."user u ON p.userid=u.userid
-			WHERE p.taskid=".bkint($taskid)."
+			WHERE p.taskid=".intval($taskid)."
 		";
         return $db->query_read($sql);
     }
 
 
-    public static function UserRoleAppend(Ab_Database $db, $taskid, $userid){
-        $sql = "
-			INSERT IGNORE INTO ".$db->prefix."btk_userrole (taskid, userid) VALUES
-			(
-				".bkint($taskid).",
-				".bkint($userid)."
-			)
-		";
-        $db->query_write($sql);
-    }
-
-    public static function UserRole(Ab_Database $db, $taskid, $userid, $retArray = false){
-        $sql = "
-			SELECT
-				ur.userroleid as id
-			FROM ".$db->prefix."btk_userrole ur
-			WHERE ur.taskid=".bkint($taskid)." AND ur.userid=".bkint($userid)."
-			LIMIT 1
-		";
-        return $retArray ? $db->query_first($sql) : $db->query_read($sql);
-    }
-
-    public static function UserRoleRemove(Ab_Database $db, $taskid, $userid){
-        $sql = "
-			DELETE FROM ".$db->prefix."btk_userrole
-			WHERE taskid=".bkint($taskid)." AND userid=".bkint($userid)."
-		";
-        $db->query_write($sql);
-    }
-
-    public static function UserRoleAllRemove(Ab_Database $db, $taskid){
-        $sql = "
-			DELETE FROM ".$db->prefix."btk_userrole
-			WHERE taskid=".bkint($taskid)."
-		";
-        $db->query_write($sql);
-    }
 
     /**
      * Обновить информацию последнего просмотра задачи (для определения флага - Новая)
@@ -587,7 +682,7 @@ class BotaskQuery {
         $sql = "
 			UPDATE ".$db->prefix."btk_userrole
 			SET viewdate=".TIMENOW."
-			WHERE taskid=".bkint($taskid)." AND userid=".bkint($userid)."
+			WHERE taskid=".intval($taskid)." AND userid=".intval($userid)."
 			LIMIT 1
 		";
         $db->query_write($sql);
@@ -596,8 +691,8 @@ class BotaskQuery {
     public static function TaskVoting(Ab_Database $db, $taskid, $userid, $value){
         $sql = "
 			UPDATE ".$db->prefix."btk_userrole
-			SET ord=".bkint($value)."
-			WHERE taskid=".bkint($taskid)." AND userid=".bkint($userid)."
+			SET ord=".intval($value)."
+			WHERE taskid=".intval($taskid)." AND userid=".intval($userid)."
 			LIMIT 1
 		";
         $db->query_write($sql);
@@ -606,8 +701,8 @@ class BotaskQuery {
     public static function TaskFavorite(Ab_Database $db, $taskid, $userid, $value){
         $sql = "
 			UPDATE ".$db->prefix."btk_userrole
-			SET favorite=".bkint($value)."
-			WHERE taskid=".bkint($taskid)." AND userid=".bkint($userid)."
+			SET favorite=".intval($value)."
+			WHERE taskid=".intval($taskid)." AND userid=".intval($userid)."
 			LIMIT 1
 		";
         $db->query_write($sql);
@@ -616,8 +711,8 @@ class BotaskQuery {
     public static function TaskExpand(Ab_Database $db, $taskid, $userid, $value){
         $sql = "
 			UPDATE ".$db->prefix."btk_userrole
-			SET expanded=".bkint($value)."
-			WHERE taskid=".bkint($taskid)." AND userid=".bkint($userid)."
+			SET expanded=".intval($value)."
+			WHERE taskid=".intval($taskid)." AND userid=".intval($userid)."
 			LIMIT 1
 		";
         $db->query_write($sql);
@@ -626,8 +721,8 @@ class BotaskQuery {
     public static function TaskShowComments(Ab_Database $db, $taskid, $userid, $value){
         $sql = "
 			UPDATE ".$db->prefix."btk_userrole
-			SET showcomments=".bkint($value)."
-			WHERE taskid=".bkint($taskid)." AND userid=".bkint($userid)."
+			SET showcomments=".intval($value)."
+			WHERE taskid=".intval($taskid)." AND userid=".intval($userid)."
 			LIMIT 1
 		";
         $db->query_write($sql);
@@ -653,7 +748,7 @@ class BotaskQuery {
 					p.contentid
 				FROM ".$db->prefix."btk_userrole ur
 				INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
-				WHERE ur.userid=".bkint($userid).") t1 ON t1.contentid=a.contentid
+				WHERE ur.userid=".intval($userid).") t1 ON t1.contentid=a.contentid
 			LEFT JOIN ".$db->prefix."user u ON u.userid = a.userid
 			ORDER BY a.commentid DESC  
 			LIMIT 15
@@ -674,7 +769,7 @@ class BotaskQuery {
 			FROM ".$db->prefix."btk_userrole ur 
 			INNER JOIN ".$db->prefix."btk_task p ON ur.taskid=p.taskid
 			INNER JOIN ".$db->prefix."btk_history h ON ur.taskid=h.taskid
-			WHERE ur.userid=".bkint($userid)." AND p.deldate=0 AND h.dateline >= ".bkint($fromtime)." AND
+			WHERE ur.userid=".intval($userid)." AND p.deldate=0 AND h.dateline >= ".intval($fromtime)." AND
 			(h.status = ".BotaskStatus::TASK_ACCEPT." OR h.prevstatus = ".BotaskStatus::TASK_ACCEPT.")
 			ORDER BY h.dateline DESC
 			LIMIT 500
@@ -698,7 +793,7 @@ class BotaskQuery {
 				c.deldate as ddl,
 				c.deluserid as duid
 			FROM ".$db->prefix."btk_checklist c 
-			WHERE c.taskid=".bkint($taskid)."
+			WHERE c.taskid=".intval($taskid)."
 			ORDER BY c.ord DESC
 		";
         return $db->query_read($sql);
@@ -707,8 +802,8 @@ class BotaskQuery {
     public static function CheckListAppend(Ab_Database $db, $taskid, $userid, $title){
         $sql = "
 			INSERT INTO ".$db->prefix."btk_checklist (taskid, userid, title, dateline) VALUES (
-				".bkint($taskid).",
-				".bkint($userid).",
+				".intval($taskid).",
+				".intval($userid).",
 				'".bkstr($title)."',
 				".TIMENOW."
 			)
@@ -721,8 +816,8 @@ class BotaskQuery {
         $sql = "
 			UPDATE ".$db->prefix."btk_checklist
 			SET deldate=".TIMENOW.",
-				deluserid=".bkint($userid)."
-			WHERE checklistid=".bkint($chid)."
+				deluserid=".intval($userid)."
+			WHERE checklistid=".intval($chid)."
 		";
         $db->query_write($sql);
     }
@@ -731,7 +826,7 @@ class BotaskQuery {
         $sql = "
 			UPDATE ".$db->prefix."btk_checklist
 			SET deldate=0, deluserid=0
-			WHERE checklistid=".bkint($chid)."
+			WHERE checklistid=".intval($chid)."
 		";
         $db->query_write($sql);
     }
@@ -741,8 +836,8 @@ class BotaskQuery {
 			UPDATE ".$db->prefix."btk_checklist
 			SET title='".bkstr($title)."',
 				upddate=".TIMENOW.",
-				upduserid=".bkint($userid)."
-			WHERE checklistid=".bkint($chid)."
+				upduserid=".intval($userid)."
+			WHERE checklistid=".intval($chid)."
 		";
         $db->query_write($sql);
     }
@@ -752,50 +847,18 @@ class BotaskQuery {
 			UPDATE ".$db->prefix."btk_checklist
 			SET checked=".(!empty($check) ? 1 : 0).",
 				checkdate=".TIMENOW.",
-				checkuserid=".bkint($userid)."
-			WHERE checklistid=".bkint($chid)."
+				checkuserid=".intval($userid)."
+			WHERE checklistid=".intval($chid)."
 		";
         $db->query_write($sql);
     }
 
-    public static function TaskFiles(Ab_Database $db, $taskid){
-        $sql = "
-			SELECT 
-				bf.filehash as id,
-				f.filename as nm,
-				f.filesize as sz
-			FROM ".$db->prefix."btk_file bf
-			INNER JOIN ".$db->prefix."fm_file f ON bf.filehash=f.filehash
-			WHERE bf.taskid=".bkint($taskid)."
-		";
-        return $db->query_read($sql);
-    }
-
-    public static function TaskFileAppend(Ab_Database $db, $taskid, $filehash, $userid){
-        $sql = "
-			INSERT INTO ".$db->prefix."btk_file (taskid, filehash, userid) VALUES
-			(
-				".bkint($taskid).",
-				'".bkstr($filehash)."',
-				".bkint($userid)."
-			)
-		";
-        $db->query_write($sql);
-    }
-
-    public static function TaskFileRemove(Ab_Database $db, $taskid, $filehash){
-        $sql = "
-			DELETE FROM ".$db->prefix."btk_file
-			WHERE taskid=".bkint($taskid)." AND filehash='".bkstr($filehash)."' 
-		";
-        $db->query_write($sql);
-    }
 
     public static function CustatusListByUser(Ab_Database $db, $userid){
         $sql = "
 			SELECT DISTINCT title as tl
 			FROM ".$db->prefix."btk_custatus
-			WHERE userid=".bkint($userid)."
+			WHERE userid=".intval($userid)."
 		";
         return $db->query_read($sql);
     }
@@ -803,8 +866,8 @@ class BotaskQuery {
     public static function CustatusSave(Ab_Database $db, $taskid, $userid, $title){
         $sql = "
 			REPLACE ".$db->prefix."btk_custatus (taskid, userid, title, dateline) VALUES (
-				".bkint($taskid).",
-				".bkint($userid).",
+				".intval($taskid).",
+				".intval($userid).",
 				'".bkstr($title)."',
 				".TIMENOW."
 			)
@@ -812,49 +875,6 @@ class BotaskQuery {
         $db->query_write($sql);
     }
 
-    public static function ImageList(Ab_Database $db, $taskid){
-        $sql = "
-			SELECT
-				imageid as id,
-				title as tl,
-				data as d
-			FROM ".$db->prefix."btk_image
-			WHERE taskid=".bkint($taskid)."
-			ORDER BY imageid
-		";
-        return $db->query_read($sql);
-    }
-
-    public static function ImageAppend(Ab_Database $db, $taskid, $title, $data){
-        $sql = "
-			INSERT INTO ".$db->prefix."btk_image (taskid, title, data) VALUES (
-				".bkint($taskid).",
-				'".bkstr($title)."',
-				'".bkstr($data)."'
-			)
-		";
-        $db->query_write($sql);
-    }
-
-    public static function ImageUpdate(Ab_Database $db, $imageid, $title, $data){
-        $sql = "
-			UPDATE ".$db->prefix."btk_image
-			SET title='".bkstr($title)."',
-				data='".bkstr($data)."'
-				WHERE imageid=".bkint($imageid)."
-			LIMIT 1
-		";
-        $db->query_write($sql);
-    }
-
-    public static function ImageRemove(Ab_Database $db, $imageid){
-        $sql = "
-			DELETE FROM ".$db->prefix."btk_image
-			WHERE imageid=".bkint($imageid)."
-			LIMIT 1
-		";
-        $db->query_write($sql);
-    }
 
     /**
      * Очистить партию удаленных проектов из корзины.
@@ -870,7 +890,7 @@ class BotaskQuery {
 			WHERE deldate=0
 				AND status=".BotaskStatus::TASK_REMOVE."
 				AND statdate<".$time."
-			LIMIT ".bkint($limit)."
+			LIMIT ".intval($limit)."
 		";
         $db->query_write($sql);
 
@@ -878,7 +898,7 @@ class BotaskQuery {
 			SELECT *
 			FROM ".$db->prefix."btk_task
 			WHERE deldate>0
-			LIMIT ".bkint($limit)."
+			LIMIT ".intval($limit)."
 		";
         return $db->query_read($sql);
     }
@@ -887,7 +907,7 @@ class BotaskQuery {
         $sql = "
 			SELECT *
 			FROM ".$db->prefix."btk_task
-			WHERE parenttaskid=".bkint($taskid)."
+			WHERE parenttaskid=".intval($taskid)."
 				AND status=".BotaskStatus::TASK_REMOVE."
 		";
         return $db->query_read($sql);
@@ -896,7 +916,7 @@ class BotaskQuery {
     public static function TaskRemovedClear(Ab_Database $db, $taskid){
         $sql = "
 			DELETE FROM ".$db->prefix."btk_task
-			WHERE taskid=".bkint($taskid)."
+			WHERE taskid=".intval($taskid)."
 		";
         $db->query_write($sql);
     }

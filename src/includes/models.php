@@ -12,10 +12,26 @@
  *
  * @property BotaskUserRoleList $users
  * @property BotaskResolutionInTaskList $resolutions
+ * @property BotaskFileList $files
+ * @property BotaskImageList $images
  */
 class BotaskTask extends AbricosModel {
     protected $_structModule = 'botask';
     protected $_structName = 'Task';
+
+    private $_commentOwner;
+
+    public function GetCommentOwner(){
+        if (!empty($this->_commentOwner)){
+            return $this->_commentOwner;
+        }
+        return $this->_commentOwner = Abricos::GetApp('comment')->InstanceClass('Owner', array(
+            "module" => "botask",
+            "type" => "task",
+            "ownerid" => $this->id
+        ));
+    }
+
 }
 
 /**
@@ -67,4 +83,20 @@ class BotaskResolutionInTask extends AbricosModel {
 }
 
 class BotaskResolutionInTaskList extends AbricosModelList {
+}
+
+class BotaskFile extends AbricosModel {
+    protected $_structModule = 'botask';
+    protected $_structName = 'File';
+}
+
+class BotaskFileList extends AbricosModelList {
+}
+
+class BotaskImage extends AbricosModel {
+    protected $_structModule = 'botask';
+    protected $_structName = 'Image';
+}
+
+class BotaskImageList extends AbricosModelList {
 }

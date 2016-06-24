@@ -465,4 +465,20 @@ Component.entryPoint = function(NS){
         appItem: NS.ResolutionInTask,
     });
 
+    NS.File = Y.Base.create('file', SYS.AppModel, [], {
+        structureName: 'File'
+    });
+
+    NS.FileList = Y.Base.create('fileList', SYS.AppModelList, [], {
+        appItem: NS.File,
+    });
+
+    NS.Image = Y.Base.create('image', SYS.AppModel, [], {
+        structureName: 'Image'
+    });
+
+    NS.ImageList = Y.Base.create('imageList', SYS.AppModelList, [], {
+        appItem: NS.Image,
+    });
+
 };
