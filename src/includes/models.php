@@ -109,3 +109,11 @@ class BotaskCheck extends AbricosModel {
 
 class BotaskCheckList extends AbricosModelList {
 }
+
+class BotaskHistory extends AbricosModel {
+    protected $_structModule = 'botask';
+    protected $_structName = 'History';
+}
+
+class BotaskHistoryList extends AbricosModelList {
+}

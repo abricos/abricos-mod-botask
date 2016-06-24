@@ -30,11 +30,13 @@ class BotaskApp extends AbricosApplication {
             "ImageList" => "BotaskImageList",
             "Check" => "BotaskCheck",
             "CheckList" => "BotaskCheckList",
+            "History" => "BotaskHistory",
+            "HistoryList" => "BotaskHistoryList",
         );
     }
 
     protected function GetStructures(){
-        return 'Task,UserRole,Resolution,ResolutionInTask,File,Image,Check';
+        return 'Task,UserRole,Resolution,ResolutionInTask,File,Image,Check,History';
     }
 
     public function IsAdminRole(){
@@ -189,11 +191,6 @@ class BotaskApp extends AbricosApplication {
 
         return $task;
 
-        $task['images'] = $this->ImageList($taskid, true);
-
-        $task['custatus'] = new stdClass();
-        $task['custatus']->list = $this->ToArrayById(BotaskQuery::CustatusList($this->db, $taskid));
-        $task['custatus']->my = $this->ToArray(BotaskQuery::CustatusListByUser($this->db, Abricos::$user->id));
 
         $hst = array();
 
@@ -391,6 +388,83 @@ class BotaskApp extends AbricosApplication {
 
         return $this->Task($taskid);
     }
+
+    /* * * * * * * * * * * * * * * Resolutions * * * * * * * * * * * * */
+
+    public function ResolutionListToJSON(){
+        $res = $this->ResolutionList();
+        return $this->ResultToJSON('resolutionList', $res);
+    }
+
+    public function ResolutionList(){
+        if (!$this->IsViewRole()){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        /** @var BotaskResolutionList $list */
+        $list = $this->InstanceClass('ResolutionList');
+
+        $rows = BotaskQuery::ResolutionList($this->db);
+        while (($d = $this->db->fetch_array($rows))){
+            $list->Add($this->InstanceClass('Resolution', $d));
+        }
+
+        return $list;
+    }
+
+    public function ResolutionSaveToJSON($taskid, $value){
+        $res = $this->ResolutionSave($taskid, $value);
+        if (AbricosResponse::IsError($res)){
+            return $res;
+        }
+        return $this->ImplodeJSON(array(
+            $this->ResultToJSON('resolutionSave', $res),
+            $this->TaskToJSON($taskid)
+        ));
+    }
+
+    public function ResolutionSave($taskid, $value){
+        if (!$this->TaskAccess($taskid)){
+            return null;
+        }
+
+        $parser = Abricos::TextParser(true);
+        $value = $parser->Parser($value);
+        BotaskQuery::CustatusSave($this->db, $taskid, Abricos::$user->id, $value);
+
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
+        $ret->value = $value;
+
+        return $ret;
+    }
+
+    /* * * * * * * * * * * * * * * * * History * * * * * * * * * * * * * * */
+
+    public function History($taskid, $firstHId){
+        if (!$this->IsViewRole()){
+            return null;
+        }
+
+        $taskid = intval($taskid);
+        if ($taskid > 0){
+            if (!$this->TaskAccess($taskid)){
+                return null;
+            }
+            $rows = BotaskQuery::TaskHistory($this->db, $taskid, $firstHId);
+        } else {
+            $rows = BotaskQuery::BoardHistory($this->db, Abricos::$user->id, 0, $firstHId);
+        }
+        $hst = array();
+        while (($row = $this->db->fetch_array($rows))){
+            $hst[] = $row;
+        }
+        return $hst;
+    }
+
+
+
+    /* * * * * * * * * * * * * * * * To Refactoring * * * * * * * * * * * * * * */
 
 
     /**
@@ -1156,79 +1230,6 @@ class BotaskApp extends AbricosApplication {
         return $ret;
     }
 
-    /* * * * * * * * * * * * * * * Resolutions * * * * * * * * * * * * */
-
-    public function ResolutionListToJSON(){
-        $res = $this->ResolutionList();
-        return $this->ResultToJSON('resolutionList', $res);
-    }
-
-    public function ResolutionList(){
-        if (!$this->IsViewRole()){
-            return AbricosResponse::ERR_FORBIDDEN;
-        }
-
-        /** @var BotaskResolutionList $list */
-        $list = $this->InstanceClass('ResolutionList');
-
-        $rows = BotaskQuery::ResolutionList($this->db);
-        while (($d = $this->db->fetch_array($rows))){
-            $list->Add($this->InstanceClass('Resolution', $d));
-        }
-
-        return $list;
-    }
-
-
-    public function ResolutionSaveToJSON($taskid, $value){
-        $res = $this->ResolutionSave($taskid, $value);
-        if (AbricosResponse::IsError($res)){
-            return $res;
-        }
-        return $this->ImplodeJSON(array(
-            $this->ResultToJSON('resolutionSave', $res),
-            $this->TaskToJSON($taskid)
-        ));
-    }
-
-    public function ResolutionSave($taskid, $value){
-        if (!$this->TaskAccess($taskid)){
-            return null;
-        }
-
-        $parser = Abricos::TextParser(true);
-        $value = $parser->Parser($value);
-        BotaskQuery::CustatusSave($this->db, $taskid, Abricos::$user->id, $value);
-
-        $ret = new stdClass();
-        $ret->taskid = $taskid;
-        $ret->value = $value;
-
-        return $ret;
-    }
-
-    /* * * * * * * * * * * * * * * * * History * * * * * * * * * * * * * * */
-
-    public function History($taskid, $firstHId){
-        if (!$this->IsViewRole()){
-            return null;
-        }
-
-        $taskid = intval($taskid);
-        if ($taskid > 0){
-            if (!$this->TaskAccess($taskid)){
-                return null;
-            }
-            $rows = BotaskQuery::TaskHistory($this->db, $taskid, $firstHId);
-        } else {
-            $rows = BotaskQuery::BoardHistory($this->db, Abricos::$user->id, 0, $firstHId);
-        }
-        $hst = array();
-        while (($row = $this->db->fetch_array($rows))){
-            $hst[] = $row;
-        }
-        return $hst;
-    }
 
     private function UserNameBuild($user){
         $firstname = !empty($user['fnm']) ? $user['fnm'] : $user['firstname'];

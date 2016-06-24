@@ -1,0 +1,116 @@
+{
+  "version": "0.1.0",
+  "type": "model",
+  "fields": {
+    "id": {
+      "type": "int"
+    },
+    "taskid": {
+      "type": "int",
+      "dbField": "tid",
+      "json": "tid"
+    },
+    "userid": {
+      "type": "int",
+      "dbField": "uid",
+      "json": "uid"
+    },
+    "date": {
+      "type": "date",
+      "dbField": "dl",
+      "json": "dl"
+    },
+
+    "title": {
+      "type": "string",
+      "dbField": "ttl",
+      "json": "ttl"
+    },
+    "titleChanged": {
+      "type": "bool",
+      "dbField": "tlc",
+      "json": "tlc"
+    },
+
+    "parentid": {
+      "type": "int",
+      "dbField": "ptid",
+      "json": "ptid"
+    },
+    "parentChanged": {
+      "type": "bool",
+      "dbField": "ptidc",
+      "json": "ptidc"
+    },
+
+
+    "body": {
+      "type": "string",
+      "dbField": "bd",
+      "json": "bd"
+    },
+    "bodyChanged": {
+      "type": "bool",
+      "dbField": "bdc",
+      "json": "bdc"
+    },
+
+    "checks": {
+      "type": "string",
+      "dbField": "ch",
+      "json": "ch"
+    },
+    "checkChanged": {
+      "type": "bool",
+      "dbField": "chc",
+      "json": "chc"
+    },
+
+    "deadlineChanged": {
+      "type": "bool",
+      "dbField": "ddlc",
+      "json": "ddlc"
+    },
+    "deadlineByTimeChanged": {
+      "type": "bool",
+      "dbField": "ddltc",
+      "json": "ddltc"
+    },
+    "userAdded": {
+      "type": "string",
+      "dbField": "usad",
+      "json": "usad"
+    },
+    "userRemoved": {
+      "type": "string",
+      "dbField": "usrm",
+      "json": "usrm"
+    },
+    "status": {
+      "type": "int",
+      "dbField": "st",
+      "json": "st"
+    },
+    "statusUserId": {
+      "type": "int",
+      "dbField": "stuid",
+      "json": "stuid"
+    },
+    "prevStatus": {
+      "type": "int",
+      "dbField": "pst",
+      "json": "pst"
+    },
+
+    "priority": {
+      "type": "int",
+      "dbField": "prt",
+      "json": "prt"
+    },
+    "priorityChanged": {
+      "type": "bool",
+      "dbField": "prtc",
+      "json": "prtc"
+    }
+  }
+}

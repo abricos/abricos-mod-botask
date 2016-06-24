@@ -47,9 +47,10 @@ Component.entryPoint = function(NS){
             ImageList: {value: NS.ImageList},
             Check: {value: NS.Check},
             CheckList: {value: NS.CheckList},
+            History: {value: NS.History},
+            HistoryList: {value: NS.HistoryList},
         },
         REQS: {
-
             taskList: {
                 attribute: true,
                 attach: 'resolutionList',

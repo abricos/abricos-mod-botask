@@ -491,5 +491,13 @@ Component.entryPoint = function(NS){
     NS.CheckList = Y.Base.create('checkList', SYS.AppModelList, [], {
         appItem: NS.Check,
     });
+    
+    NS.History = Y.Base.create('history', SYS.AppModel, [], {
+        structureName: 'History'
+    });
+
+    NS.HistoryList = Y.Base.create('historyList', SYS.AppModelList, [], {
+        appItem: NS.History,
+    });
 
 };
