@@ -55,6 +55,9 @@
     "images": {
       "type": "modelList:ImageList"
     },
+    "checks": {
+      "type": "modelList:CheckList"
+    },
     "date": {
       "type": "date",
       "dbField": "dl",

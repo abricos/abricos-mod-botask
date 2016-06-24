@@ -14,6 +14,7 @@
  * @property BotaskResolutionInTaskList $resolutions
  * @property BotaskFileList $files
  * @property BotaskImageList $images
+ * @property BotaskCheckList $checks
  */
 class BotaskTask extends AbricosModel {
     protected $_structModule = 'botask';
@@ -99,4 +100,12 @@ class BotaskImage extends AbricosModel {
 }
 
 class BotaskImageList extends AbricosModelList {
+}
+
+class BotaskCheck extends AbricosModel {
+    protected $_structModule = 'botask';
+    protected $_structName = 'Check';
+}
+
+class BotaskCheckList extends AbricosModelList {
 }

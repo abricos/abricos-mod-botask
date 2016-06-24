@@ -63,7 +63,7 @@ Component.entryPoint = function(NS){
             var tp = this.template,
                 appInstance = this.get('appInstance'),
                 taskid = this.get('taskid'),
-                task = appInstance.get('taskList').getById('taskid');
+                task = appInstance.get('taskList').getById(taskid);
 
             this.addWidget('comments',
                 new Brick.mod.comment.CommentTreeWidget({
@@ -77,18 +77,15 @@ Component.entryPoint = function(NS){
                 })
             );
 
-            this.addWidget('checkList',
-                new NS.ChecklistWidget({
-                    srcNode: tp.one('checklist'),
-                    task: task
-                })
-            ).update();
+            this.addWidget('checkList', new NS.CheckListWidget({
+                srcNode: tp.one('checklist'),
+                task: task
+            }));
 
             this.addWidget('extInfo', new NS.ExtInfo({
-                    srcNode: tp.gel('extinfo'),
-                    task: task
-                })
-            );
+                srcNode: tp.gel('extinfo'),
+                task: task
+            }));
 
             this.addWidget('attacheFiles', new Brick.mod.filemanager.AttachmentListWidget(tp.gel('ftable')));
 

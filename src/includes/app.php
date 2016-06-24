@@ -28,11 +28,13 @@ class BotaskApp extends AbricosApplication {
             "FileList" => "BotaskFileList",
             "Image" => "BotaskImage",
             "ImageList" => "BotaskImageList",
+            "Check" => "BotaskCheck",
+            "CheckList" => "BotaskCheckList",
         );
     }
 
     protected function GetStructures(){
-        return 'Task,UserRole,Resolution,ResolutionInTask,File,Image';
+        return 'Task,UserRole,Resolution,ResolutionInTask,File,Image,Check';
     }
 
     public function IsAdminRole(){
@@ -183,6 +185,7 @@ class BotaskApp extends AbricosApplication {
 
         $task->files = $this->FileList($taskid);
         $task->images = $this->ImageList($taskid);
+        $task->checks = $this->CheckList($taskid);
 
         return $task;
 
@@ -200,8 +203,6 @@ class BotaskApp extends AbricosApplication {
         }
         $task['hst'] = $hst;
 
-        // чек-лист
-        $task['chlst'] = $this->CheckList($taskid, true, true);
 
         return $task;
     }
@@ -274,20 +275,6 @@ class BotaskApp extends AbricosApplication {
         return $list;
     }
 
-
-    public function old_ImageList($taskid){
-        if (!$this->TaskAccess($taskid)){
-            return null;
-        }
-        $rows = BotaskQuery::ImageList($this->db, $taskid);
-        $ret = array();
-        while (($row = $this->db->fetch_array($rows))){
-            $row['d'] = json_decode($row['d']);
-            $ret[] = $row;
-        }
-        return $ret;
-    }
-
     public function TaskImageRemove($taskid, $image){
         $d = json_decode($image['d']);
         foreach ($d->canvas->ls as $lr){
@@ -304,6 +291,106 @@ class BotaskApp extends AbricosApplication {
         BotaskQuery::ImageRemove($this->db, $image['id']);
     }
 
+    /* * * * * * * * * * * * * * * * CheckList * * * * * * * * * * * * * * */
+
+    public function CheckListToJSON($taskid){
+        $res = $this->CheckList($taskid);
+        return $this->ResultToJSON('checkList', $res);
+    }
+
+    public function CheckList($taskid){
+        if (!$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        /** @var BotaskCheckList $list */
+        $list = $this->InstanceClass('CheckList');
+
+        $rows = BotaskQuery::CheckList($this->db, $taskid);
+        while (($d = $this->db->fetch_array($rows))){
+            $list->Add($this->InstanceClass('Check', $d));
+        }
+
+        return $list;
+    }
+
+    public function CheckListSaveToJSON($taskid, $d){
+        $res = $this->CheckListSave($taskid, $d);
+        if (AbricosResponse::IsError($res)){
+            return $res;
+        }
+        return $this->ImplodeJSON(array(
+            $this->ResultToJSON('checkListSave', $res),
+            $this->TaskToJSON($taskid)
+        ));
+    }
+
+    public function CheckListSave($taskid, $checkList, $history = null){
+        if (!$this->IsWriteRole() || !$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        $chListDb = $this->CheckList($taskid, true, true);
+
+        $utmanager = Abricos::TextParser();
+        $isAdmin = $this->IsAdminRole();
+        $userid = Abricos::$user->id;
+
+        $hstChange = false;
+        // новые
+        foreach ($checkList as $ch){
+
+            $title = $isAdmin ? $ch->tl : $utmanager->Parser($ch->tl);
+            $isNew = false;
+            if ($ch->id == 0){ // новый
+                $ch->id = BotaskQuery::CheckListAppend($this->db, $taskid, $userid, $title);
+                $hstChange = true;
+                $isNew = true;
+            } else {
+                $fch = null;
+                foreach ($chListDb as $id => $row){
+                    if ($ch->id == $id){
+                        $fch = $row;
+                        break;
+                    }
+                }
+
+                if (is_null($fch) || ($ch->duid > 0 && $fch['duid'] == 0)){ // удален
+                    BotaskQuery::CheckListRemove($this->db, $userid, $ch->id);
+                    $hstChange = true;
+                    if (is_null($fch)){
+                        continue;
+                    }
+                }
+
+                if ($ch->duid == 0 && $fch['duid'] > 0){ // восстановлен
+                    BotaskQuery::CheckListRestore($this->db, $userid, $ch->id);
+                    $hstChange = true;
+                }
+
+                if ($fch['tl'] != $title){
+                    BotaskQuery::CheckListUpdate($this->db, $userid, $ch->id, $title);
+                    $hstChange = true;
+                }
+            }
+
+            if (($isNew && !empty($ch->ch)) || (!empty($fch) && $ch->ch != $fch['ch'])){
+                BotaskQuery::CheckListCheck($this->db, $userid, $ch->id, $ch->ch);
+                $hstChange = true;
+            }
+        }
+        if ($hstChange){
+            if (is_null($history)){
+                $history = new BotaskHistory(Abricos::$user->id);
+                $history->SaveCheckList($taskid, json_encode($chListDb));
+                $history->Save();
+            } else {
+                $history->SaveCheckList($taskid, json_encode($chListDb));
+            }
+        }
+
+        return $this->Task($taskid);
+    }
 
 
     /**
@@ -443,96 +530,6 @@ class BotaskApp extends AbricosApplication {
         BotaskQuery::TaskRemovedClear($this->db, $taskid);
     }
 
-    public function CheckList($taskid, $retarray = false, $notCheckTaskAccess = false){
-        if (!$this->IsViewRole()){
-            return null;
-        }
-        if (!$notCheckTaskAccess){
-            if (!$this->TaskAccess($taskid)){
-                return null;
-            }
-        }
-        $rows = BotaskQuery::CheckList($this->db, $taskid);
-        return $retarray ? $this->ToArrayById($rows) : $rows;
-    }
-
-    public function CheckListSaveToJSON($taskid, $d){
-        $res = $this->CheckListSave($taskid, $d);
-        if (AbricosResponse::IsError($res)){
-            return $res;
-        }
-        return $this->ImplodeJSON(array(
-            $this->ResultToJSON('checkListSave', $res),
-            $this->TaskToJSON($taskid)
-        ));
-    }
-
-    public function CheckListSave($taskid, $checkList, $history = null){
-        if (!$this->IsWriteRole() || !$this->TaskAccess($taskid)){
-            return AbricosResponse::ERR_FORBIDDEN;
-        }
-
-        $chListDb = $this->CheckList($taskid, true, true);
-
-        $utmanager = Abricos::TextParser();
-        $isAdmin = $this->IsAdminRole();
-        $userid = Abricos::$user->id;
-
-        $hstChange = false;
-        // новые
-        foreach ($checkList as $ch){
-
-            $title = $isAdmin ? $ch->tl : $utmanager->Parser($ch->tl);
-            $isNew = false;
-            if ($ch->id == 0){ // новый
-                $ch->id = BotaskQuery::CheckListAppend($this->db, $taskid, $userid, $title);
-                $hstChange = true;
-                $isNew = true;
-            } else {
-                $fch = null;
-                foreach ($chListDb as $id => $row){
-                    if ($ch->id == $id){
-                        $fch = $row;
-                        break;
-                    }
-                }
-
-                if (is_null($fch) || ($ch->duid > 0 && $fch['duid'] == 0)){ // удален
-                    BotaskQuery::CheckListRemove($this->db, $userid, $ch->id);
-                    $hstChange = true;
-                    if (is_null($fch)){
-                        continue;
-                    }
-                }
-
-                if ($ch->duid == 0 && $fch['duid'] > 0){ // восстановлен
-                    BotaskQuery::CheckListRestore($this->db, $userid, $ch->id);
-                    $hstChange = true;
-                }
-
-                if ($fch['tl'] != $title){
-                    BotaskQuery::CheckListUpdate($this->db, $userid, $ch->id, $title);
-                    $hstChange = true;
-                }
-            }
-
-            if (($isNew && !empty($ch->ch)) || (!empty($fch) && $ch->ch != $fch['ch'])){
-                BotaskQuery::CheckListCheck($this->db, $userid, $ch->id, $ch->ch);
-                $hstChange = true;
-            }
-        }
-        if ($hstChange){
-            if (is_null($history)){
-                $history = new BotaskHistory(Abricos::$user->id);
-                $history->SaveCheckList($taskid, json_encode($chListDb));
-                $history->Save();
-            } else {
-                $history->SaveCheckList($taskid, json_encode($chListDb));
-            }
-        }
-
-        return $this->Task($taskid);
-    }
 
 
     public function TaskSaveToJSON($d){

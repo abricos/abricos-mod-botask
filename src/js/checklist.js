@@ -6,12 +6,12 @@ Component.entryPoint = function(NS){
         COMPONENT = this,
         SYS = Brick.mod.sys;
 
-    NS.ChecklistWidget = Y.Base.create('ChecklistWidget', SYS.AppWidget, [], {
+    NS.CheckListWidget = Y.Base.create('ChecklistWidget', SYS.AppWidget, [], {
         onInitAppWidget: function(err, appInstance){
-            this.hideRecycle = true;
-            this.list = [];
+            this.publish('change');
 
-            this.publish('changedEvent');
+            this._list = [];
+            this.renderList();
         },
         destructor: function(){
             this.cleanList();
@@ -20,7 +20,7 @@ Component.entryPoint = function(NS){
             if (!Y.Lang.isFunction(f)){
                 return;
             }
-            var lst = this.list;
+            var lst = this._list;
             for (var i = 0; i < lst.length; i++){
                 if (f.call(context || this, lst[i])){
                     return;
@@ -31,55 +31,49 @@ Component.entryPoint = function(NS){
             this.each(function(w){
                 w.destroy();
             }, this);
-            this.list = [];
+            this._list = [];
+        },
+        renderList: function(){
+            this.cleanList();
+
+            var tp = this.template,
+                checkList = this.get('task').get('checks'),
+                removeCount = 0;
+
+            tp.hide('btnSave,btnCancel');
+
+            checkList.each(function(check){
+                this.addCheck(check);
+                removeCount += check.isRemoved() ? 1 : 0;
+            }, this);
+
+            tp.toggleView(checkList.size() > 0, 'panelBody');
+            tp.toggleView(removeCount > 0, 'recycle');
+            tp.setHTML('removeCount', removeCount);
+        },
+        addCheck: function(check){
+            this.setViewModeList();
+
+            var tp = this.template,
+                list = this._list,
+                widget = new NS.CheckListRowWidget({
+                    srcNode: tp.append(check.isRemoved() ? 'recycleTable' : 'table', '<div></div>'),
+                    check: check,
+                    infoVisible: this.get('infoVisible'),
+                });
+
+            list[list.length] = widget;
+            // widget.on('change', this._onRowChange, this);
+
+            return widget;
         },
         setViewModeList: function(){
             this.each(function(w){
                 w.setViewMode();
             }, this);
         },
-        addCheck: function(check){
-            this.setViewModeList();
-            check = NS.CheckListRowWidget.checkNormalize(check);
-
-            var tp = this.template,
-                list = this.list,
-                widget = new NS.CheckListRowWidget({
-                    srcNode: tp.append(check.ddl > 0 ? 'recycleTable' : 'table', '<div></div>'),
-                    owner: this,
-                    check: check
-                });
-
-            list[list.length] = widget;
-            widget.on('change', this._onRowChange, this);
-
-            return widget;
-        },
-        _onRowChange: function(){
-            var tp = this.template;
-            tp.show('btnSave,btnCancel');
-            // tp.one('btnAddCheck').focus();
-        },
-        update: function(){
-            this.cleanList();
-
-            var tp = this.template,
-                checks = this.get('task').checks || [],
-                removeCount = 0;
-
-            tp.hide('btnSave,btnCancel');
-
-            for (var n in checks){
-                var ch = this.addCheck(checks[n]);
-                ch.isRemoved() ? removeCount++ : null;
-
-            }
-            tp.toggleView(checks.length > 0, 'panelBody');
-            tp.toggleView(removeCount > 0, 'recycle');
-            tp.setHTML('removeCount', removeCount);
-        },
         cancel: function(){
-            this.update();
+            this.renderList();
         },
         toJSON: function(){
             var sd = [];
@@ -93,23 +87,15 @@ Component.entryPoint = function(NS){
                 sd = this.toJSON();
 
             this.get('appInstance').checkListSave(task.id, sd, function(err, result){
-                this.update();
+                this.renderList();
             }, this);
         },
     }, {
         ATTRS: {
             component: {value: COMPONENT},
             templateBlockName: {value: 'widget'},
-            task: {},
-            config: {
-                value: {},
-                setter: function(val){
-                    return Y.merge({
-                        hidebtn: false,
-                        hideinfo: false
-                    }, val || {});
-                }
-            }
+            task: {value: null},
+            infoVisible: {value: true},
         },
         CLICKS: {
             add: {
@@ -128,43 +114,41 @@ Component.entryPoint = function(NS){
         buildTData: function(){
             var check = this.get('check'),
                 de = Brick.dateExt,
-                nUser = this.getUser(check['uid']), // создал
-                uUser = this.getUser(check['uuid']), // изменил
-                cUser = this.getUser(check['cuid']), // выполнил
-                dUser = this.getUser(check['duid']); // удалил
+                nUser = this.getUser(check.get('userid')), // создал
+                uUser = this.getUser(check.get('updateUserId')), // изменил
+                cUser = this.getUser(check.get('checkedUserId')), // выполнил
+                dUser = this.getUser(check.get('removeUserId')); // удалил
 
             return {
-                inew: de.convert(check['dl']) + ', ' + nUser.get('viewName'),
+                inew: de.convert(check.get('date')) + ', ' + nUser.get('viewName'),
 
-                diupdate: !uUser ? 'hide' : '',
-                iupdate: !uUser ? '' : (de.convert(check['udl']) + ', ' + uUser.get('viewName')),
+                direnderList: !uUser ? 'hide' : '',
+                irenderList: !uUser ? '' : (de.convert(check.get('updateDate')) + ', ' + uUser.get('viewName')),
 
                 dicheck: !cUser ? 'hide' : '',
-                icheck: !cUser ? '' : (de.convert(check['cdl']) + ', ' + cUser.get('viewName')),
+                icheck: !cUser ? '' : (de.convert(check.get('checkedDate')) + ', ' + cUser.get('viewName')),
 
                 diremove: !dUser ? 'hide' : '',
-                iremove: !dUser ? '' : (de.convert(check['ddl']) + ', ' + dUser.get('viewName'))
+                iremove: !dUser ? '' : (de.convert(check.get('removeDate')) + ', ' + dUser.get('viewName'))
             };
         },
         onInitAppWidget: function(err, appInstance){
             this.publish('change');
 
             var tp = this.template,
-                owner = this.get('owner'),
-                cfg = owner.get('config'),
                 check = this.get('check');
 
-            tp.toggleView(!cfg.hideinfo, 'btnShowInfo');
+            tp.toggleView(this.get('infoVisible'), 'btnShowInfo');
 
             tp.setHTML({
-                text: check.tl
+                text: check.get('title')
             });
 
-            this.set('checked', check.ch > 0);
+            this.set('checked', check.get('checked'));
 
-            tp.toggleView(!this.isRemoved, 'btnRestore', 'btnRemove');
+            tp.toggleView(!check.isRemoved(), 'btnRestore', 'btnRemove');
 
-            if (check.id === 0){
+            if (check.get('id') === 0){
                 this.setEditMode();
             }
         },
@@ -174,10 +158,6 @@ Component.entryPoint = function(NS){
         },
         onChange: function(){
             this.fire('change')
-        },
-        isRemoved: function(){
-            var check = this.get('check');
-            return check.duid > 0 && check.ddl > 0;
         },
         setEditMode: function(){
             if (this.isRemoved() || this._isEditMode){
@@ -217,7 +197,6 @@ Component.entryPoint = function(NS){
             this._isEditMode = false;
 
             var tp = this.template,
-                owner = this.get('owner'),
                 check = this.get('check'),
                 changed = false,
                 str = tp.getValue('input');
@@ -233,8 +212,8 @@ Component.entryPoint = function(NS){
 
             tp.one('input').detachAll();
 
-            check.tl = str;
-            if (check.id == 0 && str.length == 0){
+            check.set('title', str);
+            if (check.get('id') === 0 && str.length == 0){
                 this.remove();
             } else if (changed){
                 this.onChange();
@@ -242,11 +221,11 @@ Component.entryPoint = function(NS){
         },
         remove: function(){
             var check = this.get('check');
-            if (check.id == 0){
+            if (check.get('id') == 0){
                 this.destroy();
             } else {
-                check.duid = Brick.env.user.id;
-                check.ddl = Math.round((new Date()).getTime() / 1000);
+                check.set('removeUserId', Brick.env.user.id);
+                check.set('removeDate', new Date());
 
                 this.onChange();
             }
@@ -254,8 +233,8 @@ Component.entryPoint = function(NS){
         restore: function(){
             var check = this.get('check');
 
-            check.duid = 0;
-            check.ddl = 0;
+            check.set('removeUserId', 0);
+            check.set('removeDate', null);
 
             this.onChange();
         },
@@ -269,12 +248,7 @@ Component.entryPoint = function(NS){
         ATTRS: {
             component: {value: COMPONENT},
             templateBlockName: {value: 'row'},
-            check: {
-                value: {},
-                setter: function(val){
-                    return NS.CheckListRowWidget.checkNormalize(val);
-                }
-            },
+            check: {value: null},
             checked: {
                 value: false,
                 setter: function(val){
@@ -282,7 +256,7 @@ Component.entryPoint = function(NS){
                     return val;
                 }
             },
-            owner: {},
+            infoVisible: {value: true}
         },
         CLICKS: {
             text: 'setEditMode',
@@ -303,30 +277,6 @@ Component.entryPoint = function(NS){
                     this.template.toggleView(this._isShowInfo = !this._isShowInfo, 'infoBox');
                 }
             },
-        },
-        checkNormalize: function(val){
-            val = Y.merge({
-                id: 0,
-                uid: Brick.env.user.id,
-                dl: Math.round((new Date()).getTime() / 1000),
-                ch: 0,
-                cuid: 0,
-                cdl: 0,
-                udl: 0,
-                uuid: 0,
-                tl: '',
-                o: 0,
-                ddl: 0,
-                duid: 0
-            }, val || {});
-
-            var no = {};
-            for (var n in val){
-                no[n] = val[n];
-            }
-            val = no;
-            val.id = val.id | 0;
-            return val;
         },
     });
 

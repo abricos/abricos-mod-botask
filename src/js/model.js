@@ -481,4 +481,15 @@ Component.entryPoint = function(NS){
         appItem: NS.Image,
     });
 
+    NS.Check = Y.Base.create('check', SYS.AppModel, [], {
+        structureName: 'Check',
+        isRemoved: function(){
+            return !!this.get('removeDate');
+        }
+    });
+
+    NS.CheckList = Y.Base.create('checkList', SYS.AppModelList, [], {
+        appItem: NS.Check,
+    });
+
 };

@@ -1,0 +1,53 @@
+{
+  "version": "0.1.0",
+  "type": "model",
+  "fields": {
+    "id": {
+      "type": "int"
+    },
+    "userid": {
+      "type": "int",
+      "dbField": "uid"
+    },
+    "date": {
+      "type": "date",
+      "dbField": "dl"
+    },
+    "updateDate": {
+      "type": "date",
+      "dbField": "udl"
+    },
+    "updateUserId": {
+      "type": "int",
+      "dbField": "uuid"
+    },
+    "removeDate": {
+      "type": "date",
+      "dbField": "ddl"
+    },
+    "removeUserId": {
+      "type": "int",
+      "dbField": "duid"
+    },
+    "checked": {
+      "type": "bool",
+      "dbField": "ch"
+    },
+    "checkedUserId": {
+      "type": "int",
+      "dbField": "cuid"
+    },
+    "checkedDate": {
+      "type": "date",
+      "dbField": "cdl"
+    },
+    "title": {
+      "type": "string",
+      "dbField": "tl"
+    },
+    "order": {
+      "type": "int",
+      "dbField": "o"
+    }
+  }
+}

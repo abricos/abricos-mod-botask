@@ -45,6 +45,8 @@ Component.entryPoint = function(NS){
             FileList: {value: NS.FileList},
             Image: {value: NS.Image},
             ImageList: {value: NS.ImageList},
+            Check: {value: NS.Check},
+            CheckList: {value: NS.CheckList},
         },
         REQS: {
 
