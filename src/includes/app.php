@@ -188,18 +188,7 @@ class BotaskApp extends AbricosApplication {
         $task->files = $this->FileList($taskid);
         $task->images = $this->ImageList($taskid);
         $task->checks = $this->CheckList($taskid);
-
-        return $task;
-
-
-        $hst = array();
-
-        $rows = BotaskQuery::TaskHistory($this->db, $taskid);
-        while (($row = $this->db->fetch_array($rows))){
-            $hst[] = $row;
-        }
-        $task['hst'] = $hst;
-
+        $task->histories = $this->HistoryList($taskid);
 
         return $task;
     }
@@ -441,27 +430,26 @@ class BotaskApp extends AbricosApplication {
 
     /* * * * * * * * * * * * * * * * * History * * * * * * * * * * * * * * */
 
-    public function History($taskid, $firstHId){
-        if (!$this->IsViewRole()){
-            return null;
-        }
-
-        $taskid = intval($taskid);
-        if ($taskid > 0){
-            if (!$this->TaskAccess($taskid)){
-                return null;
-            }
-            $rows = BotaskQuery::TaskHistory($this->db, $taskid, $firstHId);
-        } else {
-            $rows = BotaskQuery::BoardHistory($this->db, Abricos::$user->id, 0, $firstHId);
-        }
-        $hst = array();
-        while (($row = $this->db->fetch_array($rows))){
-            $hst[] = $row;
-        }
-        return $hst;
+    public function HistoryListToJSON($taskid){
+        $res = $this->HistoryList($taskid);
+        return $this->ResultToJSON('historyList', $res);
     }
 
+    public function HistoryList($taskid, $firstHId = 0){
+        if (!$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        /** @var BotaskHistoryList $list */
+        $list = $this->InstanceClass('HistoryList');
+
+        $rows = BotaskQuery::HistoryList($this->db, $taskid);
+        while (($d = $this->db->fetch_array($rows))){
+            $list->Add($this->InstanceClass('History', $d));
+        }
+
+        return $list;
+    }
 
 
     /* * * * * * * * * * * * * * * * To Refactoring * * * * * * * * * * * * * * */
@@ -603,7 +591,6 @@ class BotaskApp extends AbricosApplication {
         // удалить сам проект
         BotaskQuery::TaskRemovedClear($this->db, $taskid);
     }
-
 
 
     public function TaskSaveToJSON($d){

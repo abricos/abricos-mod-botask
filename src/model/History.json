@@ -21,6 +21,22 @@
       "json": "dl"
     },
 
+    "iParentStatus": {
+      "type": "int",
+      "dbField": "pst",
+      "json": "pst"
+    },
+    "iStatus": {
+      "type": "int",
+      "dbField": "st",
+      "json": "st"
+    },
+    "statusUserId": {
+      "type": "int",
+      "dbField": "stuid",
+      "json": "stuid"
+    },
+
     "title": {
       "type": "string",
       "dbField": "ttl",
@@ -76,6 +92,7 @@
       "dbField": "ddltc",
       "json": "ddltc"
     },
+
     "userAdded": {
       "type": "string",
       "dbField": "usad",
@@ -85,21 +102,6 @@
       "type": "string",
       "dbField": "usrm",
       "json": "usrm"
-    },
-    "status": {
-      "type": "int",
-      "dbField": "st",
-      "json": "st"
-    },
-    "statusUserId": {
-      "type": "int",
-      "dbField": "stuid",
-      "json": "stuid"
-    },
-    "prevStatus": {
-      "type": "int",
-      "dbField": "pst",
-      "json": "pst"
     },
 
     "priority": {

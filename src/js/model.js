@@ -491,9 +491,57 @@ Component.entryPoint = function(NS){
     NS.CheckList = Y.Base.create('checkList', SYS.AppModelList, [], {
         appItem: NS.Check,
     });
-    
+
     NS.History = Y.Base.create('history', SYS.AppModel, [], {
         structureName: 'History'
+    }, {
+        ATTRS: {
+            status: {
+                readOnly: true,
+                getter: function(){
+                    var val = this.get('iStatus');
+                    return NS.Task.STATUS[val];
+                }
+            },
+            parentStatus: {
+                readOnly: true,
+                getter: function(){
+                    var val = this.get('iParentStatus');
+                    return NS.Task.STATUS[val];
+                }
+            },
+            action: {
+                readOnly: true,
+                getter: function(){
+                    var status = this.get('status'),
+                        parentStatus = this.get('parentStatus');
+
+                    switch (status) {
+                        case 'opened':
+                            if (parentStatus === 'accepted'){
+                                return 'unaccepted';
+                            }
+                            return parentStatus ? 'opened' : 'created';
+                        case 'reopened':
+                        case 'closed':
+                        case 'accepted':
+                        case 'removed':
+                        case 'arhived':
+                            return status;
+                        default:
+                            return 'changed';
+                    }
+
+                }
+            },
+            user: {
+                readOnly: true,
+                getter: function(){
+                    var userid = this.get('userid');
+                    return this.appInstance.getApp('uprofile').get('userList').getById(userid);
+                }
+            },
+        }
     });
 
     NS.HistoryList = Y.Base.create('historyList', SYS.AppModelList, [], {

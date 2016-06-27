@@ -7,8 +7,6 @@
  * @author Alexander Kuzmin <roosit@abricos.org>
  */
 
-require_once 'history.php';
-
 class BotaskManager extends Ab_ModuleManager {
 
     public function IsAdminRole(){
@@ -27,7 +25,7 @@ class BotaskManager extends Ab_ModuleManager {
         return $this->GetApp()->AJAX($d);
     }
 
-    private function _AJAX($d){
+    private function old__AJAX($d){
         switch ($d->do){
             case 'sync':
                 return $this->Sync();

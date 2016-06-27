@@ -58,6 +58,9 @@
     "checks": {
       "type": "modelList:CheckList"
     },
+    "histories": {
+      "type": "modelList:HistoryList"
+    },
     "date": {
       "type": "date",
       "dbField": "dl",

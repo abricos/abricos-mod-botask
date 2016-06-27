@@ -240,6 +240,51 @@ class BotaskQuery {
         $db->query_write($sql);
     }
 
+    /* * * * * * * * * * * * * * * * History * * * * * * * * * * * * * * */
+
+    const HISTORY_FIELDS = "
+		h.historyid 		as id,
+		h.taskid 			as tid,
+		h.taskid 			as sid,
+		p.title 			as ttl,
+		h.userid 			as uid,
+		h.dateline 			as dl,
+
+		h.parenttaskidc 	as ptidc,
+		h.titlec 			as tlc,
+		h.bodyc 			as bdc,
+		h.checkc 			as chc,
+		h.deadlinec 		as ddlc,
+		h.deadlinebytimec 	as ddltc,
+		h.useradded 		as usad,
+		h.userremoved 		as usrm,
+
+		h.status 			as st,
+		h.prevstatus 		as pst,
+		h.statuserid 		as stuid,
+		h.priority 			as prt,
+		h.priorityc			as prtc
+	";
+
+    public static function HistoryList(Ab_Database $db, $taskid, $firstHId = 0){
+        $firstHId = intval($firstHId);
+        $where = "";
+        if ($firstHId > 0){
+            $where = " AND h.historyid < ".$firstHId;
+        }
+
+        $sql = "
+			SELECT
+				".BotaskQuery::HISTORY_FIELDS."
+			FROM ".$db->prefix."btk_history h
+			INNER JOIN ".$db->prefix."btk_task p ON h.taskid=p.taskid
+			WHERE h.taskid=".intval($taskid)." ".$where."
+			ORDER BY h.dateline DESC
+			LIMIT 7
+		";
+        return $db->query_read($sql);
+    }
+
 
     /******************************************************/
     // TODO: refactoring source
@@ -487,30 +532,6 @@ class BotaskQuery {
         return $db->insert_id();
     }
 
-    const HISTORY_FIELDS = "
-		h.historyid 		as id,
-		h.taskid 			as tid,
-		h.taskid 			as sid,
-		p.title 			as ttl,
-		h.userid 			as uid,
-		h.dateline 			as dl,
-
-		h.parenttaskidc 	as ptidc,
-		h.titlec 			as tlc,
-		h.bodyc 			as bdc,
-		h.checkc 			as chc,
-		h.deadlinec 		as ddlc,
-		h.deadlinebytimec 	as ddltc,
-		h.useradded 		as usad,
-		h.userremoved 		as usrm,
-
-		h.status 			as st,
-		h.prevstatus 		as pst,
-		h.statuserid 		as stuid,
-		h.priority 			as prt,
-		h.priorityc			as prtc
-	";
-
     public static function BoardHistory(Ab_Database $db, $userid, $lastHId = 0, $firstHId = 0){
         $lastHId = intval($lastHId);
         $firstHId = intval($firstHId);
@@ -531,25 +552,6 @@ class BotaskQuery {
 			WHERE ur.userid=".intval($userid)." AND p.deldate=0 ".$where."
 			ORDER BY h.dateline DESC
 			LIMIT 15
-		";
-        return $db->query_read($sql);
-    }
-
-    public static function TaskHistory(Ab_Database $db, $taskid, $firstHId = 0){
-        $firstHId = intval($firstHId);
-        $where = "";
-        if ($firstHId > 0){
-            $where = " AND h.historyid < ".$firstHId;
-        }
-
-        $sql = "
-			SELECT
-				".BotaskQuery::HISTORY_FIELDS."
-			FROM ".$db->prefix."btk_history h
-			INNER JOIN ".$db->prefix."btk_task p ON h.taskid=p.taskid
-			WHERE h.taskid=".intval($taskid)." ".$where."
-			ORDER BY h.dateline DESC
-			LIMIT 7
 		";
         return $db->query_read($sql);
     }
