@@ -1,0 +1,88 @@
+<!--{extinfo}-->
+<div class="extInfo row">
+    <div class="col-md-4">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">История</h4>
+            </div>
+            <div class="panel-body">
+                <div id={i#history}></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">Участники и их резолюции</h4>
+            </div>
+            <div class="panel-body">
+                <div id={i#custatus}></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--{customStatusList}-->
+<div class="customStatusList">
+    <div class="row">
+        <div class="col-sm-5">
+            <img src="{v#avatar}"/>
+            <a href="#" class="show-user-profile user-{v#uid}">{v#unm}</a>
+        </div>
+        <div class="col-sm-7">
+            <div id="{i#editorPanel}" class="input-group">
+                <div class="input-group-btn">
+                    <button data-click="showSelect"
+                            class="btn btn-default btn-sm"
+                            title="Выбрать из списка">
+                        <i class="fa fa-list" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <input id="{i#input}" type="text" class="form-control input-sm"/>
+                <div class="input-group-btn">
+                    <button id="{i#saveButton}"
+                            data-click="save" class="btn btn-default btn-sm"
+                            disabled="disabled"
+                            title="OK">
+                        <i class="fa fa-floppy-o" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="{i#selectPanel}" class="input-group hide">
+                <select id="{i#select}" data-click="select" class="form-control input-sm"></select>
+                <div class="input-group-btn">
+                    <button data-click="select" class="btn btn-default btn-sm"
+                            title="OK">
+                        <i class="fa fa-check" aria-hidden="true"></i>
+                    </button>
+                    <button data-click="hideSelect" class="btn btn-default btn-sm"
+                            title="Отмена">
+                        <i class="fa fa-ban" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="{i#listPanel}" class="hide">
+        <hr />
+        <div id="{i#list}"></div>
+    </div>
+</div>
+
+<!--{user}-->
+<div class="row">
+    <div class="col-sm-5">
+        <img src="{v#avatar}"/>
+        <a href="#" class="show-user-profile user-{v#uid}">{v#unm}</a>
+    </div>
+    <div class="col-sm-7">
+        {v#status}
+    </div>
+</div>
+
+<!--{noStatus}-->
+<option value="">-- без статуса --</option>
+
+
+<!--{option}-->
+<option value="{v#id}">{v#title}</option>

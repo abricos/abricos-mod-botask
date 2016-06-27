@@ -175,6 +175,12 @@ Component.entryPoint = function(NS){
                     return NS.Task.STATUS[val];
                 }
             },
+            statusTitle: {
+                readOnly: true,
+                getter: function(){
+                    return I18N.get('model.status.' + this.get('status'));
+                }
+            },
             type: {
                 readOnly: true,
                 getter: function(){
@@ -463,6 +469,21 @@ Component.entryPoint = function(NS){
 
     NS.ResolutionInTaskList = Y.Base.create('resolutionInTaskList', SYS.AppModelList, [], {
         appItem: NS.ResolutionInTask,
+        getByUserId: function(userid){
+            userid = (userid || UID);
+            var resolutionList = this.appInstance.get('resolutionList'),
+                ret = null;
+
+            this.each(function(inTask){
+                var resolution = resolutionList.getById(inTask.get('resolutionid'));
+
+                if (resolution && resolution.get('userid') === userid){
+                    ret = resolution;
+                }
+            }, this);
+
+            return ret;
+        }
     });
 
     NS.File = Y.Base.create('file', SYS.AppModel, [], {

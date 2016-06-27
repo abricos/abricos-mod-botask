@@ -13,8 +13,6 @@ Component.entryPoint = function(NS){
         COMPONENT = this,
         SYS = Brick.mod.sys;
 
-    var LNG = this.language;
-
     var TST = NS.TaskStatus;
 
     var aTargetBlank = function(el){
@@ -104,22 +102,23 @@ Component.entryPoint = function(NS){
         },
         renderTask: function(){
             var tp = this.template,
-                task = this.get('task');
+                taskid = this.get('taskid'),
+                task = this.get('appInstance').get('taskList').getById(taskid);
 
             tp.show('bimgsave');
-            tp.setHTML('taskbody', task.descript);
+            tp.setHTML('taskbody', task.get('descript'));
 
             tp.setHTML({
-                status: LNG['project']['status'][task.status],
-                taskid: task.id
+                status: task.get('statusTitle'),
+                taskid: task.get('id')
             });
 
-            var user = this.getUser(task.userid);
+            var author = task.get('author');
 
             tp.setHTML({
                 author: tp.replace('user', {
-                    uid: user.get('id'),
-                    unm: user.get('viewName')
+                    uid: author.get('id'),
+                    unm: author.get('viewName')
                 }),
                 dl: Brick.dateExt.convert(task.date, 3, true)
             });
@@ -130,24 +129,24 @@ Component.entryPoint = function(NS){
             tp.hide('bopen,beditor,bremove,brestore,barhive');
 
             // статус
-            switch (task.status) {
-                case TST.OPEN:
-                case TST.REOPEN:
+            switch (task.get('status')) {
+                case 'opened':
+                case 'reopened':
                     tp.show('bremove');
                     break;
-                case TST.ACCEPT:
+                case 'accepted':
                     tp.show('bremove');
                     break;
-                case TST.REMOVE:
+                case 'removed':
                     tp.show('brestore');
                     break;
             }
 
             // показать прикрепленные файлы
-            this.getWidget('attacheFiles').setFiles(task.files);
-            tp.toggleView(task.files.length > 0, 'files');
+            // this.getWidget('attacheFiles').setFiles(task.files);
+            // tp.toggleView(task.files.length > 0, 'files');
 
-            tp.toggleView(task.favorite, 'btnUnsetFavorite', 'btnSetFavorite');
+            tp.toggleView(task.isFavorite(), 'btnUnsetFavorite', 'btnSetFavorite');
         },
 
         onCanvasChanged: function(type, args){
