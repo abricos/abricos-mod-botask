@@ -55,7 +55,8 @@ Component.entryPoint = function(NS){
                 attribute: true,
                 attach: 'resolutionList',
                 type: 'modelList:TaskList',
-                onResponse: function(taskList){
+                onResponse: function(taskList, data){
+                    taskList.set('lastHistoryId', data.lastHistoryId | 0);
                     var userIds = taskList.get('userIds');
 
                     return function(callback, context){
@@ -87,6 +88,25 @@ Component.entryPoint = function(NS){
                 }
             },
 
+            taskFavorite: {
+                args: ['taskid', 'value']
+            },
+            taskRemove: {
+                args: ['taskid'],
+                onResponse: function(result){
+                    var taskList = this.get('taskList'),
+                        ids = result.taskids;
+
+                    for (var i = 0, task; i < ids.length; i++){
+                        task = taskList.getById(ids[i]);
+                        if (!task){
+                            continue;
+                        }
+                        task.set('status', 'removed');
+                    }
+                }
+            },
+
             taskSave: {
                 args: ['data']
             },
@@ -99,9 +119,6 @@ Component.entryPoint = function(NS){
             taskClose: {
                 args: ['taskid']
             },
-            taskRemove: {
-                args: ['taskid']
-            },
             taskRestore: {
                 args: ['taskid']
             },
@@ -110,9 +127,6 @@ Component.entryPoint = function(NS){
             },
             taskOpen: {
                 args: ['taskid']
-            },
-            taskFavorite: {
-                args: ['taskid', 'value']
             },
             taskVoting: {
                 args: ['taskid', 'value']
@@ -170,7 +184,7 @@ Component.entryPoint = function(NS){
                     return this.getURL('ws') + 'projecteditor/ProjectEditorWidget/' + (id | 0) + '/' + (parentid | 0) + '/';
                 },
                 view: function(id){
-                    return this.getURL('ws') + 'projectview/ProjectViewWidget/' + (id | 0) + '/';
+                    return this.getURL('ws') + 'projectView/ProjectViewWidget/' + (id | 0) + '/';
                 }
             },
             task: {

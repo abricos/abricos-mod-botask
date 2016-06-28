@@ -24,7 +24,8 @@ Component.entryPoint = function(NS){
     };
 
     NS.ExploreWidget = Y.Base.create('ExploreWidget', SYS.AppWidget, [
-        NS.UProfileWidgetExt
+        NS.UProfileWidgetExt,
+        NS.AppResponsesHelperExt
     ], {
         onInitAppWidget: function(err, appInstance, options){
             var tp = this.template;
@@ -42,8 +43,13 @@ Component.entryPoint = function(NS){
                 this.set('removedVisible', val);
                 this.renderWidget();
             }, this);
+
+            this.bindResponsesEvent();
         },
         destructor: function(){
+        },
+        onTaskRemoved: function(){
+            this.renderWidget();
         },
         renderWidget: function(){
             var tp = this.template,

@@ -117,6 +117,10 @@ class BotaskApp extends AbricosApplication {
             return AbricosResponse::ERR_FORBIDDEN;
         }
 
+        if (isset($this->_cache['TaskList'])){
+            return $this->_cache['TaskList'];
+        }
+
         /** @var BotaskTaskList $list */
         $list = $this->InstanceClass('TaskList');
 
@@ -145,7 +149,10 @@ class BotaskApp extends AbricosApplication {
             $task->resolutions->Add($this->InstanceClass('ResolutionInTask', $d));
         }
 
-        return $list;
+        $d = BotaskQuery::HistoryLastId($this->db);
+        $list->lastHistoryId = empty($d) ? 0 : $d['id'];
+
+        return $this->_cache['TaskList'] = $list;
     }
 
     public function TaskToJSON($taskid){
@@ -191,7 +198,70 @@ class BotaskApp extends AbricosApplication {
         return $task;
     }
 
-    /* * * * * * * * * * * * * * * * Image * * * * * * * * * * * * * * */
+    public function TaskFavoriteToJSON($taskid, $value){
+        $res = $this->TaskFavorite($taskid, $value);
+        return $this->ResultToJSON('taskFavorite', $res);
+    }
+
+    public function TaskFavorite($taskid, $value){
+        if (!$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        BotaskQuery::TaskFavoriteUpdate($this->db, $taskid, $value);
+
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
+        $ret->value = $value;
+        return $ret;
+    }
+
+    public function TaskRemoveToJSON($taskid){
+        $res = $this->TaskRemove($taskid);
+        return $this->ResultToJSON('taskRemove', $res);
+    }
+
+    private function TaskRemoveMethod($taskid){
+        $ret = array();
+
+        $taskList = $this->TaskList();
+        $count = $taskList->Count();
+        for ($i = 0; $i < $count; $i++){
+            $cTask = $taskList->GetByIndex($i);
+            if ($cTask->parentid !== $taskid){
+                continue;
+            }
+            $ret = array_merge($ret, $this->TaskRemoveMethod($cTask->id));
+        }
+
+        $task = $taskList->Get($taskid);
+        if ($task->iStatus === BotaskStatus::TASK_REMOVE){
+            return $ret;
+        }
+
+        $this->TaskStatusUpdateMethod($taskid, BotaskStatus::TASK_REMOVE);
+
+        array_push($ret, $taskid);
+
+        return $ret;
+    }
+
+    public function TaskRemove($taskid){
+        if (!$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        $ids = $this->TaskRemoveMethod($taskid);
+
+        $this->CacheClear();
+
+        $ret = new stdClass();
+        $ret->taskids = $ids;
+        return $ret;
+    }
+
+
+    /* * * * * * * * * * * * * * * * File * * * * * * * * * * * * * * */
 
     public function FileListToJSON($taskid){
         $res = $this->FileList($taskid);
@@ -433,7 +503,7 @@ class BotaskApp extends AbricosApplication {
         return $this->ResultToJSON('historyList', $res);
     }
 
-    public function HistoryList($taskid, $firstHId = 0){
+    public function HistoryList($taskid){
         if (!$this->TaskAccess($taskid)){
             return AbricosResponse::ERR_FORBIDDEN;
         }
@@ -447,6 +517,28 @@ class BotaskApp extends AbricosApplication {
         }
 
         return $list;
+    }
+
+    private function TaskStatusUpdateMethod($taskid, $iStatus){
+        $iStatus = intval($iStatus);
+        $taskList = $this->TaskList();
+        $task = $taskList->Get($taskid);
+
+        if (empty($task) || $task->iStatus === $iStatus){
+            return;
+        }
+
+        $history = $this->InstanceClass('History', array(
+            "taskid" => $taskid,
+            "userid" => Abricos::$user->id,
+            "iStatus" => $iStatus,
+            "statusUserId" => Abricos::$user->id,
+            "iParentStatus" => $task->iStatus
+        ));
+
+        BotaskQuery::HistoryAppend($this->db, $history);
+
+        BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_REMOVE, Abricos::$user->id);
     }
 
 
@@ -867,23 +959,7 @@ class BotaskApp extends AbricosApplication {
         }
     }
 
-    public function TaskFavoriteToJSON($taskid, $value){
-        $res = $this->TaskFavorite($taskid, $value);
-        return $this->ResultToJSON('taskFavorite', $res);
-    }
 
-    public function TaskFavorite($taskid, $value){
-        if (!$this->TaskAccess($taskid)){
-            return AbricosResponse::ERR_FORBIDDEN;
-        }
-
-        BotaskQuery::TaskFavoriteUpdate($this->db, $taskid, $value);
-
-        $ret = new stdClass();
-        $ret->taskid = $taskid;
-        $ret->value = $value;
-        return $ret;
-    }
 
     public function TaskSetExecToJSON($taskid){
         $res = $this->TaskSetExec($taskid);
@@ -989,44 +1065,6 @@ class BotaskApp extends AbricosApplication {
         return $ret;
     }
 
-    public function TaskRemoveToJSON($taskid){
-        $res = $this->TaskRemove($taskid);
-        if (AbricosResponse::IsError($res)){
-            return $res;
-        }
-        return $this->ImplodeJSON(array(
-            $this->ResultToJSON('taskRemove', $res),
-            $this->TaskToJSON($taskid)
-        ));
-    }
-
-    public function TaskRemove($taskid){
-        if (!$this->TaskAccess($taskid)){
-            return AbricosResponse::ERR_FORBIDDEN;
-        }
-
-        // сначало закрыть все подзадачи
-        $rows = BotaskQuery::Board($this->db, Abricos::$user->id, 0, $taskid);
-        while (($row = $this->db->fetch_array($rows))){
-            $this->TaskRemove($row['id']);
-        }
-
-        $task = BotaskQuery::Task($this->db, $taskid, Abricos::$user->id, true);
-
-        if ($task['st'] == BotaskStatus::TASK_REMOVE){
-            return AbricosResponse::ERR_BAD_REQUEST;
-        }
-
-        $history = new BotaskHistory(Abricos::$user->id);
-        $history->SetStatus($task, BotaskStatus::TASK_REMOVE, Abricos::$user->id);
-        $history->Save();
-
-        BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_REMOVE, Abricos::$user->id);
-
-        $ret = new stdClass();
-        $ret->taskid = $taskid;
-        return $ret;
-    }
 
     public function TaskRestoreToJSON($taskid){
         $res = $this->TaskRestore($taskid);

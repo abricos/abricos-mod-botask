@@ -59,7 +59,6 @@
       "json": "ptidc"
     },
 
-
     "body": {
       "type": "string",
       "dbField": "bd",
@@ -71,6 +70,17 @@
       "json": "bdc"
     },
 
+    "imageData": {
+      "type": "string",
+      "dbField": "imgd",
+      "json": "imgd"
+    },
+    "imageDataChanged": {
+      "type": "bool",
+      "dbField": "imgdc",
+      "json": "imgdc"
+    },
+    
     "checks": {
       "type": "string",
       "dbField": "ch",
@@ -82,10 +92,21 @@
       "json": "chc"
     },
 
+    "deadline": {
+      "type": "int",
+      "dbField": "ddl",
+      "json": "ddl"
+    },
     "deadlineChanged": {
       "type": "bool",
       "dbField": "ddlc",
       "json": "ddlc"
+    },
+
+    "deadlineByTime": {
+      "type": "int",
+      "dbField": "ddlt",
+      "json": "ddlt"
     },
     "deadlineByTimeChanged": {
       "type": "bool",

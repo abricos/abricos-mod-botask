@@ -187,10 +187,16 @@ Component.entryPoint = function(NS){
                 }
             },
             status: {
-                readOnly: true,
                 getter: function(){
                     var val = this.get('iStatus');
                     return NS.Task.STATUS[val];
+                },
+                setter: function(val){
+                    var iStatus = NS.Task.ISTATUS[val] | 0;
+                    if (iStatus === 0){
+                        return;
+                    }
+                    this.set('iStatus', iStatus);
                 }
             },
             statusTitle: {
@@ -280,6 +286,15 @@ Component.entryPoint = function(NS){
             6: 'removed',
             7: 'arhived',
         },
+        ISTATUS: {
+            opened: 1,
+            reopened: 2,
+            closed: 3,
+            accepted: 4,
+            assigned: 5,
+            removed: 6,
+            arhived: 7,
+        },
         TYPE: {
             1: 'folder',
             2: 'project',
@@ -310,7 +325,8 @@ Component.entryPoint = function(NS){
                     }
                     return ret;
                 }
-            }
+            },
+            lastHistoryId: {value: 0}
         },
         COMPARE: {
             'default': function(tk1, tk2){ // сортировка: Наименьший срок, наивысший приоритет

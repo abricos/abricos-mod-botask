@@ -10,7 +10,7 @@
 /**
  * Class BotaskHistory
  */
-class BotaskHistory {
+class old_BotaskHistory {
 
     public $userid = 0;
     private $hitype = 0; // временно

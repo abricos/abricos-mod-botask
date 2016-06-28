@@ -36,6 +36,19 @@ class BotaskQuery {
         return $db->query_read($sql);
     }
 
+    public static function HistoryLastId(Ab_Database $db){
+        $sql = "
+			SELECT h.historyid as id
+			FROM ".$db->prefix."btk_userrole ur
+			INNER JOIN ".$db->prefix."btk_task p ON ur.taskid=p.taskid
+			INNER JOIN ".$db->prefix."btk_history h ON ur.taskid=h.taskid
+			WHERE ur.userid=".intval(Abricos::$user->id)." AND p.deldate=0
+			ORDER BY h.dateline DESC
+			LIMIT 1
+		";
+        return $db->query_first($sql);
+    }
+
     public static function Task(Ab_Database $db, $taskid){
         $sql = "
 			SELECT
@@ -295,6 +308,55 @@ class BotaskQuery {
         return $db->query_read($sql);
     }
 
+    public static function HistoryAppend(Ab_Database $db, BotaskHistory $h){
+        $sql = "
+			INSERT INTO ".$db->prefix."btk_history (
+				taskid, userid, dateline,
+				parenttaskid, parenttaskidc,
+				title, titlec,
+				body, bodyc,
+				imagedata, imagedatac,
+				checklist, checkc,
+				deadline, deadlinec,
+				deadlinebytime, deadlinebytimec,
+				status,prevstatus,statuserid,
+				priority,priorityc,
+				useradded, userremoved) VALUES (
+
+				".intval($h->taskid).",
+				".intval($h->userid).",
+				".intval(TIMENOW).",
+				".intval($h->parentid).",
+				".intval($h->parentChanged).",
+				'".bkstr($h->title)."',
+				".intval($h->titleChanged).",
+				'".bkstr($h->body)."',
+				".intval($h->bodyChanged).",
+
+				'".bkstr($h->imageData)."',
+				".intval($h->imageDataChanged).",
+
+				'".bkstr($h->checks)."',
+				".intval($h->checksChanged).",
+				".intval($h->deadline).",
+				".intval($h->deadlineChanged).",
+				".intval($h->deadlineByTime).",
+				".intval($h->deadlineByTimeChanged).",
+
+				".intval($h->iStatus).",
+				".intval($h->iParentStatus).",
+				".intval($h->statusUserId).",
+
+				".intval($h->priority).",
+				".intval($h->priorityChanged).",
+
+				'".bkstr($h->userAdded)."',
+				'".bkstr($h->userRemoved)."'
+			)
+		";
+        $db->query_write($sql);
+        return $db->insert_id();
+    }
 
     /******************************************************/
     // TODO: refactoring source
@@ -492,55 +554,7 @@ class BotaskQuery {
         return $retArray ? $db->query_first($sql) : $db->query_read($sql);
     }
 
-    public static function HistoryAppend(Ab_Database $db, BotaskHistory $h){
-        $sql = "
-			INSERT INTO ".$db->prefix."btk_history (
-				taskid, userid, dateline,
-				parenttaskid, parenttaskidc,
-				title, titlec,
-				body, bodyc,
-				imagedata, imagedatac,
-				checklist, checkc,
-				deadline, deadlinec,
-				deadlinebytime, deadlinebytimec,
-				status,prevstatus,statuserid,
-				priority,priorityc,
-				useradded, userremoved) VALUES (
 
-				".intval($h->taskid).",
-				".intval($h->userid).",
-				".TIMENOW.",
-				".intval($h->parenttaskid).",
-				".intval($h->parenttaskidc).",
-				'".bkstr($h->title)."',
-				".intval($h->titlec).",
-				'".bkstr($h->body)."',
-				".intval($h->bodyc).",
-
-				'".bkstr($h->imagedata)."',
-				".intval($h->imagedatac).",
-
-				'".bkstr($h->check)."',
-				".intval($h->checkc).",
-				".intval($h->deadline).",
-				".intval($h->deadlinec).",
-				".intval($h->deadlinebytime).",
-				".intval($h->deadlinebytimec).",
-
-				".intval($h->status).",
-				".intval($h->prevstatus).",
-				".intval($h->statuserid).",
-
-				".intval($h->priority).",
-				".intval($h->priorityc).",
-
-				'".bkstr($h->useradded)."',
-				'".bkstr($h->userremoved)."'
-			)
-		";
-        $db->query_write($sql);
-        return $db->insert_id();
-    }
 
     public static function BoardHistory(Ab_Database $db, $userid, $lastHId = 0, $firstHId = 0){
         $lastHId = intval($lastHId);
@@ -620,12 +634,12 @@ class BotaskQuery {
         $db->query_write($sql);
     }
 
-    public static function TaskSetStatus(Ab_Database $db, $taskid, $status, $statuserid){
+    public static function TaskSetStatus(Ab_Database $db, $taskid, $iStatus, $statusUserId){
         $sql = "
 			UPDATE ".$db->prefix."btk_task
 			SET
-				status=".intval($status).",
-				statuserid=".intval($statuserid).",
+				status=".intval($iStatus).",
+				statuserid=".intval($statusUserId).",
 				statdate=".TIMENOW."
 			WHERE taskid=".intval($taskid)."
 		";

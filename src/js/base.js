@@ -107,4 +107,35 @@ Component.entryPoint = function(NS){
         },
     };
     NS.UProfileWidgetExt = UProfileWidgetExt;
+
+    var AppResponsesHelperExt = function(){
+
+    };
+    AppResponsesHelperExt.prototype = {
+        bindResponsesEvent: function(){
+            var appInstance = this.get('appInstance');
+            if (appInstance){
+                appInstance.on('appResponses', this._helperOnAppResponses, this);
+            }
+        },
+        destructor: function(){
+            var appInstance = this.get('appInstance');
+            if (appInstance){
+                appInstance.detach('appResponses', this._helperOnAppResponses, this);
+            }
+        },
+        _helperOnAppResponses: function(e){
+            if (e.err){
+                return;
+            }
+
+            var r = e.result;
+            if (r.taskRemove){
+                this.onTaskRemoved();
+            }
+        },
+        onTaskRemoved: function(){
+        }
+    };
+    NS.AppResponsesHelperExt = AppResponsesHelperExt;
 };

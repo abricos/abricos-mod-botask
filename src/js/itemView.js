@@ -130,6 +130,22 @@ Component.entryPoint = function(NS){
 
             tp.toggleView(task.isFavorite(), 'removeFromFavoriteButton', 'addToFavoriteButton');
         },
+        showRemovePanel: function(){
+            this.template.show('removePanel');
+        },
+        closeRemovePanel: function(){
+            this.template.hide('removePanel');
+        },
+        removeItem: function(){
+            this.set('waiting', true);
+            var taskid = this.get('taskid');
+            this.get('appInstance').taskRemove(taskid, function(err, result){
+                this.set('waiting', false);
+                if (!err){
+                    this.go('ws');
+                }
+            }, this);
+        },
         onClick: function(e){
             var task = this.get('task');
             switch (e.dataClick) {
@@ -140,6 +156,15 @@ Component.entryPoint = function(NS){
                 case 'removeFromFavorite':
                     task.removeFromFavorite();
                     this.renderItem();
+                    return true;
+                case 'showRemovePanel':
+                    this.showRemovePanel();
+                    return true;
+                case 'closeRemovePanel':
+                    this.closeRemovePanel();
+                    return true;
+                case 'removeItem':
+                    this.removeItem();
                     return true;
             }
         }

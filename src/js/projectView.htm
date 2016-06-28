@@ -10,9 +10,15 @@
                 </h3>
             </div>
             <div class="col-md-3 text-right">
+
+                <span data-wait="show">
+                    <img src="/images/loading.gif"/>
+                </span>
+
                 <button id="{i#addToFavoriteButton}"
                         class="btn btn-default btn-xs"
                         data-click="addToFavorite"
+                        data-wait="disable"
                         title="Добавить в избранное">
                     <i class="fa fa-star-o" aria-hidden="true"></i>
                 </button>
@@ -20,6 +26,7 @@
                 <button id="{i#removeFromFavoriteButton}"
                         class="btn btn-default btn-xs hide"
                         data-click="removeFromFavorite"
+                        data-wait="disable"
                         title="Удалить из избранного">
                     <i class="fa fa-star" aria-hidden="true"></i>
                 </button>
@@ -27,6 +34,7 @@
                 <a href="#" id="{i#editButton}"
                    data-url="project.edit({v#id})"
                    class="btn btn-default btn-xs"
+                   data-wait="disable"
                    title="Редактировать">
                     <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
                 </a>
@@ -34,10 +42,43 @@
                 <a href="#" id="{i#addChildItemButton}"
                    data-url="item.create({v#id})"
                    class="btn btn-default btn-xs"
+                   data-wait="disable"
                    title="Добавить подпроект/подзадачу">
                     <i class="fa fa-plus-circle" aria-hidden="true"></i>
                 </a>
+
+                <button id="{i#showRemovePanelButton}"
+                        class="btn btn-default btn-xs"
+                        data-click="showRemovePanel"
+                        data-wait="disable"
+                        title="Удалить проект">
+                    <i class="fa fa-trash-o" aria-hidden="true"></i>
+                </button>
             </div>
+        </div>
+    </div>
+
+    <div id="{i#removePanel}" class="panel-body hide">
+        <div class="alert alert-danger" role="alert">
+            <strong>Внимание!</strong>
+            <p>
+                Вы действительно хотите удалить этот проект со всем его содержимым,
+                включая возможные подпроекты?
+            </p>
+            <p class="text-right">
+                <button class="btn btn-danger btn-sm"
+                        data-click="removeItem"
+                        data-wait="disable"
+                        title="Подтверждаю удаление">
+                    Подтверждаю удаление
+                </button>
+                <button class="btn btn-default btn-sm"
+                        data-click="closeRemovePanel"
+                        data-wait="disable"
+                        title="Отмена">
+                    Отмена
+                </button>
+            </p>
         </div>
     </div>
 
