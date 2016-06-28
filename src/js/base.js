@@ -66,7 +66,7 @@ Component.entryPoint = function(NS){
             getter: function(){
                 var taskid = this.get('taskid');
                 if (taskid > 0){
-                    return this.get('appInstance').get('taskList').getById('taskid');
+                    return this.get('appInstance').get('taskList').getById(taskid);
                 }
                 if (this._taskNewCache){
                     return this._taskNewCache;

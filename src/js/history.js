@@ -5,53 +5,38 @@ Component.requires = {
     ]
 };
 Component.entryPoint = function(NS){
-
     var Y = Brick.YUI,
         COMPONENT = this,
         SYS = Brick.mod.sys;
-
-    var LNG = this.language;
 
     NS.HistoryWidget = Y.Base.create('HistoryWidget', SYS.AppWidget, [
         NS.UProfileWidgetExt
     ], {
         onInitAppWidget: function(err, appInstance, options){
             this.renderHistory();
-            // NS.taskManager.historyChangedEvent.subscribe(this.onHistoryChanged, this, true);
         },
         destructor: function(){
-            // NS.taskManager.historyChangedEvent.unsubscribe(this.onHistoryChanged);
-        },
-        onHistoryChanged: function(type, args){
-            var taskid = this.get('config')['taskid'] | 0,
-                isRender = taskid == 0;
-
-            if (!isRender){
-                args[0].foreach(function(hst){
-                    if (hst['taskid'] * 1 == taskid){
-                        isRender = true;
-                        return true;
-                    }
-                });
-            }
-            if (isRender){
-                this.renderHistory();
-            }
         },
         renderHistory: function(){
             var tp = this.template,
                 task = this.get('task'),
-                limit = this.get('limit'),
+                page = this.get('page'),
+                limit = this.get('limit') * page,
                 i18n = this.language,
                 isFull = false,
+                counter = 0, user, action,
                 lst = "";
 
             task.get('histories').each(function(history){
-                var user = history.get('user'),
-                    action = history.get('action');
+                if (counter >= limit){
+                    return;
+                }
 
-                if (!isFull && !history.get('parentStatus')){
-                    isFull = true;
+                user = history.get('user');
+                action = history.get('action');
+
+                if (!isFull){
+                    isFull = history.get('isFirst');
                 }
 
                 lst += tp.replace('item', {
@@ -60,47 +45,26 @@ Component.entryPoint = function(NS){
                     uid: user.get('id'),
                     unm: user.get('viewName')
                 });
+
+                counter++;
             }, this);
 
             tp.setHTML('list', lst);
             tp.toggleView(!isFull, 'more');
         },
         loadMore: function(){
-            var history = this.get('history'),
-                cfg = this.get('config'),
-                limit = cfg['pagerow'] * cfg['page'],
-                isLoad = limit > history.count();
+            var page = this.get('page') + 1;
 
-            cfg['page']++;
+            this.set('page', page);
 
-            if (!isLoad && cfg['taskid'] * 1 == 0){
-
-                // кол-во в кеше достаточно, но может быть это кеш кусков загруженных задач?
-                history.foreach(function(hst){
-                    if (history.firstLoadedId > hst.id){
-                        isLoad = true;
-                        return true;
-                    }
-                });
-            }
-
-            if (isLoad){
-                var instance = this;
-                this.set('waiting', true);
-
-                NS.taskManager.loadHistory(history, cfg['taskid'], function(){
-                    instance.set('waiting', true);
-                    instance.renderHistory();
-                });
-            } else {
-                this.renderHistory();
-            }
+            this.renderHistory();
         }
     }, {
         ATTRS: {
             component: {value: COMPONENT},
-            templateBlockName: {value: 'widget,item,hd,fhd,act1,act2,act3,act4,act5,act6,act7,act8,act9'},
+            templateBlockName: {value: 'widget,item'},
             task: {value: null},
+            page: {value: 1},
             limit: {value: 3},
         },
         CLICKS: {

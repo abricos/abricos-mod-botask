@@ -30,29 +30,26 @@ Component.entryPoint = function(NS){
             var tp = this.template,
                 task = this.get('task'),
                 resolutionList = appInstance.get('resolutionList'),
+                resolutionInTaskList = task.get('resolutions'),
                 lst = "";
 
-            task.get('resolutions').each(function(inTask){
-                var userid = inTask.get('userid'),
-                    resolution = resolutionList.getById(inTask.get('resolutionid'));
-
-                if (!resolution){
-                    return;
-                }
-
-                var userid = resolution.get('userid'),
+            task.get('users').each(function(role){
+                var userid = role.get('userid'),
                     user = this.getUser(userid);
 
                 if (userid === UID){
                     return;
                 }
 
+                var resolution = resolutionInTaskList.getByUserId('userid');
+
                 lst += tp.replace('user', {
                     avatar: user.get('avatarSrc24'),
                     uid: user.get('id'),
                     unm: user.get('viewName'),
-                    status: resolution.get('title')
+                    status: resolution ? resolution.get('title') : ''
                 });
+
             }, this);
 
             tp.toggleView(lst !== '', 'listPanel');

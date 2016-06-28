@@ -38,7 +38,7 @@
     },
     "descript": {
       "type": "string",
-      "dbField": "db",
+      "dbField": "bd",
       "json": "bd"
     },
     "users": {

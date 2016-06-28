@@ -59,9 +59,9 @@ class BotaskApp extends AbricosApplication {
                 return $this->ResolutionListToJSON();
             case 'task':
                 return $this->TaskToJSON($d->taskid);
+            case 'taskFavorite':
+                return $this->TaskFavoriteToJSON($d->taskid, $d->value);
 
-            case 'boardData':
-                return $this->BoardDataToJSON($d->hlid);
             case 'taskSave':
                 return $this->TaskSaveToJSON($d->data);
             case 'taskSetExec':
@@ -78,8 +78,6 @@ class BotaskApp extends AbricosApplication {
                 return $this->TaskArhiveToJSON($d->taskid);
             case 'taskOpen':
                 return $this->TaskOpenToJSON($d->taskid);
-            case 'taskFavorite':
-                return $this->TaskFavoriteToJSON($d->taskid, $d->value);
             case 'taskVoting':
                 return $this->TaskVotingToJSON($d->taskid, $d->value);
             case 'taskExpand':
@@ -466,11 +464,6 @@ class BotaskApp extends AbricosApplication {
         }
     }
 
-
-    public function BoardDataToJSON($lastHId = 0){
-        $res = $this->BoardData($lastHId);
-        return $this->ResultToJSON('boardData', $res);
-    }
 
     /**
      * Получить структуру доски задач
@@ -876,13 +869,7 @@ class BotaskApp extends AbricosApplication {
 
     public function TaskFavoriteToJSON($taskid, $value){
         $res = $this->TaskFavorite($taskid, $value);
-        if (AbricosResponse::IsError($res)){
-            return $res;
-        }
-        return $this->ImplodeJSON(array(
-            $this->ResultToJSON('taskFavorite', $res),
-            $this->TaskToJSON($taskid)
-        ));
+        return $this->ResultToJSON('taskFavorite', $res);
     }
 
     public function TaskFavorite($taskid, $value){
@@ -890,7 +877,7 @@ class BotaskApp extends AbricosApplication {
             return AbricosResponse::ERR_FORBIDDEN;
         }
 
-        BotaskQuery::TaskFavorite($this->db, $taskid, Abricos::$user->id, $value);
+        BotaskQuery::TaskFavoriteUpdate($this->db, $taskid, $value);
 
         $ret = new stdClass();
         $ret->taskid = $taskid;

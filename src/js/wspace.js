@@ -31,11 +31,21 @@ Component.entryPoint = function(NS){
                     srcNode: tp.gel('teamusers')
                 }));
 
+                appInstance.on('appResponses', this._onAppResponses, this);
+
                 this.showWorkspacePage(!wsPage.isEmpty() ? wsPage : null);
                 this.renderWidget();
             }, this);
+
         },
         destructor: function(){
+            this.get('appInstance').detach('appResponses', this._onAppResponses, this);
+        },
+        _onAppResponses: function(e){
+            if (e.err){
+                return;
+            }
+            this.renderWidget();
         },
         renderWidget: function(){
 

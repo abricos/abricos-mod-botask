@@ -4,33 +4,34 @@
         <div class="row">
             <div class="col-md-9">
                 <h3 class="panel-title">
-                    <img src="/modules/botask/images/tproject.gif" title="{#mod.botask.projectview.panel.1}"/>
+                    <i class="fa fa-book" aria-hidden="true"></i>
+                    &nbsp;
                     <span id="{i#title}"></span>
                 </h3>
             </div>
             <div class="col-md-3 text-right">
-                <button id="{i#btnSetFavorite}"
+                <button id="{i#addToFavoriteButton}"
                         class="btn btn-default btn-xs"
-                        data-click="taskFavorite"
+                        data-click="addToFavorite"
                         title="Добавить в избранное">
                     <i class="fa fa-star-o" aria-hidden="true"></i>
                 </button>
 
-                <button id="{i#btnUnsetFavorite}"
+                <button id="{i#removeFromFavoriteButton}"
                         class="btn btn-default btn-xs hide"
-                        data-click="taskFavorite"
+                        data-click="removeFromFavorite"
                         title="Удалить из избранного">
                     <i class="fa fa-star" aria-hidden="true"></i>
                 </button>
 
-                <a href="#" id="{i#btnEdit}"
+                <a href="#" id="{i#editButton}"
                    data-url="project.edit({v#id})"
                    class="btn btn-default btn-xs"
                    title="Редактировать">
                     <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
                 </a>
 
-                <a href="#" id="{i#btnAddChildItem}"
+                <a href="#" id="{i#addChildItemButton}"
                    data-url="item.create({v#id})"
                    class="btn btn-default btn-xs"
                    title="Добавить подпроект/подзадачу">
@@ -56,7 +57,7 @@
         <div class="col-md-3 text-center">
             <dl>
                 <dt>Создан</dt>
-                <dd id="{i#dl}"></dd>
+                <dd id="{i#date}"></dd>
             </dl>
         </div>
         <div class="col-md-3 text-center">
@@ -65,17 +66,18 @@
     </div>
 
     <div class="panel-body">
-        <div class="bodybox">
-            <div id="{i#taskbody}"></div>
 
-            <div id="{i#checklist}"></div>
+        <div class="alert alert-info">
+            <div id="{i#descript}"></div>
+        </div>
 
-            <div id="{i#files}" class="dfiles row" style="display: none">
-                <div class="col-md-2">
-                    {#mod.botask.projectview.panel.14}
-                </div>
-                <div id="{i#ftable}" class="col-md-6"></div>
+        <div id="{i#checkListWidget}"></div>
+
+        <div id="{i#files}" class="dfiles row" style="display: none">
+            <div class="col-md-2">
+                {#mod.botask.projectview.panel.14}
             </div>
+            <div id="{i#attacheFiles}" class="col-md-6"></div>
         </div>
 
         <div id="{i#imgwidget}" class="imgcanvas hide">
@@ -89,14 +91,32 @@
             <div id="{i#images}"></div>
         </div>
 
-
-        <div id="{i#extinfo}"></div>
-
-        <hr />
-
-        <div class="tkcomments">
-            <div class="comments" id="{i#comments}"></div>
+        <div class="extInfo row">
+            <div class="col-md-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">История</h4>
+                    </div>
+                    <div class="panel-body">
+                        <div id={i#historyWidget}></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">Участники и их резолюции</h4>
+                    </div>
+                    <div class="panel-body">
+                        <div id={i#resolutionWidget}></div>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <hr/>
+
+        <div id="{i#commentTreeWidget}"></div>
 
     </div>
 </div>

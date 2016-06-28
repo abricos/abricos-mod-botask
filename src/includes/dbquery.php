@@ -62,6 +62,16 @@ class BotaskQuery {
         return $db->query_first($sql);
     }
 
+    public static function TaskFavoriteUpdate(Ab_Database $db, $taskid, $value){
+        $sql = "
+			UPDATE ".$db->prefix."btk_userrole
+			SET favorite=".intval($value)."
+			WHERE taskid=".intval($taskid)." AND userid=".intval(Abricos::$user->id)."
+			LIMIT 1
+		";
+        $db->query_write($sql);
+    }
+
     public static function UserRole(Ab_Database $db, $taskid){
         $sql = "
 			SELECT *
@@ -280,7 +290,7 @@ class BotaskQuery {
 			INNER JOIN ".$db->prefix."btk_task p ON h.taskid=p.taskid
 			WHERE h.taskid=".intval($taskid)." ".$where."
 			ORDER BY h.dateline DESC
-			LIMIT 7
+			LIMIT 100
 		";
         return $db->query_read($sql);
     }
@@ -694,16 +704,6 @@ class BotaskQuery {
         $sql = "
 			UPDATE ".$db->prefix."btk_userrole
 			SET ord=".intval($value)."
-			WHERE taskid=".intval($taskid)." AND userid=".intval($userid)."
-			LIMIT 1
-		";
-        $db->query_write($sql);
-    }
-
-    public static function TaskFavorite(Ab_Database $db, $taskid, $userid, $value){
-        $sql = "
-			UPDATE ".$db->prefix."btk_userrole
-			SET favorite=".intval($value)."
 			WHERE taskid=".intval($taskid)." AND userid=".intval($userid)."
 			LIMIT 1
 		";

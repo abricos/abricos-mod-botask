@@ -134,6 +134,24 @@ Component.entryPoint = function(NS){
             var role = this.get('userRole');
             return role.get('favorite');
         },
+        _favoriteChange: function(favorite){
+            favorite = !!favorite;
+            if (favorite === this.isFavorite()){
+                return;
+            }
+            var appInstance = this.appInstance,
+                role = this.get('userRole');
+
+            role.set('favorite', favorite);
+
+            appInstance.taskFavorite(this.get('id'), favorite);
+        },
+        addToFavorite: function(){
+            this._favoriteChange(true);
+        },
+        removeFromFavorite: function(){
+            this._favoriteChange(false);
+        },
         isExpired: function(){
 
         },
@@ -529,6 +547,15 @@ Component.entryPoint = function(NS){
                 getter: function(){
                     var val = this.get('iParentStatus');
                     return NS.Task.STATUS[val];
+                }
+            },
+            isFirst: {
+                readOnly: true,
+                getter: function(){
+                    var status = this.get('status'),
+                        parentStatus = this.get('parentStatus');
+
+                    return status === 'opened' && !parentStatus;
                 }
             },
             action: {
