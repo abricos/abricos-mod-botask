@@ -357,10 +357,13 @@ Component.entryPoint = function(NS){
                 return NS.TaskList.COMPARE.default(tk2, tk1);
             },
             title: function(tk1, tk2){
-                if (tk1.get('title') == tk2.get('title')){
+                var title1 = tk1.get('title'),
+                    title2 = tk2.get('title');
+
+                if (title1 == title2){
                     return 0;
                 }
-                return (tk1.get('title') < tk2.get('title')) ? -1 : 1;
+                return (title1 < title2) ? -1 : 1;
             },
             titleDesc: function(tk1, tk2){
                 return NS.TaskList.COMPARE.title(tk2, tk1);

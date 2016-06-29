@@ -193,7 +193,7 @@ Component.entryPoint = function(NS){
                     return this.getURL('project.edit', 0, parentid | 0);
                 },
                 edit: function(id, parentid){
-                    return this.getURL('ws') + 'projecteditor/ProjectEditorWidget/' + (id | 0) + '/' + (parentid | 0) + '/';
+                    return this.getURL('ws') + 'projectEditor/ProjectEditorWidget/' + (id | 0) + '/' + (parentid | 0) + '/';
                 },
                 view: function(id){
                     return this.getURL('ws') + 'projectView/ProjectViewWidget/' + (id | 0) + '/';

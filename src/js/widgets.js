@@ -10,46 +10,52 @@ Component.entryPoint = function(NS){
         SYS = Brick.mod.sys;
 
     NS.TaskTreeSelectWidget = Y.Base.create('TaskTreeSelectWidget', SYS.AppWidget, [], {
-        onBuildTData: function(){
+        buildTData: function(){
             var tp = this.template,
                 taskid = this.get('taskid');
 
             // путь
-            var getPT = function(tk){
-                var tl = tk.title;
-                if (tk.parent){
-                    tl = getPT(tk.parent) + " / " + tl;
+            var getPT = function(task){
+                var tl = task.get('title'),
+                    parent = task.get('parent');
+                if (parent){
+                    tl = getPT(parent) + " / " + tl;
                 }
                 return tl;
             };
-            var isChild = function(tk){
-                if (tk.id == taskid){
+            
+            var isChild = function(task){
+                if (task.get('id') == taskid){
                     return true;
                 }
-                if (tk.parent){
-                    return isChild(tk.parent);
+                var parent = task.get('parent');
+                if (parent){
+                    return isChild(parent);
                 }
                 return false;
             };
 
             var lst = "";
-            NS.taskManager.list.foreach(function(tk){
-                if (!tk.parent && tk.parentTaskId > 0){
+
+            NS.appInstance.get('taskList').each(function(task){
+                var parent = task.get('parent');
+
+                if (!parent && task.get('parentid') > 0){
                     return;
                 }
-                if (tk.isClosed() || tk.isRemoved() || tk.isArhive()){
+                if (task.isClosed() || task.isRemoved() || task.isArhived()){
                     return;
                 }
-                if (tk.id == taskid || isChild(tk)){
+                if (task.get('id') == taskid || isChild(task)){
                     return;
                 }
                 lst += tp.replace('node', {
-                    'id': tk.id,
-                    'tl': getPT(tk)
+                    'id': task.get('id'),
+                    'tl': getPT(task)
                 });
-            }, false, NS.taskSort['name']);
+            }, this, NS.TaskList.COMPARE.title);
 
-            return tp.replace('tree', {'rows': lst});
+            return {'rows': lst};
         },
         onInitAppWidget: function(err, appInstance){
             this.setValue(this.get('parentTaskId'));

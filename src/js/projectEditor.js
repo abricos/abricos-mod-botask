@@ -43,11 +43,11 @@ Component.entryPoint = function(NS){
         },
         _onLoadTask: function(){
             var tp = this.template,
-                taskid = this.get('taskid'),
+                taskid = this.get('taskid') | 0,
                 task = this.get('task');
 
             tp.setValue({
-                tl: task.title
+                tl: task.get('title')
             });
 
             this.addWidget('parentSelect', new NS.TaskTreeSelectWidget({
@@ -63,28 +63,17 @@ Component.entryPoint = function(NS){
                 toolbar: SYS.Editor.TOOLBAR_MINIMAL
             }));
 
-            this.addWidget('checkList', new NS.ChecklistWidget({
-                srcNode: tp.one('checklist'),
+            this.addWidget('checkList', new NS.CheckListWidget({
+                srcNode: tp.one('checkListWidget'),
                 task: task,
-                config: {
-                    hidebtn: true,
-                    hideinfo: true
-                }
-            })).update();
+            }));
 
             if (Brick.mod.filemanager.roles.isWrite){
-                this.addWidget('files', new Brick.mod.filemanager.AttachmentWidget(tp.gel('files'), task.files));
+                this.addWidget('files', new Brick.mod.filemanager.AttachmentWidget(tp.gel('fileListWidget'), task.files));
             } else {
                 this.filesWidget = null;
                 tp.hide('rfiles');
             }
-
-            var users = task.id * 1 == 0 && task.parent ? task.parent.users : task.users;
-
-            this.addWidget('users', new Brick.mod.uprofile.UserSelectWidget({
-                srcNode: tp.append('users', '<div></div>'),
-                users: users
-            }));
 
             if (Brick.mod.pictab && Brick.mod.pictab.ImageListWidget){
                 this.addWidget('drawList',
@@ -93,6 +82,20 @@ Component.entryPoint = function(NS){
             } else {
                 tp.hide('rimage');
             }
+
+            var users = task.get('users').toArray('userid');
+            if (taskid === 0 && task.get('parentid') > 0){
+                var parentTask = this.get('appInstance').get('taskList').getById(task.get('parentid'));
+                if (parentTask){
+                    users = parentTask.get('users').toArray('userid');
+                }
+            }
+
+            this.addWidget('users', new Brick.mod.uprofile.UserSelectWidget({
+                srcNode: tp.append('users', '<div></div>'),
+                users: users
+            }));
+
         },
         save: function(){
             var tp = this.template,
