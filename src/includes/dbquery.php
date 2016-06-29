@@ -338,6 +338,7 @@ class BotaskQuery {
 
 				'".bkstr($h->checks)."',
 				".intval($h->checksChanged).",
+				
 				".intval($h->deadline).",
 				".intval($h->deadlineChanged).",
 				".intval($h->deadlineByTime).",
@@ -356,6 +357,63 @@ class BotaskQuery {
 		";
         $db->query_write($sql);
         return $db->insert_id();
+    }
+
+    /* * * * * * * * * * * * * * * * Check List * * * * * * * * * * * * * * */
+
+    public static function CheckList(Ab_Database $db, $taskid){
+        $sql = "
+			SELECT
+				c.checklistid as id,
+				c.userid as uid,
+				c.dateline as dl,
+				c.upddate as udl,
+				c.upduserid as uuid,
+				c.checked as ch,
+				c.checkuserid as cuid,
+				c.checkdate as cdl,
+				c.title as tl,
+				c.ord as o,
+				c.deldate as ddl,
+				c.deluserid as duid
+			FROM ".$db->prefix."btk_checklist c 
+			WHERE c.taskid=".intval($taskid)."
+			ORDER BY c.ord DESC
+		";
+        return $db->query_read($sql);
+    }
+
+    public static function CheckAppend(Ab_Database $db, $taskid, BotaskCheck $check){
+        $sql = "
+			INSERT INTO ".$db->prefix."btk_checklist (taskid, userid, title, checked, dateline) VALUES (
+				".intval($taskid).",
+				".intval($check->userid).",
+				'".bkstr($check->title)."',
+				".intval($check->checked).",
+				".TIMENOW."
+			)
+		";
+        $db->query_write($sql);
+        return $db->insert_id();
+    }
+
+    public static function CheckUpdate(Ab_Database $db, $taskid, BotaskCheck $check){
+        $sql = "
+			UPDATE ".$db->prefix."btk_checklist
+			SET checked=".($check->checked ? 1 : 0).",
+				checkdate=".intval($check->checkedDate).",
+				checkuserid=".intval($check->checkedUserId).",
+			
+			    title='".bkstr($check->title)."',
+				upddate=".intval($check->updateDate).",
+				upduserid=".intval($check->updateUserId).",
+				
+				deldate=".intval($check->removeDate).",
+				deluserid=".intval($check->removeUserId)."
+			WHERE taskid=".intval($taskid)." 
+			    AND checklistid=".intval($check->id)."
+		";
+        $db->query_write($sql);
     }
 
     /******************************************************/
@@ -555,7 +613,6 @@ class BotaskQuery {
     }
 
 
-
     public static function BoardHistory(Ab_Database $db, $userid, $lastHId = 0, $firstHId = 0){
         $lastHId = intval($lastHId);
         $firstHId = intval($firstHId);
@@ -697,7 +754,6 @@ class BotaskQuery {
     }
 
 
-
     /**
      * Обновить информацию последнего просмотра задачи (для определения флага - Новая)
      *
@@ -791,82 +847,6 @@ class BotaskQuery {
 			LIMIT 500
 		";
         return $db->query_read($sql);
-    }
-
-    public static function CheckList(Ab_Database $db, $taskid){
-        $sql = "
-			SELECT
-				c.checklistid as id,
-				c.userid as uid,
-				c.dateline as dl,
-				c.upddate as udl,
-				c.upduserid as uuid,
-				c.checked as ch,
-				c.checkuserid as cuid,
-				c.checkdate as cdl,
-				c.title as tl,
-				c.ord as o,
-				c.deldate as ddl,
-				c.deluserid as duid
-			FROM ".$db->prefix."btk_checklist c 
-			WHERE c.taskid=".intval($taskid)."
-			ORDER BY c.ord DESC
-		";
-        return $db->query_read($sql);
-    }
-
-    public static function CheckListAppend(Ab_Database $db, $taskid, $userid, $title){
-        $sql = "
-			INSERT INTO ".$db->prefix."btk_checklist (taskid, userid, title, dateline) VALUES (
-				".intval($taskid).",
-				".intval($userid).",
-				'".bkstr($title)."',
-				".TIMENOW."
-			)
-		";
-        $db->query_write($sql);
-        return $db->insert_id();
-    }
-
-    public static function CheckListRemove(Ab_Database $db, $userid, $chid){
-        $sql = "
-			UPDATE ".$db->prefix."btk_checklist
-			SET deldate=".TIMENOW.",
-				deluserid=".intval($userid)."
-			WHERE checklistid=".intval($chid)."
-		";
-        $db->query_write($sql);
-    }
-
-    public static function CheckListRestore(Ab_Database $db, $userid, $chid){
-        $sql = "
-			UPDATE ".$db->prefix."btk_checklist
-			SET deldate=0, deluserid=0
-			WHERE checklistid=".intval($chid)."
-		";
-        $db->query_write($sql);
-    }
-
-    public static function CheckListUpdate(Ab_Database $db, $userid, $chid, $title){
-        $sql = "
-			UPDATE ".$db->prefix."btk_checklist
-			SET title='".bkstr($title)."',
-				upddate=".TIMENOW.",
-				upduserid=".intval($userid)."
-			WHERE checklistid=".intval($chid)."
-		";
-        $db->query_write($sql);
-    }
-
-    public static function CheckListCheck(Ab_Database $db, $userid, $chid, $check){
-        $sql = "
-			UPDATE ".$db->prefix."btk_checklist
-			SET checked=".(!empty($check) ? 1 : 0).",
-				checkdate=".TIMENOW.",
-				checkuserid=".intval($userid)."
-			WHERE checklistid=".intval($chid)."
-		";
-        $db->query_write($sql);
     }
 
 

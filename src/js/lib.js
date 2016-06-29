@@ -137,6 +137,18 @@ Component.entryPoint = function(NS){
             taskShowComments: {
                 args: ['taskid', 'value']
             },
+
+            checkList: {
+                type: 'modelList:CheckList',
+                onResponse: function(result, data){
+                    var taskList = this.get('taskList'),
+                        task = taskList.getById(data.taskid);
+                    if (!task){
+                        return;
+                    }
+                    task.set('checks', result);
+                }
+            },
             checkListSave: {
                 args: ['taskid', 'data']
             },

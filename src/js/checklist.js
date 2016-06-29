@@ -151,7 +151,7 @@ Component.entryPoint = function(NS){
                 sd = this.toJSON();
 
             this.get('appInstance').checkListSave(task.get('id'), sd, function(err, result){
-                console.log(arguments);
+                this._cloneCheckList();
                 this.renderList();
             }, this);
         },

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @package Abricos
  * @subpackage Botask
@@ -6,7 +7,6 @@
  * @license http://opensource.org/licenses/mit-license.php MIT License
  * @author Alexander Kuzmin <roosit@abricos.org>
  */
-
 class BotaskType {
     const TASK = 0;
     const PROJECT = 1;
@@ -185,12 +185,42 @@ class BotaskImage extends AbricosModel {
 class BotaskImageList extends AbricosModelList {
 }
 
+/**
+ * Class BotaskCheck
+ *
+ * @property int $userid
+ * @property int $date
+ * @property int $updateDate
+ * @property int $updateUserId
+ * @property int $removeDate
+ * @property int $removeUserId
+ * @property bool $checked
+ * @property int $checkedDate
+ * @property int $checkedUserId
+ * @property string $title
+ * @property int $order
+ */
 class BotaskCheck extends AbricosModel {
     protected $_structModule = 'botask';
     protected $_structName = 'Check';
 }
 
+/**
+ * Class BotaskCheckList
+ *
+ * @method BotaskCheck Get(int $id)
+ * @method BotaskCheck GetByIndex(int $i)
+ */
 class BotaskCheckList extends AbricosModelList {
+
+    public $taskid = 0;
+
+    public function ToJSON(){
+        $ret = parent::ToJSON();
+        $ret->taskid = $this->taskid;
+        return $ret;
+    }
+
 }
 
 /**
@@ -215,7 +245,7 @@ class BotaskCheckList extends AbricosModelList {
  *
  * @property string $body
  * @property bool $bodyChanged
- * 
+ *
  * @property string $imageData
  * @property bool $imageDataChanged
  *

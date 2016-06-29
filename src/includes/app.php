@@ -359,6 +359,7 @@ class BotaskApp extends AbricosApplication {
 
         /** @var BotaskCheckList $list */
         $list = $this->InstanceClass('CheckList');
+        $list->taskid = $taskid;
 
         $rows = BotaskQuery::CheckList($this->db, $taskid);
         while (($d = $this->db->fetch_array($rows))){
@@ -370,75 +371,95 @@ class BotaskApp extends AbricosApplication {
 
     public function CheckListSaveToJSON($taskid, $d){
         $res = $this->CheckListSave($taskid, $d);
+        if (AbricosResponse::IsError($res)){
+            return $res;
+        }
+        return $this->ImplodeJSON(array(
+            $this->ResultToJSON('checkListSave', $res),
+            $this->CheckListToJSON($taskid)
+        ));
+
         return $this->ResultToJSON('checkListSave', $res);
     }
 
-    public function CheckListSave($taskid, $checkList, $history = null){
+    public function CheckListSave($taskid, $data){
         if (!$this->TaskAccess($taskid)){
             return AbricosResponse::ERR_FORBIDDEN;
         }
 
+        $utm = Abricos::TextParser();
         $checkListOrig = $this->CheckList($taskid);
+        $isHistoryChange = false;
 
+        for ($i = 0; $i < count($data); $i++){
+            /** @var BotaskCheck $check */
+            $check = $this->InstanceClass('Check', $data[$i]);
+            $check->title = $utm->Parser($check->title);
 
-        $utmanager = Abricos::TextParser();
-        $isAdmin = $this->IsAdminRole();
-        $userid = Abricos::$user->id;
-
-        $hstChange = false;
-        // новые
-        foreach ($checkList as $ch){
-
-            $title = $isAdmin ? $ch->tl : $utmanager->Parser($ch->tl);
-            $isNew = false;
-            if ($ch->id == 0){ // новый
-                $ch->id = BotaskQuery::CheckListAppend($this->db, $taskid, $userid, $title);
-                $hstChange = true;
-                $isNew = true;
+            if ($check->id < 1){
+                $check->userid = Abricos::$user->id;
+                $check->id = BotaskQuery::CheckAppend($this->db, $taskid, $check);
+                $isHistoryChange = true;
             } else {
-                $fch = null;
-                foreach ($chListDb as $id => $row){
-                    if ($ch->id == $id){
-                        $fch = $row;
-                        break;
-                    }
+                $checkOrig = $checkListOrig->Get($check->id);
+                if (empty($checkOrig)){
+                    continue;
                 }
 
-                if (is_null($fch) || ($ch->duid > 0 && $fch['duid'] == 0)){ // удален
-                    BotaskQuery::CheckListRemove($this->db, $userid, $ch->id);
-                    $hstChange = true;
-                    if (is_null($fch)){
-                        continue;
-                    }
+                $isCheckChange = false;
+
+                if ($checkOrig->title !== $check->title){
+                    $check->updateDate = TIMENOW;
+                    $check->updateUserId = Abricos::$user->id;
+                    $isCheckChange = $isHistoryChange = true;
+                } else {
+                    $check->updateDate = $checkOrig->updateDate;
+                    $check->updateUserId = $checkOrig->updateUserId;
                 }
 
-                if ($ch->duid == 0 && $fch['duid'] > 0){ // восстановлен
-                    BotaskQuery::CheckListRestore($this->db, $userid, $ch->id);
-                    $hstChange = true;
+                if ($checkOrig->checked !== $check->checked){
+                    $check->checkedDate = TIMENOW;
+                    $check->checkedUserId = Abricos::$user->id;
+                    $isCheckChange = $isHistoryChange = true;
+                } else {
+                    $check->checkedDate = $checkOrig->checkedDate;
+                    $check->checkedUserId = $checkOrig->checkedUserId;
                 }
 
-                if ($fch['tl'] != $title){
-                    BotaskQuery::CheckListUpdate($this->db, $userid, $ch->id, $title);
-                    $hstChange = true;
+                if ($checkOrig->removeDate === 0 && $check->removeDate > 0){
+                    $check->removeDate = TIMENOW;
+                    $check->removeUserId = Abricos::$user->id;
+                    $isCheckChange = $isHistoryChange = true;
+                } else if ($checkOrig->removeDate > 0 && $check->removeDate === 0){
+                    $check->removeDate = 0;
+                    $check->removeUserId = 0;
+                    $isCheckChange = $isHistoryChange = true;
+                } else {
+                    $check->removeDate = $checkOrig->removeDate;
+                    $check->removeUserId = $checkOrig->removeUserId;
                 }
-            }
 
-            if (($isNew && !empty($ch->ch)) || (!empty($fch) && $ch->ch != $fch['ch'])){
-                BotaskQuery::CheckListCheck($this->db, $userid, $ch->id, $ch->ch);
-                $hstChange = true;
-            }
-        }
-        if ($hstChange){
-            if (is_null($history)){
-                $history = new BotaskHistory(Abricos::$user->id);
-                $history->SaveCheckList($taskid, json_encode($chListDb));
-                $history->Save();
-            } else {
-                $history->SaveCheckList($taskid, json_encode($chListDb));
+                if ($isCheckChange){
+                    BotaskQuery::CheckUpdate($this->db, $taskid, $check);
+                }
             }
         }
 
-        return $this->Task($taskid);
+        if ($isHistoryChange){
+            $history = $this->InstanceClass('History', array(
+                "taskid" => $taskid,
+                "userid" => Abricos::$user->id,
+                "checks" => json_encode($data),
+                "checksChanged" => true
+            ));
+            BotaskQuery::HistoryAppend($this->db, $history);
+
+            $this->CacheClear();
+        }
+
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
+        return $ret;
     }
 
     /* * * * * * * * * * * * * * * Resolutions * * * * * * * * * * * * */
@@ -692,9 +713,9 @@ class BotaskApp extends AbricosApplication {
         $d->id = intval($d->id);
         if (!$this->IsAdminRole()){
             // порезать теги и прочие гадости
-            $utmanager = Abricos::TextParser();
-            $d->tl = $utmanager->Parser($d->tl);
-            $d->bd = $utmanager->Parser($d->bd);
+            $utm = Abricos::TextParser();
+            $d->tl = $utm->Parser($d->tl);
+            $d->bd = $utm->Parser($d->bd);
         }
 
 

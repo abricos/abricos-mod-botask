@@ -86,7 +86,7 @@
       "dbField": "ch",
       "json": "ch"
     },
-    "checkChanged": {
+    "checksChanged": {
       "type": "bool",
       "dbField": "chc",
       "json": "chc"
