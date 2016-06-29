@@ -2,44 +2,54 @@
 <div class="checkList panel panel-default">
     <div id="{i#panelBody}" class="panel-body">
         <div id="{i#table}"></div>
-        <div id="{i#recycle}" class="recycle">
-            <a href="#" id="{i#brecshow}">
-                показать корзину (<span id="{i#reccnt}">0</span>)
-            </a>
-            <a href="#" id="{i#brechide}" class="hide">
-                скрыть корзину
-            </a>
-
-            <div id="{i#recycleTable}" class="hide"></div>
-        </div>
+        <div id="{i#recycleTable}" class="recycleTable hide"></div>
     </div>
 
     <div id="{i#buttons}" class="panel-footer">
-        <button id="{i#btnAddCheck}" data-click="add" class="btn btn-default btn-xs"
-                data-wait="disable"
-                title="Добавить микрозадачу">
-            <i class="fa fa-plus" aria-hidden="true"></i>
-            Добавить микрозадачу
-        </button>
-        <button id="{i#btnSave}" data-click="save"
-                data-wait="disable"
-                class="btn btn-default btn-xs hide"
-                title="Сохранить изменения в чек-листе">
-            <i class="fa fa-floppy-o" aria-hidden="true"></i>
-            Сохранить
-        </button>
-        <button id="{i#btnCancel}" data-click="cancel"
-                data-wait="disable"
-                class="btn btn-default btn-xs hide"
-                title="Отменить изменения в чек-листе">
-            <i class="fa fa-ban" aria-hidden="true"></i>
-            Отмена
-        </button>
+        <div class="pull-left">
+            <button id="{i#btnAddCheck}" data-click="add" class="btn btn-default btn-xs"
+                    data-wait="disable"
+                    title="Добавить микрозадачу">
+                <i class="fa fa-plus" aria-hidden="true"></i>
+                Добавить микрозадачу
+            </button>
+            <button id="{i#btnSave}" data-click="save"
+                    data-wait="disable"
+                    class="btn btn-default btn-xs hide"
+                    title="Сохранить изменения в чек-листе">
+                <i class="fa fa-floppy-o" aria-hidden="true"></i>
+                Сохранить
+            </button>
+            <button id="{i#btnCancel}" data-click="cancel"
+                    data-wait="disable"
+                    class="btn btn-default btn-xs hide"
+                    title="Отменить изменения в чек-листе">
+                <i class="fa fa-ban" aria-hidden="true"></i>
+                Отмена
+            </button>
+        </div>
+        <div id="{i#recycleButtons}" class="pull-right">
+
+            <button id="{i#btnShowRecycle}" data-click="showRecycle"
+                    data-wait="disable"
+                    class="btn btn-default btn-xs"
+                    title="Показать корзину">
+                Показать удаленные (<span id="{i#removeCount}">0</span>)
+            </button>
+
+            <button id="{i#btnHideRecycle}" data-click="hideRecycle"
+                    data-wait="disable"
+                    class="btn btn-default btn-xs hide"
+                    title="Скрыть корзину">
+                Скрыть удаленные
+            </button>
+        </div>
+        <div class="clearfix"></div>
     </div>
 </div>
 
 <!--{row}-->
-<div id="{i#bg}" class="checkRow uncheck">
+<div id="{i#bg}" class="checkRow alert alert-warning">
     <table id="{i#blurPanel}">
         <tbody>
         <tr>

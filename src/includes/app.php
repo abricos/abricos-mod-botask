@@ -370,21 +370,16 @@ class BotaskApp extends AbricosApplication {
 
     public function CheckListSaveToJSON($taskid, $d){
         $res = $this->CheckListSave($taskid, $d);
-        if (AbricosResponse::IsError($res)){
-            return $res;
-        }
-        return $this->ImplodeJSON(array(
-            $this->ResultToJSON('checkListSave', $res),
-            $this->TaskToJSON($taskid)
-        ));
+        return $this->ResultToJSON('checkListSave', $res);
     }
 
     public function CheckListSave($taskid, $checkList, $history = null){
-        if (!$this->IsWriteRole() || !$this->TaskAccess($taskid)){
+        if (!$this->TaskAccess($taskid)){
             return AbricosResponse::ERR_FORBIDDEN;
         }
 
-        $chListDb = $this->CheckList($taskid, true, true);
+        $checkListOrig = $this->CheckList($taskid);
+
 
         $utmanager = Abricos::TextParser();
         $isAdmin = $this->IsAdminRole();
@@ -958,7 +953,6 @@ class BotaskApp extends AbricosApplication {
             $history->ImagesChange($cImgs);
         }
     }
-
 
 
     public function TaskSetExecToJSON($taskid){

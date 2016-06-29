@@ -541,6 +541,23 @@ Component.entryPoint = function(NS){
         isRemoved: function(){
             return !!this.get('removeDate');
         }
+    }, {
+        ATTRS: {
+            titleSrc: {
+                getter: function(){
+                    var str = this.get('title');
+                    str = str.replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
+                    str = str.replace(/<br \/>/gi, '\n');
+                    str = str.replace(/<br\/>/gi, '\n');
+                    str = str.replace(/<br>/gi, '\n');
+                    return str;
+                },
+                setter: function(val){
+                    val = val.replace(/</gi, '&lt;').replace(/>/gi, '&gt;').replace(/\n/gi, '<br />');
+                    this.set('title', val);
+                }
+            }
+        }
     });
 
     NS.CheckList = Y.Base.create('checkList', SYS.AppModelList, [], {

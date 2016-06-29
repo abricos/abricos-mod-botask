@@ -249,76 +249,6 @@ Component.entryPoint = function(NS){
     NS.Old_TaskList = Old_TaskList;
 
 
-    var HItem = function(di){
-        HItem.superclass.constructor.call(this, di);
-    };
-    YAHOO.extend(HItem, SC.HistoryItem, {
-        init: function(d){
-            HItem.superclass.init.call(this, d);
-
-            this.taskid = d['tid'] * 1;	// идентификатор задачи
-
-            this.socid = this.taskid;
-
-            this.taskTitle = d['ttl'];
-
-            this.isTitle = d['tlc'] * 1 > 0;
-            this.isDescript = d['bdc'] * 1 > 0;
-            this.isDeadline = d['ddlc'] * 1 > 0;
-            this.isDdlTime = d['ddltc'] * 1 > 0;
-            this.isParent = d['ptidc'] * 1 > 0;
-
-            this.isStatus = d['st'] * 1 != d['pst'] * 1;
-            this.stUserId = d['stuid'] * 1;
-            this.status = d['st'] * 1;
-            this.pstatus = d['pst'] * 1;
-        }
-    });
-
-    // история может быт в трех состояниях:
-    // не загружена вовсе, загружена частично (только параметры - что изменено),
-    // загружена полностью (параметры + сами данные из истории)
-    var History = function(data){
-        History.superclass.constructor.call(this, data);
-    };
-    YAHOO.extend(History, SC.History, {
-        itemInstance: function(di){
-            return new HItem(di);
-        }
-    });
-
-    /*
-     var UserConfig = function(d){
-     this.init(d);
-     };
-     UserConfig.prototype = {
-     init: function(d){
-     this.update(d);
-     },
-     update: function(d){
-     d = L.merge({
-     'tasksort': 'deadline',
-     'tasksortdesc': false,
-     'taskviewchild': true,
-     'taskviewcmts': true
-     }, d || {});
-
-     this.tasksort = NS.taskSort[d['tasksort']] ? d['tasksort'] : 'deadline';
-     this.tasksortdesc = d['tasksortdesc'] * 1 > 0;
-     this.taskviewchild = d['taskviewchild'] * 1 > 0;
-     this.taskviewcmts = d['taskviewcmts'] * 1 > 0;
-     },
-     toAjax: function(){
-     return {
-     'tasksort': NS.taskSort[this.tasksort] ? this.tasksort : 'deadline',
-     'tasksortdesc': this.tasksortdesc ? 1 : 0,
-     'taskviewchild': this.taskviewchild ? 1 : 0,
-     'taskviewcmts': this.taskviewcmts ? 1 : 0
-     };
-     }
-     };
-     /**/
-
     var TaskManager = function(initData){
         initData = L.merge({
             'board': {},
@@ -536,43 +466,6 @@ Component.entryPoint = function(NS){
             /**/
         },
 
-        loadHistory: function(history, socid, callback){
-            callback = callback || function(){
-                };
-            var __self = this;
-            this.ajax({
-                'do': 'history',
-                'socid': socid,
-                'firstid': history.firstLoadedId
-            }, function(r){
-                r = L.isArray(r) ? r : [];
-                history.isFullLoaded = r.length == 0;
-                __self.historyUpdate(r, socid);
-                callback();
-            });
-        },
-
-        getTask: function(taskid){
-            return this.list.find(taskid);
-        },
-
-        /*
-        taskFavorite: function(taskid, callback){
-            var task = this.list.find(taskid);
-            callback = callback || function(){
-                };
-            var __self = this;
-            this.ajax({'do': 'taskfavorite', 'taskid': taskid, 'val': (!task.favorite ? '1' : '0')}, function(r){
-                callback();
-                if (Y.Lang.isNull(r)){
-                    return;
-                }
-                task.favorite = r * 1 > 0;
-                __self.taskUserChangedEvent.fire(task);
-            });
-        },
-        /**/
-
         taskShowComments: function(taskid, callback){
             var task = this.list.find(taskid);
             callback = callback || function(){
@@ -713,51 +606,6 @@ Component.entryPoint = function(NS){
             });
         },
 
-        // сохранить задачу (task - задача, newdata - новые данных по задаче)
-        /*
-        taskSave: function(task, d, callback){
-            callback = callback || function(){
-                };
-            var __self = this;
-
-            d = L.merge({
-                'onlyimage': false,
-                'id': 0, 'type': 3, 'title': '',
-                'descript': '',
-                'checks': [],
-                'files': [],
-                'images': [],
-                'users': [Brick.env.user.id],
-                'parentid': 0,
-                'deadline': null,
-                'ddlTime': false,
-                'priority': 3
-            }, d || {});
-
-            this.ajax({
-                'do': 'tasksave',
-                'task': {
-                    'id': task.id,
-                    'pid': d['parentid'],
-                    'type': d['type'],
-                    'tl': d['title'],
-                    'bd': d['descript'],
-                    'checks': d['checks'],
-                    'files': d['files'],
-                    'images': d['images'],
-                    'users': d['users'],
-                    'pid': d['parentid'],
-                    'ddl': NS.dateToServer(d['deadline']),
-                    'ddlt': d['ddlTime'] ? 1 : 0,
-                    'prt': d['priority'],
-                    'onlyimage': d['onlyimage']
-                }
-            }, function(r){
-                __self._setLoadedTaskData(r);
-                callback(r);
-            });
-        }
-        /**/
     };
 
     NS.parseTime = function(str){
