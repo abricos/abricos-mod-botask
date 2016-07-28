@@ -95,13 +95,26 @@ Component.entryPoint = function(NS){
                 this.addWidget('attacheFiles', new Brick.mod.filemanager.AttachmentListWidget(tp.gel('attacheFiles')));
             }
 
+
+            var NSPicTab = Brick.mod.pictab,
+                images = task.get('images');
+
+            if (tp.one('pictabWidget') && NSPicTab && NSPicTab.PicTabWidget
+                && images && images.size() > 0){
+
+                this.addWidget('picTab', new NSPicTab.PicTabWidget({
+                    srcNode: tp.one('pictabWidget'),
+                    imageList: images,
+                    viewMode: true
+                }));
+                /*
+                 tp.show('imgwidget');
+                 this.drawListWidget = new mPT.ImageListWidget(tp.gel('images'), task.images, true);
+                 this.drawListWidget.changedEvent.subscribe(this.onCanvasChanged, this, true);
+                 /**/
+            }
+
             /*
-             var mPT = Brick.mod.pictab;
-             if (mPT && mPT.ImageListWidget && L.isArray(task.images) && task.images.length > 0){
-             tp.show('imgwidget');
-             this.drawListWidget = new mPT.ImageListWidget(tp.gel('images'), task.images, true);
-             this.drawListWidget.changedEvent.subscribe(this.onCanvasChanged, this, true);
-             }
              task.isNewCmt = false;
              /**/
 

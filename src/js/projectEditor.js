@@ -75,10 +75,14 @@ Component.entryPoint = function(NS){
                 tp.hide('rfiles');
             }
 
-            if (Brick.mod.pictab && Brick.mod.pictab.ImageListWidget){
-                this.addWidget('drawList',
-                    new Brick.mod.pictab.ImageListWidget(tp.gel('widget'), task.images)
-                );
+            var NSPicTab = Brick.mod.pictab;
+            if (NSPicTab && NSPicTab.PicTabWidget){
+                this.addWidget('picTab', new NSPicTab.PicTabWidget({
+                    srcNode: tp.one('pictabWidget'),
+                    images: task.images
+                }));
+
+                // this.drawListWidget = new Brick.mod.pictab.ImageListWidget(tp.gel('drawListWidget'), task.images);
             } else {
                 tp.hide('rimage');
             }
