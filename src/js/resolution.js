@@ -41,7 +41,7 @@ Component.entryPoint = function(NS){
                     return;
                 }
 
-                var resolution = resolutionInTaskList.getByUserId('userid');
+                var resolution = resolutionInTaskList.getByUserId(userid);
 
                 lst += tp.replace('user', {
                     avatar: user.get('avatarSrc24'),
@@ -55,7 +55,7 @@ Component.entryPoint = function(NS){
             tp.toggleView(lst !== '', 'listPanel');
             tp.setHTML('list', lst);
 
-            // this._updateStatus();
+            this._updateStatus();
 
             tp.one('input').on('keyup', this._onInputChange, this);
         },
@@ -64,7 +64,8 @@ Component.entryPoint = function(NS){
         },
         _onInputChange: function(){
             var tp = this.template,
-                value = this.getStatusFromTask(UID).tl,
+                resol = this.get('task').get('resolutions').getByUserId(UID),
+                value = resol ? resol.get('title') : "",
                 curValue = tp.getValue('input');
 
             tp.one('saveButton').set('disabled', value === curValue ? 'disabled' : '');
@@ -73,34 +74,23 @@ Component.entryPoint = function(NS){
             var tp = this.template,
                 task = this.get('task'),
                 appInstance = this.get('appInstance'),
-                resolutionList = appInstance.get('resolutionList'),
-                resolution = task.get('resolutions').getByUserId(UID);
+                resolList = appInstance.get('resolutionList'),
+                resol = task.get('resolutions').getByUserId(UID),
+                lst = tp.replace('noStatus');
 
+            tp.setValue('input', resol ? resol.get('title') : '');
 
-            tp.setValue('input', resolution ? resolution.get('title') : '');
-
-
-            // this._onInputChange();
-
-            var lst = tp.replace('noStatus'),
-                mys = task.custatus.my;
-
-            for (var i = 0, title; i < mys.length; i++){
-                title = mys[i]['tl'];
-                if (title === ''){
-                    continue;
-                }
+            resolList.each(function(iResol){
+                var title = iResol.get('title');
 
                 lst += tp.replace('option', {
                     id: title,
                     title: title
                 });
-            }
+
+            }, this);
+
             tp.setHTML('select', lst);
-            tp.setValue('select', status.tl);
-        },
-        getStatusFromTask: function(uid){
-            return this.get('task').custatus.list[uid] || {tl: ''};
         },
         showSelect: function(){
             this.template.toggleView(true, 'selectPanel', 'editorPanel');
