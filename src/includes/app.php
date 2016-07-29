@@ -86,6 +86,8 @@ class BotaskApp extends AbricosApplication {
                 return $this->TaskShowCommentsToJSON($d->taskid, $d->value);
             case 'checkListSave':
                 return $this->CheckListSaveToJSON($d->taskid, $d->data);
+            case 'imageListSave':
+                return $this->ImageListSaveToJSON($d->taskid, $d->data);
         }
         return null;
     }
@@ -305,7 +307,7 @@ class BotaskApp extends AbricosApplication {
         $fmanager->RolesEnable();
     }
 
-    /* * * * * * * * * * * * * * * * Image * * * * * * * * * * * * * * */
+    /* * * * * * * * * * * * * * * * PictabList * * * * * * * * * * * * * * */
 
     public function ImageListToJSON($taskid){
         $res = $this->ImageList($taskid);
@@ -329,7 +331,7 @@ class BotaskApp extends AbricosApplication {
         return $list;
     }
 
-    public function TaskImageRemove($taskid, $image){
+    public function ImageRemove($taskid, $image){
         $d = json_decode($image['d']);
         foreach ($d->canvas->ls as $lr){
             foreach ($lr->fs as $fe){
@@ -344,6 +346,89 @@ class BotaskApp extends AbricosApplication {
         }
         BotaskQuery::ImageRemove($this->db, $image['id']);
     }
+
+    public function ImageListSaveToJSON($taskid, $d){
+        $res = $this->ImageListSave($taskid, $d);
+        if (AbricosResponse::IsError($res)){
+            return $res;
+        }
+        return $this->ImplodeJSON(array(
+            $this->ResultToJSON('imageListSave', $res),
+            $this->ImageListToJSON($taskid)
+        ));
+
+        return $this->ResultToJSON('imageListSave', $res);
+    }
+
+    public function ImageListSave($taskid, $d, $isNewTask = false){
+        if (!$this->TaskAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        $utm = Abricos::TextParser();
+        $utmf = Abricos::TextParser(true);
+        $isChanged = false;
+        $arrUpdated = array();
+
+        $curImageList = $this->ImageList($taskid);
+
+        for ($i = 0; $i < count($d); $i++){
+            $dImage = $d[$i];
+
+            $dImage->id = intval($dImage->id);
+            $dImage->title = $utmf->Parser($dImage->title);
+
+            $layers = $dImage->data->canvas->ls;
+
+            for ($ii = 0; $ii < count($layers); $ii++){
+                $layer = $layers[$ii];
+
+                if ($layer->tp === "cmt"){
+                    $layer->t = $utm->Parser($layer->t);
+                }
+            }
+
+            $sData = json_encode($dImage->data);
+
+            if ($dImage->id === 0){
+                BotaskQuery::ImageAppend($this->db, $taskid, $dImage->title, $sData);
+                $isChanged = true;
+            } else {
+                $curImage = $curImageList->Get($dImage->id);
+                $arrUpdated[$dImage->id] = true;
+                if (!empty($curImage) && ($curImage->title != $dImage->title || $curImage->data != $sData)){
+                    BotaskQuery::ImageUpdate($this->db, $dImage->id, $dImage->title, $sData);
+                    $isChanged = true;
+                }
+            }
+        }
+
+        // removed image
+        for ($i = 0; $i < $curImageList->Count(); $i++){
+            $image = $curImageList->GetByIndex($i);
+            if ($arrUpdated[$image->id]){
+                continue;
+            }
+            $this->ImageRemove($taskid, $image->id);
+        }
+
+        if ($isChanged && !$isNewTask){
+            $history = $this->InstanceClass('History', array(
+                "taskid" => $taskid,
+                "userid" => Abricos::$user->id,
+                "imageData" => json_encode($d),
+                "imageDataChanged" => true
+            ));
+            BotaskQuery::HistoryAppend($this->db, $history);
+
+            $this->CacheClear();
+        }
+
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
+        return $ret;
+    }
+
 
     /* * * * * * * * * * * * * * * * CheckList * * * * * * * * * * * * * * */
 
@@ -681,7 +766,7 @@ class BotaskApp extends AbricosApplication {
         // удалить изобрежения во вкладках
         $rows = BotaskQuery::ImageList($this->db, $taskid);
         while (($row = $this->db->fetch_array($rows))){
-            $this->TaskImageRemove($taskid, $row);
+            $this->ImageRemove($taskid, $row);
         }
 
         // удалить роли пользвотелей на проект
@@ -717,7 +802,6 @@ class BotaskApp extends AbricosApplication {
             $d->tl = $utm->Parser($d->tl);
             $d->bd = $utm->Parser($d->bd);
         }
-
 
         // родительская задача, есть ли доступ сохранения в нее
         $parentid = intval($d->pid);
@@ -778,21 +862,22 @@ class BotaskApp extends AbricosApplication {
 
         $users = $this->TaskUserList($d->id, true);
 
-        if (!$d->onlyimage){ // производиться полное редактирование
-            $this->TaskSaveUsersUpdate($d, $users, $history);
+        $this->TaskSaveUsersUpdate($d, $users, $history);
 
-            // сохранить чеклист
-            $this->CheckListSave($d->id, $d->checks, $history);
+        // сохранить чеклист
+        $this->CheckListSave($d->id, $d->checks);
 
-            // обновить информацию по файлам, если есть на это роль
-            $this->TaskSaveFilesUpdate($d, $history);
-        }
+        // обновить информацию по файлам, если есть на это роль
+        $this->TaskSaveFilesUpdate($d, $history);
 
         // сохранить картинки
-        $this->TaskSaveImagesUpdate($d, $history);
+        $this->ImageListSave($d->id, $d->images);
 
         $history->Save();
+
+        $this->CacheClear();
         $taskid = $d->id;
+
         $task = $this->Task($taskid);
 
         /*
@@ -924,57 +1009,6 @@ class BotaskApp extends AbricosApplication {
             }
         }
     }
-
-    private function TaskSaveImagesUpdate($tk, BotaskHistory $history){
-        // TODO: необходимо осуществить проверку в текстовых записях картинки $tk->img дабы исключить проникновения javascript
-        // $tk->img = json_encode_ext($tk->img);
-
-        $imgchanges = false;
-        if (!is_array($tk->images)){
-            $tk->images = array();
-        }
-
-        $cImgs = $this->ImageList($tk->id);
-        foreach ($tk->images as $img){
-            $img->d = json_encode_ext($img->d);
-
-            if ($img->id == 0){ // новое изображение
-                BotaskQuery::ImageAppend($this->db, $tk->id, $img->tl, $img->d);
-                $imgchanges = true;
-            } else {
-                $cfimg = null;
-                foreach ($cImgs as $cimg){
-                    if ($cimg['id'] == $img->id){
-                        $cfimg = $cimg;
-                        break;
-                    }
-                }
-                if (!is_null($cfimg) && ($img->tl != $cimg['tl'] || $img->d != $cimg['d'])){
-                    BotaskQuery::ImageUpdate($this->db, $img->id, $img->tl, $img->d);
-                    $imgchanges = true;
-                }
-            }
-        }
-        // удаленные изображения
-        foreach ($cImgs as $cimg){
-            $find = false;
-            foreach ($tk->images as $img){
-                if ($cimg['id'] == $img->id){
-                    $find = true;
-                    break;
-                }
-            }
-            if (!$find){
-                $this->TaskImageRemove($tk->id, $cimg);
-                // BotaskQuery::ImageRemove($this->db, $cimg['id']);
-                $imgchanges = true;
-            }
-        }
-        if ($imgchanges){
-            $history->ImagesChange($cImgs);
-        }
-    }
-
 
     public function TaskSetExecToJSON($taskid){
         $res = $this->TaskSetExec($taskid);

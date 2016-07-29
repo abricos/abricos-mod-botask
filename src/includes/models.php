@@ -177,11 +177,23 @@ class BotaskFile extends AbricosModel {
 class BotaskFileList extends AbricosModelList {
 }
 
+/**
+ * Class BotaskImage
+ *
+ * @property string $title
+ * @property string $data
+ */
 class BotaskImage extends AbricosModel {
     protected $_structModule = 'botask';
     protected $_structName = 'Image';
 }
 
+/**
+ * Class BotaskImageList
+ *
+ * @method BotaskImage Get(int $id)
+ * @method BotaskImage GetByIndex(int $i)
+ */
 class BotaskImageList extends AbricosModelList {
 }
 

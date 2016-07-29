@@ -61,9 +61,6 @@ Component.entryPoint = function(NS){
 
         },
 
-        onCanvasChanged: function(type, args){
-            this.template.show('bimgsave');
-        },
         onHistoryChanged: function(type, args){
             var history = args[0];
 
@@ -107,17 +104,6 @@ Component.entryPoint = function(NS){
             var instance = this;
             this._shLoading(true);
             NS.taskManager.taskOpen(this.get('task').id, function(){
-                instance._shLoading(false);
-            });
-        },
-        saveImages: function(){
-            this._shLoading(true);
-            var newdata = {
-                'onlyimage': true,
-                'images': this.drawListWidget.toSave()
-            };
-            var instance = this;
-            NS.taskManager.taskSave(this.get('task'), newdata, function(){
                 instance._shLoading(false);
             });
         },

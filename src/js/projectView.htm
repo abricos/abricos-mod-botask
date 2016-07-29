@@ -114,7 +114,17 @@
 
         <div id="{i#checkListWidget}"></div>
 
-        <div id="{i#pictabWidget}"></div>
+        <div id="{i#pictabPanel}" class="pictabPanel hide">
+
+            <button id="{i#pictabSaveButton}"
+                    class="btn btn-success btn-xs btnPictabSave hide"
+                    data-click="pictabSave"
+                    type="button">
+                Сохранить изменения
+            </button>
+
+            <div id="{i#pictabWidget}"></div>
+        </div>
 
         <div id="{i#files}" class="dfiles row" style="display: none">
             <div class="col-md-2">
@@ -186,7 +196,7 @@
 				<input id="{i#bremove}" value="{#mod.botask.projectview.tkremovepanel.4}" type="button"/>
 				<input id="{i#bcancel}" value="{#mod.botask.projectview.tkremovepanel.5}" type="button"/>
 			</span>
-			<span id="{i#bloading}" style="display: none">
+            <span id="{i#bloading}" style="display: none">
 				<img src="/images/loading.gif"/> {#mod.botask.projectview.tkremovepanel.6}
 			</span>
         </div>

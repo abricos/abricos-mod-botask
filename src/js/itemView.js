@@ -102,21 +102,18 @@ Component.entryPoint = function(NS){
             if (tp.one('pictabWidget') && NSPicTab && NSPicTab.PicTabWidget
                 && images && images.size() > 0){
 
-                this.addWidget('picTab', new NSPicTab.PicTabWidget({
+                tp.show('pictabPanel');
+
+                var pictabWidget = this.addWidget('pictab', new NSPicTab.PicTabWidget({
                     srcNode: tp.one('pictabWidget'),
                     imageList: images,
-                    viewMode: true
+                    editMode: false
                 }));
-                /*
-                 tp.show('imgwidget');
-                 this.drawListWidget = new mPT.ImageListWidget(tp.gel('images'), task.images, true);
-                 this.drawListWidget.changedEvent.subscribe(this.onCanvasChanged, this, true);
-                 /**/
-            }
 
-            /*
-             task.isNewCmt = false;
-             /**/
+                pictabWidget.on('canvasChanged', function(){
+                    tp.show('pictabSaveButton');
+                }, this);
+            }
 
             this.renderItem();
         },
@@ -159,6 +156,17 @@ Component.entryPoint = function(NS){
                 }
             }, this);
         },
+        pictabSave: function(){
+            var taskid = this.get('taskid'),
+                data = this.getWidget('pictab').toJSON();
+
+            this.template.hide('pictabSaveButton');
+
+            this.set('waiting', true);
+            this.get('appInstance').imageListSave(taskid, data, function(err, result){
+                this.set('waiting', false);
+            }, this);
+        },
         onClick: function(e){
             var task = this.get('task');
             switch (e.dataClick) {
@@ -178,6 +186,9 @@ Component.entryPoint = function(NS){
                     return true;
                 case 'removeItem':
                     this.removeItem();
+                    return true;
+                case 'pictabSave':
+                    this.pictabSave();
                     return true;
             }
         }

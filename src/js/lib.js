@@ -143,13 +143,24 @@ Component.entryPoint = function(NS){
                 onResponse: function(result, data){
                     var taskList = this.get('taskList'),
                         task = taskList.getById(data.taskid);
-                    if (!task){
-                        return;
-                    }
-                    task.set('checks', result);
+
+                    task ? task.set('checks', result) : null;
                 }
             },
             checkListSave: {
+                args: ['taskid', 'data']
+            },
+
+            imageList: {
+                type: 'modelList:ImageList',
+                onResponse: function(result, data){
+                    var taskList = this.get('taskList'),
+                        task = taskList.getById(data.taskid);
+
+                    task ? task.set('images', result) : null;
+                }
+            },
+            imageListSave: {
                 args: ['taskid', 'data']
             },
 
