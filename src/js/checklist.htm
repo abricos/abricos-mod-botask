@@ -2,30 +2,16 @@
 <div class="checkList panel panel-default">
     <div id="{i#panelBody}" class="panel-body">
         <div id="{i#table}"></div>
-        <div id="{i#recycleTable}" class="recycleTable hide"></div>
+        <div id="{i#recycleTable}" class="recycleTable"></div>
     </div>
 
-    <div id="{i#buttons}" class="panel-footer">
+    <div id="{i#buttons}" class="panel-footer text-center">
         <div class="pull-left">
             <button id="{i#btnAddCheck}" data-click="add" class="btn btn-default btn-xs"
                     data-wait="disable"
                     title="Добавить микрозадачу">
                 <i class="fa fa-plus" aria-hidden="true"></i>
                 Добавить микрозадачу
-            </button>
-            <button id="{i#btnSave}" data-click="save"
-                    data-wait="disable"
-                    class="btn btn-default btn-xs hide"
-                    title="Сохранить изменения в чек-листе">
-                <i class="fa fa-floppy-o" aria-hidden="true"></i>
-                Сохранить
-            </button>
-            <button id="{i#btnCancel}" data-click="cancel"
-                    data-wait="disable"
-                    class="btn btn-default btn-xs hide"
-                    title="Отменить изменения в чек-листе">
-                <i class="fa fa-ban" aria-hidden="true"></i>
-                Отмена
             </button>
         </div>
         <div id="{i#recycleButtons}" class="pull-right">
@@ -44,6 +30,22 @@
                 Скрыть удаленные
             </button>
         </div>
+
+        <button id="{i#btnSave}" data-click="save"
+                data-wait="disable"
+                class="btn btn-success btn-xs hide"
+                title="Сохранить изменения в чек-листе">
+            <i class="fa fa-floppy-o" aria-hidden="true"></i>
+            Сохранить
+        </button>
+        <button id="{i#btnCancel}" data-click="cancel"
+                data-wait="disable"
+                class="btn btn-default btn-xs hide"
+                title="Отменить изменения в чек-листе">
+            <i class="fa fa-ban" aria-hidden="true"></i>
+            Отмена
+        </button>
+
         <div class="clearfix"></div>
     </div>
 </div>

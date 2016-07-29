@@ -69,10 +69,12 @@ Component.entryPoint = function(NS){
                 removeCount += check.isRemoved() ? 1 : 0;
             }, this);
 
-            tp.toggleView(checkList.size() > 0, 'panelBody');
-
             this._removeCount = removeCount;
+            this._updateBodyVisible();
             this._updateRecycleVisible();
+        },
+        _updateBodyVisible: function(){
+            // this.template.toggleView(this._wList.length > 0, 'panelBody');
         },
         _updateRecycleVisible: function(){
             var tp = this.template,
@@ -113,6 +115,8 @@ Component.entryPoint = function(NS){
             widget.on('change', this._onCheckChange, this);
             widget.on('remove', this._onCheckRemove, this);
             widget.on('restore', this._onCheckRestore, this);
+
+            this._updateBodyVisible();
 
             return widget;
         },
