@@ -651,42 +651,44 @@ class BotaskQuery {
         return $db->query_first($sql);
     }
 
-    public static function TaskAppend(Ab_Database $db, $tk, $pubkey){
+    public static function ItemAppend(Ab_Database $db, $d, $pubkey){
         $sql = "
 			INSERT INTO ".$db->prefix."btk_task (
 				userid, parenttaskid, tasktype, title, status, statdate, pubkey, body,
 				deadline, deadlinebytime, dateline, updatedate, priority) VALUES (
-				".intval($tk->uid).",
-				".intval($tk->pid).",
-				".intval($tk->typeid).",
-				'".bkstr($tk->tl)."',
+				".intval(Abricos::$user->id).",
+				".intval($d->parentid).",
+				".intval($d->typeid).",
+				'".bkstr($d->title)."',
 				".BotaskStatus::TASK_OPEN.",
 				".TIMENOW.",
 				'".bkstr($pubkey)."',
-				'".bkstr($tk->bd)."',
-				".intval($tk->ddl).",
-				".intval($tk->ddlt).",
+				'".bkstr($d->body)."',
+				
+				".intval($d->deadline).",
+				".intval($d->deadlineTime).",
 				".TIMENOW.",
 				".TIMENOW.",
-				".intval($tk->prt)."
+				".intval($d->priority)."
 			)
 		";
         $db->query_write($sql);
         return $db->insert_id();
     }
 
-    public static function TaskUpdate(Ab_Database $db, $tk, $userid){
+    public static function TaskUpdate(Ab_Database $db, $d){
         $sql = "
 			UPDATE ".$db->prefix."btk_task
 			SET
-				title='".bkstr($tk->tl)."',
-				body='".bkstr($tk->bd)."',
-				parenttaskid=".intval($tk->pid).",
-				deadline=".intval($tk->ddl).",
-				deadlinebytime=".intval($tk->ddlt).",
+				title='".bkstr($d->title)."',
+				body='".bkstr($d->body)."',
+				parenttaskid=".intval($d->parentid).",
+				deadline=".intval($d->deadline).",
+				deadlinebytime=".intval($d->deadlineTime).",
 				updatedate=".TIMENOW.",
-				priority=".intval($tk->prt)."
-			WHERE taskid=".intval($tk->id)."
+				priority=".intval($d->priority)."
+			WHERE taskid=".intval($d->id)."
+			LIMIT 1
 		";
         $db->query_write($sql);
     }

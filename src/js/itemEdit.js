@@ -96,7 +96,8 @@ Component.entryPoint = function(NS){
                 this.addWidget('users', new Brick.mod.uprofile.UserSelectWidget({
                     // srcNode: tp.append('usersWidget', '<div></div>'),
                     srcNode: tp.one('usersWidget'),
-                    users: users
+                    users: users,
+                    useFriends: true,
                 }));
             }
 
@@ -110,44 +111,23 @@ Component.entryPoint = function(NS){
                 checkListWidget = this.getWidget('checkList'),
                 pictabWidget = this.getWidget('pictab'),
                 filesWidget = this.getWidget('files'),
-                usersWidget = this.getWidget('users');
+                usersWidget = this.getWidget('users'),
+                data = {
+                    id: task.get('id'),
+                    type: this.get('itemType'),
+                    title: tp.getValue('title'),
+                    parentid: parentSelectWidget.getValue(),
+                    body: editorWidget.get('content'),
+                    checks: checkListWidget ? checkListWidget.toJSON() : null,
+                    images: pictabWidget ? pictabWidget.toJSON() : null,
+                    users: usersWidget ? usersWidget.toJSON() : null,
+                };
 
-            var data = {
-                id: task.get('id'),
-                type: this.get('itemType'),
-                title : tp.getValue('title'),
-                body: editorWidget.get('content'),
-                checks: checkListWidget ? checkListWidget.toJSON() : null,
-                images: pictabWidget ? pictabWidget.toJSON() : null
-            };
-
-            console.log(data);
-
-            return;
-
-
-            users[users.length] = Brick.env.user.id;
-
-            if (drawListWidget){
-                images = drawListWidget.toSave();
-            }
-
-            var data = {
-                files: !filesWidget ? task.files : filesWidget.files,
-                images: images,
-                onlyimage: false,
-                users: users,
-                pid: this.getWidget('parentSelect').getValue(),
-                ddl: NS.dateToServer(null),
-                ddlt: 0,
-                prt: 3,
-            };
-
-            this.get('appInstance').taskSave(data, function(err, result){
+            this.get('appInstance').itemSave(data, function(err, result){
                 this.set('waiting', false);
 
                 if (!err){
-                    this.go('project.view', result.taskSave.taskid);
+                    this.go('item.view', this.get('itemType'), result.itemSave.taskid);
                 }
             }, this);
         },

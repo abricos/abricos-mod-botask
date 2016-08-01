@@ -107,7 +107,7 @@ Component.entryPoint = function(NS){
                 }
             },
 
-            taskSave: {
+            itemSave: {
                 args: ['data']
             },
             taskSetExec: {

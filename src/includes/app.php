@@ -39,20 +39,10 @@ class BotaskApp extends AbricosApplication {
         return 'Task,UserRole,Resolution,ResolutionInTask,File,Image,Check,History';
     }
 
-    public function IsAdminRole(){
-        return $this->manager->IsAdminRole();
-    }
-
-    public function IsWriteRole(){
-        return $this->manager->IsWriteRole();
-    }
-
-    public function IsViewRole(){
-        return $this->manager->IsViewRole();
-    }
-
     public function ResponseToJSON($d){
         switch ($d->do){
+            case 'itemSave':
+                return $this->ItemSaveToJSON($d->data);
             case 'taskList':
                 return $this->TaskListToJSON();
             case 'resolutionList':
@@ -61,9 +51,6 @@ class BotaskApp extends AbricosApplication {
                 return $this->TaskToJSON($d->taskid);
             case 'taskFavorite':
                 return $this->TaskFavoriteToJSON($d->taskid, $d->value);
-
-            case 'taskSave':
-                return $this->TaskSaveToJSON($d->data);
             case 'taskSetExec':
                 return $this->TaskSetExecToJSON($d->taskid);
             case 'taskUnsetExec':
@@ -90,6 +77,18 @@ class BotaskApp extends AbricosApplication {
                 return $this->ImageListSaveToJSON($d->taskid, $d->data);
         }
         return null;
+    }
+
+    public function IsAdminRole(){
+        return $this->manager->IsAdminRole();
+    }
+
+    public function IsWriteRole(){
+        return $this->manager->IsWriteRole();
+    }
+
+    public function IsViewRole(){
+        return $this->manager->IsViewRole();
     }
 
     public function TaskAccess($taskid){
@@ -182,10 +181,7 @@ class BotaskApp extends AbricosApplication {
         $commentApp = Abricos::GetApp('comment');
         $task->commentStatistic = $commentApp->Statistic($task->GetCommentOwner());
 
-        $rows = BotaskQuery::UserRoleList($this->db, array($taskid));
-        while (($d = $this->db->fetch_array($rows))){
-            $task->users->Add($this->InstanceClass('UserRole', $d));
-        }
+        $task->users = $this->TaskUserRoleList($taskid);
 
         $rows = BotaskQuery::ResolutionInTaskList($this->db, array($taskid));
         while (($d = $this->db->fetch_array($rows))){
@@ -198,6 +194,22 @@ class BotaskApp extends AbricosApplication {
         $task->histories = $this->HistoryList($taskid);
 
         return $task;
+    }
+
+    /**
+     * @param $taskid
+     * @return BotaskUserRoleList
+     */
+    private function TaskUserRoleList($taskid){
+        /** @var BotaskUserRoleList $list */
+        $list = $this->InstanceClass('UserRoleList');
+
+        $rows = BotaskQuery::UserRoleList($this->db, array($taskid));
+        while (($d = $this->db->fetch_array($rows))){
+            $list->Add($this->InstanceClass('UserRole', $d));
+        }
+
+        return $list;
     }
 
     public function TaskFavoriteToJSON($taskid, $value){
@@ -360,7 +372,14 @@ class BotaskApp extends AbricosApplication {
         return $this->ResultToJSON('imageListSave', $res);
     }
 
-    public function ImageListSave($taskid, $d, $isNewTask = false){
+
+    /**
+     * @param $taskid
+     * @param $d
+     * @param BotaskHistory $history
+     * @return int|stdClass
+     */
+    public function ImageListSave($taskid, $d, $history = null){
         if (!$this->TaskAccess($taskid)){
             return AbricosResponse::ERR_FORBIDDEN;
         }
@@ -412,14 +431,19 @@ class BotaskApp extends AbricosApplication {
             $this->ImageRemove($taskid, $image->id);
         }
 
-        if ($isChanged && !$isNewTask){
-            $history = $this->InstanceClass('History', array(
-                "taskid" => $taskid,
-                "userid" => Abricos::$user->id,
-                "imageData" => json_encode($d),
-                "imageDataChanged" => true
-            ));
-            BotaskQuery::HistoryAppend($this->db, $history);
+        if ($isChanged){
+            if (empty($history)){
+                $history = $this->InstanceClass('History', array(
+                    "taskid" => $taskid,
+                    "userid" => Abricos::$user->id,
+                    "imageData" => json_encode($d),
+                    "imageDataChanged" => true
+                ));
+                BotaskQuery::HistoryAppend($this->db, $history);
+            } else if (!$history->isNewTask){
+                $history->imageData = json_encode($d);
+                $history->imageDataChanged = true;
+            }
 
             $this->CacheClear();
         }
@@ -467,7 +491,13 @@ class BotaskApp extends AbricosApplication {
         return $this->ResultToJSON('checkListSave', $res);
     }
 
-    public function CheckListSave($taskid, $data){
+    /**
+     * @param $taskid
+     * @param $data
+     * @param BotaskHistory $history
+     * @return int|stdClass
+     */
+    public function CheckListSave($taskid, $data, $history = null){
         if (!$this->TaskAccess($taskid)){
             return AbricosResponse::ERR_FORBIDDEN;
         }
@@ -531,13 +561,18 @@ class BotaskApp extends AbricosApplication {
         }
 
         if ($isHistoryChange){
-            $history = $this->InstanceClass('History', array(
-                "taskid" => $taskid,
-                "userid" => Abricos::$user->id,
-                "checks" => json_encode($data),
-                "checksChanged" => true
-            ));
-            BotaskQuery::HistoryAppend($this->db, $history);
+            if (empty($history)){
+                $history = $this->InstanceClass('History', array(
+                    "taskid" => $taskid,
+                    "userid" => Abricos::$user->id,
+                    "checks" => json_encode($data),
+                    "checksChanged" => true
+                ));
+                BotaskQuery::HistoryAppend($this->db, $history);
+            } else if (!$history->isNewTask){
+                $history->checks = json_encode($data);
+                $history->checksChanged = true;
+            }
 
             $this->CacheClear();
         }
@@ -779,58 +814,65 @@ class BotaskApp extends AbricosApplication {
     }
 
 
-    public function TaskSaveToJSON($d){
-        $res = $this->TaskSave($d);
+    public function ItemSaveToJSON($d){
+        $res = $this->ItemSave($d);
         if (AbricosResponse::IsError($res)){
             return $res;
         }
         return $this->ImplodeJSON(array(
-            $this->ResultToJSON('taskSave', $res),
+            $this->ResultToJSON('itemSave', $res),
             $this->TaskToJSON($res->taskid)
         ));
     }
 
-    public function TaskSave($d){
+    public function ItemSave($d){
         if (!$this->IsWriteRole()){
             return AbricosResponse::ERR_FORBIDDEN;
         }
 
+        $utm = Abricos::TextParser();
+        $utmf = Abricos::TextParser(true);
+
         $d->id = intval($d->id);
-        if (!$this->IsAdminRole()){
-            // порезать теги и прочие гадости
-            $utm = Abricos::TextParser();
-            $d->tl = $utm->Parser($d->tl);
-            $d->bd = $utm->Parser($d->bd);
+        $d->title = $utmf->Parser($d->title);
+        $d->body = $utm->Parser($d->body);
+        $d->parentid = intval($d->parentid);
+
+        switch ($d->type){
+            case 'folder':
+                $d->typeid = 1;
+                break;
+            case 'project':
+                $d->typeid = 2;
+                break;
+            default:
+                $d->typeid = 3;
+                break;
         }
 
-        // родительская задача, есть ли доступ сохранения в нее
-        $parentid = intval($d->pid);
+        $d->deadline = isset($d->deadline) ? intval($d->deadline) : 0;
+        $d->deadlineTime = isset($d->deadlineTime) ? intval($d->deadlineTime) : 0;
+        $d->priority = isset($d->priority) ? intval($d->priority) : 0;
 
-        $history = new BotaskHistory(Abricos::$user->id);
-        $sendNewNotify = false;
-
-        if ($d->type == 'folder'){
-            $d->typeid = 1;
-        } else if ($d->type == 'project'){
-            $d->typeid = 2;
-        } else {
-            $d->typeid = 3;
-        }
-
-        if ($d->id == 0){
-            if ($parentid > 0){
-                if (!$this->TaskAccess($parentid)){
-                    // ОПС! попытка добавить подзадачу туда, куда нету доступа
+        if ($d->id === 0){
+            if ($d->parentid > 0){
+                if (!$this->TaskAccess($d->parentid)){
+                    // ОПС! попытка добавить элемент туда, куда нету доступа
                     return AbricosResponse::ERR_BAD_REQUEST;
                 }
             }
-
-            $d->uid = Abricos::$user->id;
             $pubkey = md5(time().Abricos::$user->id);
-            $d->id = BotaskQuery::TaskAppend($this->db, $d, $pubkey);
 
-            $history->SetNewStatus($d->id);
-            $sendNewNotify = true;
+            $d->id = BotaskQuery::ItemAppend($this->db, $d, $pubkey);
+
+            /** @var BotaskHistory $history */
+            $history = $this->InstanceClass('History', array(
+                "taskid" => $d->id,
+                "userid" => Abricos::$user->id,
+                "iStatus" => BotaskStatus::TASK_OPEN,
+                "iParentStatus" => 0
+            ));
+            $history->isNewTask = true;
         } else {
 
             // является ли пользователь участником этой задача, если да, то он может делать с ней все что хошь
@@ -838,40 +880,76 @@ class BotaskApp extends AbricosApplication {
                 return AbricosResponse::ERR_FORBIDDEN;
             }
 
-            $info = BotaskQuery::Task($this->db, $d->id, Abricos::$user->id, true);
-            if ($info['pid'] * 1 != $parentid){ // попытка сменить раздел каталога
-                if ($info['pid'] * 1 > 0 && !$this->TaskAccess($info['pid'])){ // разрешено ли его забрать из этой надзадачи?
-                    $d->pid = $info['pid']; // не будем менять родителя
-                } else if ($parentid > 0 && !$this->TaskAccess($parentid)){ // разрешено ли поместить его в эту подзадачу
-                    $d->pid = $info['pid']; // не будем менять родителя
+            $task = $this->Task($d->id);
+            if ($task->parentid != $d->parentid){// попытка сменить раздел каталога
+                if ($task->parentid > 0 && !$this->TaskAccess($task->parentid)){ // разрешено ли его забрать из этой надзадачи?
+                    $d->parentid = $task->parentid; // не будем менять родителя
+                } else if ($d->parentid > 0 && !$this->TaskAccess($d->parentid)){ // разрешено ли поместить его в эту подзадачу
+                    $d->parentid = $task->parentid; // не будем менять родителя
                 }
             }
 
-            if ($info['st'] == BotaskStatus::TASK_CLOSE
-                || $info['st'] == BotaskStatus::TASK_REMOVE
+            if ($task->iStatus == BotaskStatus::TASK_CLOSE
+                || $task->iStatus == BotaskStatus::TASK_REMOVE
             ){
                 return AbricosResponse::ERR_BAD_REQUEST;
             }
 
-            if (!$d->onlyimage){
-                BotaskQuery::TaskUpdate($this->db, $d, Abricos::$user->id);
-            }
+            BotaskQuery::TaskUpdate($this->db, $d);
 
-            $history->CompareTask($d, $info);
+            /** @var BotaskHistory $history */
+            $history = $this->InstanceClass('History', array(
+                "taskid" => $d->id,
+                "userid" => Abricos::$user->id,
+            ));
+            if ($d->title !== $task->title){
+                $history->title = $task->title;
+                $history->titleChanged = true;
+            }
+            if ($d->body != $task->body){
+                $history->body = $task->body;
+                $history->bodyChanged = true;
+            }
+            if ($d->parentid != $task->parentid){
+                $history->parentid = $task->parentid;
+                $history->parentChanged = true;
+            }
+            if ($d->deadline != $task->deadline){
+                $history->deadline = $task->deadline;
+                $history->deadlineChanged = true;
+            }
+            if ($d->deadlineTime != $task->deadlineTime){
+                $history->deadlineTime = $task->deadlineTime;
+                $history->deadlineTimeChanged = true;
+            }
+            if ($d->priority != $task->priority){
+                $history->priority = $task->priority;
+                $history->priorityChanged = true;
+            }
         }
 
-        $users = $this->TaskUserList($d->id, true);
+        $taskid = $d->id;
 
-        $this->TaskSaveUsersUpdate($d, $users, $history);
+        $this->ItemUsersUpdate($taskid, $d->users, $history);
 
         // сохранить чеклист
-        $this->CheckListSave($d->id, $d->checks);
+        $this->CheckListSave($d->id, $d->checks, $history);
+
+        // сохранить картинки
+        $this->ImageListSave($d->id, $d->images, $history);
+
+        BotaskQuery::HistoryAppend($this->db, $history);
+
+        $this->CacheClear();
+
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
+        return $ret; //////////////////////////
+
 
         // обновить информацию по файлам, если есть на это роль
         $this->TaskSaveFilesUpdate($d, $history);
 
-        // сохранить картинки
-        $this->ImageListSave($d->id, $d->images);
 
         $history->Save();
 
@@ -933,45 +1011,49 @@ class BotaskApp extends AbricosApplication {
         }
         /**/
 
-        $ret = new stdClass();
-        $ret->taskid = $taskid;
-        return $ret;
     }
 
-    private function TaskSaveUsersUpdate($tk, $users, $history){
-        $arr = $tk->users;
+    private function ItemUsersUpdate($taskid, $users, BotaskHistory $history){
+        $curUserList = $this->TaskUserRoleList($taskid);
+
+        $users[] = Abricos::$user->id;
+        $checker = array();
+
+        /** @var UProfileManager $uprofileManager */
+        $uprofileManager = Abricos::GetModule('uprofile')->GetManager();
+
+        for ($i = 0; $i < count($users); $i++){
+            $userid = $users[$i];
+            $checker[$userid] = true;
+
+            $curUser = $curUserList->GetBy('userid', $userid);
+            if (!empty($curUser)){
+                continue;
+            }
+
+            if (Abricos::$user->id != $userid && !$uprofileManager->UserPublicityCheck($userid)){
+                continue;
+            }
+
+            BotaskQuery::UserRoleAppend($this->db, $taskid, $userid);
+
+            $a = explode(',', $history->userAdded);
+            $a[] = $userid;
+            $history->userAdded = implode(',', $a);
+        }
 
         // обновить информацию по правам пользователей
-        foreach ($users as $rUserId => $cuser){
-            $find = false;
-            foreach ($arr as $uid){
-                if ($uid == $rUserId){
-                    $find = true;
-                    break;
-                }
-            }
-            if (!$find){
-                BotaskQuery::UserRoleRemove($this->db, $tk->id, $rUserId);
-                $history->UserRemove($rUserId);
+        for ($i = 0; $i < $curUserList->Count(); $i++){
+            $curUser = $curUserList->GetByIndex($i);
+            if (!isset($checker[$curUser->userid])){
+                BotaskQuery::UserRoleRemove($this->db, $taskid, $curUser->userid);
+
+                $a = explode(',', $history->userRemoved);
+                $a[] = $userid;
+                $history->userRemoved = implode(',', $a);
             }
         }
-        foreach ($arr as $uid){
-            $find = false;
-            foreach ($users as $rUserId => $cuser){
-                if ($uid == $rUserId){
-                    $find = true;
-                    break;
-                }
-            }
-            if (!$find){ // добавление нового пользователя
-                // проверить, а вдруг пользователь не хочет чтоб его добавляли
-                $uprofileManager = Abricos::GetModule('uprofile')->GetManager();
-                if ($uprofileManager->UserPublicityCheck($uid)){
-                    BotaskQuery::UserRoleAppend($this->db, $tk->id, $uid);
-                    $history->UserAdd($uid);
-                }
-            }
-        }
+        $this->CacheClear();
     }
 
     private function TaskSaveFilesUpdate($tk, $history){

@@ -144,13 +144,26 @@ class BotaskTaskList extends AbricosModelList {
 
 /**
  * Class BotaskUserRole
+ *
+ * @property int $userid
+ * @property int $taskid
+ * @property int $viewdate
+ * @property bool $favorite
+ * @property bool $expanded
  */
 class BotaskUserRole extends AbricosModel {
     protected $_structModule = 'botask';
     protected $_structName = 'UserRole';
 }
 
+/**
+ * Class BotaskUserRoleList
+ *
+ * @method BotaskUserRole Get(int $id)
+ * @method BotaskUserRole GetByIndex(int $i)
+ */
 class BotaskUserRoleList extends AbricosModelList {
+
 }
 
 class BotaskResolution extends AbricosModel {
@@ -277,6 +290,7 @@ class BotaskHistory extends AbricosModel {
     protected $_structModule = 'botask';
     protected $_structName = 'History';
 
+    public $isNewTask = false;
 }
 
 class BotaskHistoryList extends AbricosModelList {

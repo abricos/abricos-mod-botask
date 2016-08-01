@@ -83,31 +83,7 @@ class old_BotaskHistory {
                 $this->titlec = true;
                 $this->change = true;
             }
-            if ($nt->bd != $ot['bd']){
-                $this->body = $ot['bd'];
-                $this->bodyc = true;
-                $this->change = true;
-            }
-            if (intval($nt->pid) != intval($ot['pid'])){
-                $this->parenttaskid = $ot['pid'];
-                $this->parenttaskidc = true;
-                $this->change = true;
-            }
-            if (intval($nt->ddl) != intval($ot['ddl'])){
-                $this->deadline = $ot['ddl'];
-                $this->deadlinec = true;
-                $this->change = true;
-            }
-            if (intval($nt->ddlt) != intval($ot['ddlt'])){
-                $this->deadlinebytime = $ot['ddlt'];
-                $this->deadlinebytimec = true;
-                $this->change = true;
-            }
-            if (intval($nt->prt) != intval($ot['prt'])){
-                $this->priority = $ot['prt'];
-                $this->priorityc = true;
-                $this->change = true;
-            }
+
         }
     }
 
