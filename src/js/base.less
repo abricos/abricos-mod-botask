@@ -1,6 +1,11 @@
 .aw-botask {
-  .panel-default > .panel-heading {
-    /* background-color: #fcf8e3; /**/
+
+  .badge {
+    background-color: #1F4A70;
+  }
+
+  .panel-default > .panel-heading .badge {
+    background-color: #286090;
   }
 
   &.app-workspace {
@@ -8,6 +13,7 @@
       padding-right: 5px;
     }
   }
+
   .taskItemView {
     .infoBox {
       padding-top: 10px;
@@ -31,6 +37,12 @@
         top: 10px;
         right: 10px;
       }
+    }
+  }
+
+  .taskItemEdit {
+    .form-horizontal .control-label {
+      text-align: left;
     }
   }
 }

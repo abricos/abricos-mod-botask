@@ -23,9 +23,16 @@
     </div>
     <div class="panel-body">
         <div id="{i#table}" class="list"></div>
-        <div id="{i#empty}" class="text-center">
-            <div>{#mod.botask.explore.widget.8}</div>
-            <a href="#app=botask/ws/showWorkspacePanel/add/0/">{#mod.botask.explore.widget.9}</a>
+        <div id="{i#empty}" class="text-center empty">
+            <p>
+                Нет записей
+            </p>
+            <p>
+                <a data-url="item.create"
+                        class="btn btn-default btn-sm" href="#">
+                    Добавить
+                </a>
+            </p>
         </div>
     </div>
     <div class="panel-footer">

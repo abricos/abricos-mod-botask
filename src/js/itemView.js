@@ -13,6 +13,8 @@ Component.entryPoint = function(NS){
         COMPONENT = this,
         SYS = Brick.mod.sys;
 
+    var PicTabWidget = Brick.mod.pictab ? Brick.mod.pictab.PicTabWidget : null;
+
     var aTargetBlank = function(el){
         if (el.tagName == 'A'){
             el.target = "_blank";
@@ -96,15 +98,14 @@ Component.entryPoint = function(NS){
             }
 
 
-            var NSPicTab = Brick.mod.pictab,
-                images = task.get('images');
+            var images = task.get('images');
 
-            if (tp.one('pictabWidget') && NSPicTab && NSPicTab.PicTabWidget
+            if (tp.one('pictabWidget') && PicTabWidget
                 && images && images.size() > 0){
 
                 tp.show('pictabPanel');
 
-                var pictabWidget = this.addWidget('pictab', new NSPicTab.PicTabWidget({
+                var pictabWidget = this.addWidget('pictab', new PicTabWidget({
                     srcNode: tp.one('pictabWidget'),
                     imageList: images,
                     editMode: false

@@ -1,5 +1,5 @@
 <!--{widget}-->
-<div class="taskedit panel panel-default">
+<div class="taskItemEdit panel panel-default">
     <div class="panel-heading text-center">
         <h3 class="panel-title pull-left">
             <span data-isedit="hide">Добавление нового проекта</span>
@@ -25,78 +25,65 @@
     </div>
     <div class="panel-body">
         <div class="form-horizontal">
-
             <div class="form-group">
                 <label class="col-sm-2 control-label">
                     Родитель
                 </label>
                 <div class="col-md-10">
-                    <div id="{i#path}" class="col-sm-10">&nbsp;</div>
+                    <div id="{i#parentSelectWidget}" class="col-sm-10">&nbsp;</div>
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="col-sm-2 control-label" for="{i#tl}">
+                <label class="col-sm-2 control-label" for="{i#title}">
                     Название
                 </label>
 
                 <div class="col-sm-10">
-                    <input id="{i#tl}" type="text" class="form-control"/>
+                    <input id="{i#title}" type="text" class="form-control"/>
                 </div>
             </div>
-
-            <div class="form-group">
-                <label class="col-sm-2 control-label">
-                    Описание
-                </label>
-
-                <div class="col-sm-12">
-                    <div id="{i#editor}" data-rows="10"></div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="col-sm-2 control-label">
-                    Микрозадачи
-                </label>
-
-                <div class="col-sm-10">
-                    <div id="{i#checkListWidget}"></div>
-                </div>
-            </div>
-
-            <div id="{i#rfiles}" class="form-group">
-                <label class="col-sm-2 control-label">
-                    Файлы
-                </label>
-
-                <div class="col-sm-10">
-                    <div id="{i#fileListWidget}"></div>
-                </div>
-            </div>
-
-            <div id="{i#rimage}" class="form-group">
-                <label class="col-sm-2 control-label">
-                    Изображение
-                </label>
-
-                <div class="col-sm-10">
-                    <div id="{i#pictabWidget}"></div>
-                </div>
-            </div>
-
-            <div id="{i#widget}"></div>
-
         </div>
 
         <div class="form-group">
+            <label class="control-label">
+                Описание
+            </label>
+            <div id="{i#editor}" data-rows="10"></div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label">
+                Микрозадачи
+            </label>
+            <div id="{i#checkListWidget}"></div>
+        </div>
+
+        <div id="{i#pictabPanel}" class="form-group">
+            <label class="control-label">
+                Изображения
+            </label>
+            <div id="{i#pictabWidget}"></div>
+        </div>
+
+        <div id="{i#rfiles}" class="form-group">
             <label class="col-sm-2 control-label">
-                Участники
+                Файлы
             </label>
 
             <div class="col-sm-10">
-                <div id="{i#users}"></div>
+                <div id="{i#fileListWidget}"></div>
             </div>
+        </div>
+
+        <div id="{i#widget}"></div>
+
+        <div class="form-group">
+            <label class="control-label">
+                Участники
+            </label>
+
+            <div id="{i#usersWidget}"></div>
         </div>
     </div>
     <div class="panel-footer text-right">

@@ -64,14 +64,20 @@ Component.entryPoint = function(NS){
         task: {
             readOnly: true,
             getter: function(){
-                var taskid = this.get('taskid');
+                var app = this.get('appInstance'),
+                    taskid = this.get('taskid');
+
                 if (taskid > 0){
-                    return this.get('appInstance').get('taskList').getById(taskid);
+                    return app.get('taskList').getById(taskid);
                 }
                 if (this._taskNewCache){
                     return this._taskNewCache;
                 }
-                return this._taskNewCache = new NS.Old_Task();
+                var Task = app.get('Task');
+
+                return this._taskNewCache = new Task({
+                    appInstance: app
+                });
             }
         }
     };
