@@ -64,6 +64,7 @@ Component.entryPoint = function(NS){
                 this.addWidget('checkList', new NS.CheckListWidget({
                     srcNode: tp.one('checkListWidget'),
                     task: task,
+                    editMode: true
                 }));
             }
 
@@ -94,7 +95,6 @@ Component.entryPoint = function(NS){
                 }
 
                 this.addWidget('users', new Brick.mod.uprofile.UserSelectWidget({
-                    // srcNode: tp.append('usersWidget', '<div></div>'),
                     srcNode: tp.one('usersWidget'),
                     users: users,
                     useFriends: true,

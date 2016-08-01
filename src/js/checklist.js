@@ -22,6 +22,7 @@ Component.entryPoint = function(NS){
         },
         _cloneCheckList: function(){
             var appInstance = this.get('appInstance'),
+                tp = this.template,
                 task = this.get('task'),
                 checkList = new NS.CheckList({
                     appInstance: appInstance
@@ -38,7 +39,9 @@ Component.entryPoint = function(NS){
 
             this.set('checkList', checkList);
 
-            this.template.hide('btnSave,btnCancel');
+            tp.toggleView(!this.get('editMode'), 'actionButtons');
+
+            tp.hide('btnSave,btnCancel');
         },
         each: function(f, context){
             if (!Y.Lang.isFunction(f)){
@@ -60,11 +63,9 @@ Component.entryPoint = function(NS){
         renderList: function(){
             this.cleanList();
 
-            var tp = this.template,
-                checkList = this.get('checkList'),
-                removeCount = 0;
+            var removeCount = 0;
 
-            checkList.each(function(check){
+            this.get('checkList').each(function(check){
                 this.addCheck(check);
                 removeCount += check.isRemoved() ? 1 : 0;
             }, this);
@@ -98,6 +99,7 @@ Component.entryPoint = function(NS){
                     date: new Date(),
                     userid: UID
                 });
+                this.get('checkList').add(check);
             }
             this.setViewModeList();
 
@@ -173,6 +175,7 @@ Component.entryPoint = function(NS){
             task: {value: null},
             checkList: {value: null},
             infoVisible: {value: true},
+            editMode: {value: false}
         },
         CLICKS: {
             add: {

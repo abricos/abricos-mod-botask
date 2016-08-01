@@ -15,7 +15,6 @@
             </button>
         </div>
         <div id="{i#recycleButtons}" class="pull-right">
-
             <button id="{i#btnShowRecycle}" data-click="showRecycle"
                     data-wait="disable"
                     class="btn btn-default btn-xs"
@@ -31,20 +30,22 @@
             </button>
         </div>
 
-        <button id="{i#btnSave}" data-click="save"
-                data-wait="disable"
-                class="btn btn-success btn-xs hide"
-                title="Сохранить изменения в чек-листе">
-            <i class="fa fa-floppy-o" aria-hidden="true"></i>
-            Сохранить
-        </button>
-        <button id="{i#btnCancel}" data-click="cancel"
-                data-wait="disable"
-                class="btn btn-default btn-xs hide"
-                title="Отменить изменения в чек-листе">
-            <i class="fa fa-ban" aria-hidden="true"></i>
-            Отмена
-        </button>
+        <div id="{i#actionButtons}" class="text-center">
+            <button id="{i#btnSave}" data-click="save"
+                    data-wait="disable"
+                    class="btn btn-success btn-xs hide"
+                    title="Сохранить изменения в чек-листе">
+                <i class="fa fa-floppy-o" aria-hidden="true"></i>
+                Сохранить
+            </button>
+            <button id="{i#btnCancel}" data-click="cancel"
+                    data-wait="disable"
+                    class="btn btn-default btn-xs hide"
+                    title="Отменить изменения в чек-листе">
+                <i class="fa fa-ban" aria-hidden="true"></i>
+                Отмена
+            </button>
+        </div>
 
         <div class="clearfix"></div>
     </div>
