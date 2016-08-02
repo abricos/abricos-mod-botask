@@ -12,7 +12,8 @@ Component.entryPoint = function(NS){
     NS.TaskTreeSelectWidget = Y.Base.create('TaskTreeSelectWidget', SYS.AppWidget, [], {
         buildTData: function(){
             var tp = this.template,
-                taskid = this.get('taskid');
+                taskid = this.get('taskid'),
+                lst = "";
 
             // путь
             var getPT = function(task){
@@ -23,7 +24,7 @@ Component.entryPoint = function(NS){
                 }
                 return tl;
             };
-            
+
             var isChild = function(task){
                 if (task.get('id') == taskid){
                     return true;
@@ -34,8 +35,6 @@ Component.entryPoint = function(NS){
                 }
                 return false;
             };
-
-            var lst = "";
 
             NS.appInstance.get('taskList').each(function(task){
                 var parent = task.get('parent');
@@ -58,7 +57,7 @@ Component.entryPoint = function(NS){
             return {'rows': lst};
         },
         onInitAppWidget: function(err, appInstance){
-            this.setValue(this.get('parentTaskId'));
+            this.setValue(this.get('parentid'));
         },
         setValue: function(val){
             this.template.setValue('id', val);
@@ -71,7 +70,7 @@ Component.entryPoint = function(NS){
             component: {value: COMPONENT},
             templateBlockName: {value: 'tree,node'},
             taskid: {value: 0},
-            parentTaskId: {value: 0}
+            parentid: {value: 0}
         },
         CLICKS: {},
     });

@@ -10,11 +10,9 @@ Component.requires = {
     ]
 };
 Component.entryPoint = function(NS){
-    var Y = Brick.YUI,
-        COMPONENT = this,
-        SYS = Brick.mod.sys;
 
-    var PicTabWidget = Brick.mod.pictab ? Brick.mod.pictab.PicTabWidget : null;
+    var SYS = Brick.mod.sys,
+        PicTabWidget = Brick.mod.pictab ? Brick.mod.pictab.PicTabWidget : null;
 
     var ItemEditWidgetExt = function(){
     };
@@ -29,6 +27,7 @@ Component.entryPoint = function(NS){
 
             if (taskid === 0){
                 task.set('type', this.get('itemType'));
+                task.set('parentid', this.get('parentid'));
 
                 return this._onLoadItem();
             }
@@ -50,13 +49,13 @@ Component.entryPoint = function(NS){
             this.addWidget('parentSelect', new NS.TaskTreeSelectWidget({
                 srcNode: tp.one('parentSelectWidget'),
                 taskid: taskid,
-                parentTaskId: task.parent ? task.parent.id : 0
+                parentid: task.get('parentid')
             }));
 
             this.addWidget('editor', new SYS.Editor({
                 appInstance: this.get('appInstance'),
                 srcNode: tp.gel('editor'),
-                content: task.descript,
+                content: task.get('descript'),
                 toolbar: SYS.Editor.TOOLBAR_MINIMAL
             }));
 
