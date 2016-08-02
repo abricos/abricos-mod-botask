@@ -45,8 +45,6 @@ class BotaskApp extends AbricosApplication {
                 return $this->ItemSaveToJSON($d->data);
             case 'taskList':
                 return $this->TaskListToJSON();
-            case 'resolutionList':
-                return $this->ResolutionListToJSON();
             case 'task':
                 return $this->TaskToJSON($d->taskid);
             case 'taskFavorite':
@@ -75,6 +73,10 @@ class BotaskApp extends AbricosApplication {
                 return $this->CheckListSaveToJSON($d->taskid, $d->data);
             case 'imageListSave':
                 return $this->ImageListSaveToJSON($d->taskid, $d->data);
+            case 'resolutionList':
+                return $this->ResolutionListToJSON();
+            case 'resolutionSave':
+                return $this->ResolutionSaveToJSON($d->taskid, $d->value);
         }
         return null;
     }
@@ -589,6 +591,9 @@ class BotaskApp extends AbricosApplication {
         return $this->ResultToJSON('resolutionList', $res);
     }
 
+    /**
+     * @return BotaskResolutionList|int
+     */
     public function ResolutionList(){
         if (!$this->IsViewRole()){
             return AbricosResponse::ERR_FORBIDDEN;
@@ -612,22 +617,50 @@ class BotaskApp extends AbricosApplication {
         }
         return $this->ImplodeJSON(array(
             $this->ResultToJSON('resolutionSave', $res),
+            $this->ResolutionListToJSON(),
             $this->TaskToJSON($taskid)
         ));
     }
 
     public function ResolutionSave($taskid, $value){
         if (!$this->TaskAccess($taskid)){
-            return null;
+            return AbricosResponse::ERR_FORBIDDEN;
         }
 
         $parser = Abricos::TextParser(true);
         $value = $parser->Parser($value);
-        BotaskQuery::CustatusSave($this->db, $taskid, Abricos::$user->id, $value);
 
         $ret = new stdClass();
         $ret->taskid = $taskid;
         $ret->value = $value;
+
+        $task = $this->Task($taskid);
+        $resolInTask = $task->resolutions->GetBy('userid', Abricos::$user->id);
+
+        if (!empty($resolInTask)){
+            BotaskQuery::ResolutionInTaskRemove($this->db, $taskid, $resolInTask->resolutionid);
+        }
+
+        if (empty($value)){
+            return $ret;
+        }
+
+        $list = $this->ResolutionList();
+
+        $resolid = 0;
+        for ($i = 0; $i < $list->Count(); $i++){
+            $resol = $list->GetByIndex($i);
+            if ($resol->userid === Abricos::$user->id && $resol->title === $value){
+                $resolid = intval($resol->id);
+                break;
+            }
+        }
+
+        if ($resolid === 0){
+            $resolid = BotaskQuery::ResolutionAppend($this->db, $value);
+        }
+
+        BotaskQuery::ResolutionInTaskAppend($this->db, $taskid, $resolid);
 
         return $ret;
     }

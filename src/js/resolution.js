@@ -111,9 +111,9 @@ Component.entryPoint = function(NS){
                 task = this.get('task');
 
             this.set('waiting', true);
-            this.get('appInstance').customStatusSave(task.id, tp.getValue('input'), function(){
+            this.get('appInstance').resolutionSave(task.get('id'), tp.getValue('input'), function(){
                 this.set('waiting', false);
-                this._updateStatus();
+                // this._updateStatus();
             }, this);
         },
     }, {

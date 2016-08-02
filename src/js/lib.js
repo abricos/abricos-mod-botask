@@ -134,9 +134,6 @@ Component.entryPoint = function(NS){
             taskExpand: {
                 args: ['taskid', 'value']
             },
-            taskShowComments: {
-                args: ['taskid', 'value']
-            },
 
             checkList: {
                 type: 'modelList:CheckList',
@@ -168,6 +165,9 @@ Component.entryPoint = function(NS){
                 attribute: true,
                 type: 'modelList:ResolutionList',
             },
+            resolutionSave: {
+                args: ['taskid', 'value']
+            }
         },
         URLS: {
             ws: "#app={C#MODNAMEURI}/wspace/ws/",

@@ -141,6 +141,8 @@ class BotaskQuery {
         $db->query_write($sql);
     }
 
+    /* * * * * * * * * * * * * * * * Resolution * * * * * * * * * * * * * * */
+
     public static function ResolutionList(Ab_Database $db){
         $sql = "
             SELECT r.*
@@ -175,11 +177,46 @@ class BotaskQuery {
         }
 
         $sql = "
-			SELECT *
-            FROM ".$db->prefix."btk_resolutionInTask
+			SELECT 
+			  rin.*, 
+			  r.userid as userid
+            FROM ".$db->prefix."btk_resolutionInTask rin
+            INNER JOIN ".$db->prefix."btk_resolution r ON r.resolutionid=rin.resolutionid
 			WHERE ".implode(" OR ", $aw)."
 		";
         return $db->query_read($sql);
+    }
+
+    public static function ResolutionAppend(Ab_Database $db, $value){
+        $sql = "
+			INSERT INTO ".$db->prefix."btk_resolution 
+			(userid, title) VALUES (
+				".intval(Abricos::$user->id).",
+				'".bkstr($value)."'
+			)
+		";
+        $db->query_write($sql);
+        return $db->insert_id();
+    }
+
+    public static function ResolutionInTaskAppend(Ab_Database $db, $taskid, $resolid){
+        $sql = "
+			INSERT INTO ".$db->prefix."btk_resolutionInTask 
+			(taskid, resolutionid, dateline) VALUES (
+				".intval($taskid).",
+				".intval($resolid).",
+				".intval(TIMENOW)."
+			)
+		";
+        $db->query_write($sql);
+    }
+
+    public static function ResolutionInTaskRemove(Ab_Database $db, $taskid, $resolid){
+        $sql = "
+            DELETE FROM ".$db->prefix."btk_resolutionInTask
+            WHERE  taskid=".intval($taskid)." AND resolutionid=".intval($resolid)."
+		";
+        $db->query_write($sql);
     }
 
     /* * * * * * * * * * * * * * * * File * * * * * * * * * * * * * * */
@@ -849,28 +886,6 @@ class BotaskQuery {
 			LIMIT 500
 		";
         return $db->query_read($sql);
-    }
-
-
-    public static function CustatusListByUser(Ab_Database $db, $userid){
-        $sql = "
-			SELECT DISTINCT title as tl
-			FROM ".$db->prefix."btk_custatus
-			WHERE userid=".intval($userid)."
-		";
-        return $db->query_read($sql);
-    }
-
-    public static function CustatusSave(Ab_Database $db, $taskid, $userid, $title){
-        $sql = "
-			REPLACE ".$db->prefix."btk_custatus (taskid, userid, title, dateline) VALUES (
-				".intval($taskid).",
-				".intval($userid).",
-				'".bkstr($title)."',
-				".TIMENOW."
-			)
-		";
-        $db->query_write($sql);
     }
 
 

@@ -12,6 +12,9 @@
     "resolutionid": {
       "type": "int"
     },
+    "userid": {
+      "type": "int"
+    },
     "dateline": {
       "type": "date"
     }
