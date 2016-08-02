@@ -27,9 +27,11 @@ Component.entryPoint = function(NS){
                     srcNode: tp.gel('explore')
                 }));
 
-                this.addWidget('teamUsers', new NS.TeamUserListWidget({
-                    srcNode: tp.gel('teamusers')
-                }));
+                /*w
+                 this.addWidget('teamUsers', new NS.TeamUserListWidget({
+                 srcNode: tp.gel('teamusers')
+                 }));
+                 /**/
 
                 appInstance.on('appResponses', this._onAppResponses, this);
 

@@ -16,8 +16,9 @@ Component.entryPoint = function(NS){
         },
         _goClick: function(){
             var tp = this.template,
+                app = this.get('appInstance'),
                 number = tp.getValue('number') | 0,
-                task = NS.taskManager.getTask(number);
+                task = app.get('taskList').getById(number);
 
             tp.toggleView(!task, 'error');
             tp.setHTML('numberView', number);
@@ -26,7 +27,7 @@ Component.entryPoint = function(NS){
                 return;
             }
 
-            this.go(task.type + '.view', number);
+            this.go(task.get('type') + '.view', number);
         }
     }, {
         ATTRS: {
