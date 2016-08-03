@@ -85,6 +85,8 @@ class BotaskQuery {
         $db->query_write($sql);
     }
 
+    /* * * * * * * * * * * * * * * * Users * * * * * * * * * * * * * * */
+
     public static function UserRole(Ab_Database $db, $taskid){
         $sql = "
 			SELECT *
@@ -139,6 +141,22 @@ class BotaskQuery {
 			WHERE taskid=".intval($taskid)."
 		";
         $db->query_write($sql);
+    }
+
+    public static function UserFriendList(Ab_Database $db){
+        $sql = "
+			SELECT DISTINCT u.userid as id
+			FROM (
+				SELECT DISTINCT ur.taskid
+				FROM ".$db->prefix."btk_userrole ur
+				INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
+				WHERE ur.userid=".intval(Abricos::$user->id)." AND p.deldate=0 
+			) ps
+			LEFT JOIN ".$db->prefix."btk_userrole ur1 ON ps.taskid=ur1.taskid
+			INNER JOIN ".$db->prefix."user u ON ur1.userid=u.userid
+		";
+
+        return $db->query_read($sql);
     }
 
     /* * * * * * * * * * * * * * * * Resolution * * * * * * * * * * * * * * */
@@ -453,201 +471,11 @@ class BotaskQuery {
         $db->query_write($sql);
     }
 
+    /* * * * * * * * * * * * * * * * * * * OLD CODE * * * * * * * * * * * * * * * * * */
+
     /******************************************************/
     // TODO: refactoring source
     /******************************************************/
-
-    const TASK_FIELDS = "
-		p.taskid as id,
-		p.parenttaskid as pid,
-		p.tasktype as tp,
-		p.userid as uid,
-		p.title as tl,
-		p.dateline as dl,
-		p.updatedate as udl,
-		p.deadline as ddl,
-		p.deadlinebytime as ddlt,
-		p.status as st,
-		p.statuserid as stuid,
-		p.statdate as stdl,
-		p.priority as prt,
-		
-		ur.viewdate as vdl,
-		IF (ur.viewdate > 0, 0, 1) as n,
-		ur.ord as o,
-		ur.favorite as f,
-		ur.expanded as e,
-		ur.showcomments as c
-	";
-
-    private static function BoardWhere($lastupdate = 0, $parenttaskid = 0, $status = 0){
-        $where = "";
-        if ($lastupdate > 0){
-            $where = " AND p.updatedate >= ".intval($lastupdate);
-        }
-        if ($parenttaskid > 0){
-            $where .= " AND p.parenttaskid = ".intval($parenttaskid);
-        }
-        return $where;
-    }
-
-    /**
-     * Список доступных пользователю задач
-     *
-     * @param Ab_Database $db
-     * @param integer $userid
-     * @param integer $lastupdate
-     */
-    public static function Board(Ab_Database $db, $userid, $lastupdate = 0, $parenttaskid = 0, $status = 0, $page = 0, $limit = 0){
-        $limit = "";
-        $where = BotaskQuery::BoardWhere($lastupdate, $parenttaskid, $status);
-        $sql = "
-			SELECT
-				".BotaskQuery::TASK_FIELDS.",
-				cmtl.commentid as cmtv,
-				(
-					SELECT lastCommentid as cmtid
-					FROM ".$db->prefix."comment_ownerstat cmt
-					WHERE p.taskid=cmt.ownerid AND cmt.ownerModule='botask' AND cmt.ownerType='task'
-					LIMIT 1
-				) as cmt
-			FROM ".$db->prefix."btk_userrole ur
-			INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
-			LEFT JOIN ".$db->prefix."comment_userview cmtl
-			    ON p.taskid=cmtl.ownerid AND cmtl.ownerModule='botask' AND cmtl.ownerType='task'
-			        AND cmtl.userid=".intval($userid)."
-			WHERE ur.userid=".intval($userid)." AND p.deldate=0 ".$where."
-		";
-        return $db->query_read($sql);
-    }
-
-
-    public static function BoardOnline(Ab_Database $db, $userid){
-        $sql = "
-			SELECT * 
-			FROM (
-				SELECT
-					".BotaskQuery::TASK_FIELDS.",
-					cmtl.commentid as cmtv,
-					(
-						SELECT commentid as cmtid
-						FROM ".$db->prefix."cmt_comment cmt
-						WHERE p.contentid=cmt.contentid
-						ORDER BY commentid DESC
-						LIMIT 1
-					) as cmt
-				FROM ".$db->prefix."btk_userrole ur
-				INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
-				LEFT JOIN ".$db->prefix."cmt_lastview cmtl ON p.contentid=cmtl.contentid AND cmtl.userid=".intval($userid)."
-				WHERE ur.userid=".intval($userid)." AND p.deldate=0
-			) a
-			WHERE a.cmt > a.cmtv OR a.n > 0
-		";
-        return $db->query_read($sql);
-    }
-
-    /**
-     * Список задач доступные этому пользователю, включая свои,
-     * со списком пользователей на каждую задачу
-     *
-     * @param Ab_Database $db
-     * @param unknown_type $userid
-     */
-    public static function BoardTaskUsers(Ab_Database $db, $userid, $lastupdate = 0, $parenttaskid = 0, $status = 0, $page = 0, $limit = 0){
-        $where = BotaskQuery::BoardWhere($lastupdate, $parenttaskid, $status);
-        $sql = "
-			SELECT
-				CONCAT(ur1.taskid,'-',ur1.userid) as id,
-				ur1.taskid as tid,
-				ur1.userid as uid
-			FROM (
-				SELECT ur.taskid
-				FROM ".$db->prefix."btk_userrole ur
-				INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
-				WHERE ur.userid=".intval($userid)." AND p.deldate=0 ".$where."
-			) ps
-			LEFT JOIN ".$db->prefix."btk_userrole ur1 ON ps.taskid=ur1.taskid
-			WHERE ur1.userid>0
-		";
-        return $db->query_read($sql);
-    }
-
-    /**
-     * Список пользователей участвующих на доске проектов, включая закрытые и удаленные проекты
-     *
-     * @param Ab_Database $db
-     * @param unknown_type $userid
-     */
-    public static function BoardUsers(Ab_Database $db, $userid, $lastupdate = 0, $autors = array()){
-        $where = "";
-        if ($lastupdate > 0){
-            $where = " AND p.updatedate >= ".intval($lastupdate);
-        }
-
-        $whereu = "";
-        $whereun = "";
-        if (is_array($autors) && count($autors) > 0){
-            $sa = array();
-            $san = array();
-            foreach ($autors as $id => $v){
-                $sa[] = " u.userid = ".intval($id);
-                $san[] = " u.userid <> ".intval($id);
-            }
-            $whereu = "WHERE ".implode(" OR ", $sa);
-            $whereun = "WHERE ".implode(" OR ", $san);
-        }
-        $sql = "
-			SELECT
-				DISTINCT
-				u.userid as id,
-				u.username as unm,
-				u.firstname as fnm,
-				u.lastname as lnm,
-				u.avatar as avt
-			FROM (
-				SELECT DISTINCT ur.taskid
-				FROM ".$db->prefix."btk_userrole ur
-				INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
-				WHERE ur.userid=".intval($userid)." AND p.deldate=0 ".$where."
-			) ps
-			LEFT JOIN ".$db->prefix."btk_userrole ur1 ON ps.taskid=ur1.taskid
-			INNER JOIN ".$db->prefix."user u ON ur1.userid=u.userid
-			".$whereun."
-		";
-
-        if (!empty($whereu)){
-            $sql .= "
-				UNION
-				SELECT
-					DISTINCT
-					u.userid as id,
-					u.username as unm,
-					u.firstname as fnm,
-					u.lastname as lnm,
-					u.avatar as avt
-				FROM ".$db->prefix."user u
-				".$whereu."
-			";
-        }
-
-        return $db->query_read($sql);
-    }
-
-    public static function MyUserData(Ab_Database $db, $userid, $retArray = false){
-        $sql = "
-			SELECT
-				DISTINCT
-				u.userid as id,
-				u.username as unm,
-				u.firstname as fnm,
-				u.lastname as lnm,
-				u.avatar as avt
-			FROM ".$db->prefix."user u
-			WHERE u.userid=".intval($userid)."
-			LIMIT 1
-		";
-        return $retArray ? $db->query_first($sql) : $db->query_read($sql);
-    }
 
 
     public static function BoardHistory(Ab_Database $db, $userid, $lastHId = 0, $firstHId = 0){
@@ -827,44 +655,6 @@ class BotaskQuery {
 			LIMIT 1
 		";
         $db->query_write($sql);
-    }
-
-    public static function TaskShowComments(Ab_Database $db, $taskid, $userid, $value){
-        $sql = "
-			UPDATE ".$db->prefix."btk_userrole
-			SET showcomments=".intval($value)."
-			WHERE taskid=".intval($taskid)." AND userid=".intval($userid)."
-			LIMIT 1
-		";
-        $db->query_write($sql);
-    }
-
-    public static function CommentList(Ab_Database $db, $userid){
-        $sql = "
-			SELECT 
-				a.commentid as id,
-				a.parentcommentid as pid,
-				t1.taskid as tkid,
-				a.body as bd, 
-				a.dateedit as de,
-				a.status as st, 
-				u.userid as uid, 
-				u.username as unm,
-				u.avatar as avt,
-				u.firstname as fnm,
-				u.lastname as lnm
-			FROM ".$db->prefix."cmt_comment a
-			INNER JOIN (SELECT
-					p.taskid, 
-					p.contentid
-				FROM ".$db->prefix."btk_userrole ur
-				INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
-				WHERE ur.userid=".intval($userid).") t1 ON t1.contentid=a.contentid
-			LEFT JOIN ".$db->prefix."user u ON u.userid = a.userid
-			ORDER BY a.commentid DESC  
-			LIMIT 15
-		";
-        return $db->query_read($sql);
     }
 
     public static function ToWork(Ab_Database $db, $userid, $fromtime){

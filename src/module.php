@@ -9,10 +9,10 @@
 
 /**
  * Class BotaskModule
+ *
+ * @method BotaskManager GetManager()
  */
 class BotaskModule extends Ab_Module {
-
-    private $_manager = null;
 
     public function __construct(){
         $this->version = "0.3.1";
@@ -20,24 +20,11 @@ class BotaskModule extends Ab_Module {
         $this->permission = new BotaskPermission($this);
     }
 
-    /**
-     * Получить менеджер
-     *
-     * @return BotaskManager
-     */
-    public function GetManager(){
-        if (is_null($this->_manager)){
-            require_once 'includes/manager.php';
-            $this->_manager = new BotaskManager($this);
-        }
-        return $this->_manager;
-    }
-
-    public function UProfile_UserFriendList(){
-        return $this->GetManager()->UProfile_UserFriendList();
-    }
-
     public function Bos_IsMenu(){
+        return true;
+    }
+
+    public function UProfile_IsFriendIds(){
         return true;
     }
 }

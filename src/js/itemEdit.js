@@ -70,7 +70,7 @@ Component.entryPoint = function(NS){
             if (PicTabWidget && tp.one('pictabWidget')){
                 this.addWidget('pictab', new PicTabWidget({
                     srcNode: tp.one('pictabWidget'),
-                    images: task.get('images'),
+                    imageList: task.get('images'),
                     editMode: true
                 }));
             } else {
@@ -97,6 +97,7 @@ Component.entryPoint = function(NS){
                     srcNode: tp.one('usersWidget'),
                     users: users,
                     useFriends: true,
+                    hideCurrent: true
                 }));
             }
 
