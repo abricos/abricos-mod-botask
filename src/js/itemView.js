@@ -4,7 +4,7 @@ Component.requires = {
         {name: 'comment', files: ['tree.js']},
         {name: 'filemanager', files: ['attachment.js']},
         {name: 'uprofile', files: ['users.js']},
-        {name: '{C#MODNAME}', files: ['tasklist.js', 'checklist.js', 'history.js', 'resolution.js']},
+        {name: '{C#MODNAME}', files: ['taskList.js', 'checklist.js', 'history.js', 'resolution.js']},
         {name: 'pictab', files: ['draw.js']}
     ]
 };

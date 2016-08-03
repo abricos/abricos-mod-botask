@@ -9,22 +9,7 @@ Component.entryPoint = function(NS){
         COMPONENT = this,
         SYS = Brick.mod.sys;
 
-    var aTargetBlank = function(el){
-        if (el.tagName == 'A'){
-            el.target = "_blank";
-        } else if (el.tagName == 'IMG'){
-            el.style.maxWidth = "100%";
-            el.style.height = "auto";
-        }
-        var chs = el.childNodes;
-        for (var i = 0; i < chs.length; i++){
-            if (chs[i]){
-                aTargetBlank(chs[i]);
-            }
-        }
-    };
-
-    NS.ProjectViewWidget = Y.Base.create('ProjectViewWidget', SYS.AppWidget, [
+    NS.TaskViewWidget = Y.Base.create('TaskViewWidget', SYS.AppWidget, [
         NS.ContainerWidgetExt,
         NS.TaskWidgetExt,
         NS.UProfileWidgetExt,

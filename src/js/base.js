@@ -76,7 +76,8 @@ Component.entryPoint = function(NS){
                 var Task = app.get('Task');
 
                 return this._taskNewCache = new Task({
-                    appInstance: app
+                    appInstance: app,
+                    priority: 3
                 });
             }
         }

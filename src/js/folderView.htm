@@ -43,7 +43,7 @@
                    data-url="item.create({v#id})"
                    class="btn btn-default btn-xs"
                    data-wait="disable"
-                   title="Добавить подпроект/подзадачу">
+                   title="Добавить подраздел/подпроект/подзадачу">
                     <i class="fa fa-plus-circle" aria-hidden="true"></i>
                 </a>
 
@@ -51,7 +51,7 @@
                         class="btn btn-default btn-xs"
                         data-click="showRemovePanel"
                         data-wait="disable"
-                        title="Удалить проект">
+                        title="Удалить раздел">
                     <i class="fa fa-trash-o" aria-hidden="true"></i>
                 </button>
             </div>
@@ -62,8 +62,7 @@
         <div class="alert alert-danger" role="alert">
             <strong>Внимание!</strong>
             <p>
-                Вы действительно хотите удалить этот проект со всем его содержимым,
-                включая возможные подпроекты?
+                Вы действительно хотите удалить этот раздел со всем его содержимым?
             </p>
             <p class="text-right">
                 <button class="btn btn-danger btn-sm"
@@ -107,54 +106,11 @@
     </div>
 
     <div class="panel-body">
-
         <div class="alert alert-info">
             <div id="{i#descript}"></div>
         </div>
 
-        <div id="{i#checkListWidget}"></div>
-
-        <div id="{i#pictabPanel}" class="pictabPanel hide">
-
-            <button id="{i#pictabSaveButton}"
-                    class="btn btn-success btn-xs btnPictabSave hide"
-                    data-click="pictabSave"
-                    type="button">
-                Сохранить изменения
-            </button>
-
-            <div id="{i#pictabWidget}"></div>
-        </div>
-
-        <div id="{i#fileListPanel}" class="row hide">
-            <div class="col-md-2">
-                Файлы
-            </div>
-            <div id="{i#attacheFiles}" class="col-md-6"></div>
-        </div>
-
-        <div id="{i#imgwidget}" class="imgcanvas hide">
-            <hr/>
-            <img id="{i#bimgsaveload}" src="/images/loading.gif" class="bimgsaveload" style="display: none"/>
-
-            <div class="imgsave">
-                <a id="{i#bimgsave}" class="bimgsave btkbt hide" href="#">{#mod.botask.projectview.panel.15}</a>
-            </div>
-
-            <div id="{i#images}"></div>
-        </div>
-
         <div class="extInfo row">
-            <div class="col-md-4">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h4 class="panel-title">История</h4>
-                    </div>
-                    <div class="panel-body">
-                        <div id={i#historyWidget}></div>
-                    </div>
-                </div>
-            </div>
             <div class="col-md-8">
                 <div class="panel panel-default">
                     <div class="panel-heading">
@@ -166,11 +122,6 @@
                 </div>
             </div>
         </div>
-
-        <hr/>
-
-        <div id="{i#commentTreeWidget}"></div>
-
     </div>
 </div>
 

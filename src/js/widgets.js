@@ -74,4 +74,23 @@ Component.entryPoint = function(NS){
         },
         CLICKS: {},
     });
+
+    NS.PrioritySelectWidget = Y.Base.create('PrioritySelectWidget', SYS.AppWidget, [], {
+        onInitAppWidget: function(err, appInstance){
+            this.setValue(this.get('initValue'));
+        },
+        setValue: function(val){
+            this.template.setValue('id', val);
+        },
+        getValue: function(){
+            return this.template.getValue('id');
+        }
+    }, {
+        ATTRS: {
+            component: {value: COMPONENT},
+            templateBlockName: {value: 'priority'},
+            initValue: {value: 3},
+        },
+        CLICKS: {},
+    });
 };

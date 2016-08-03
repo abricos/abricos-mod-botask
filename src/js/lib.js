@@ -193,10 +193,10 @@ Component.entryPoint = function(NS){
                     return this.getURL('folder.edit', 0, parentid | 0);
                 },
                 edit: function(id, parentid){
-                    return this.getURL('ws') + 'foldereditor/FolderEditorWidget/' + (id | 0) + '/' + (parentid | 0) + '/';
+                    return this.getURL('ws') + 'folderEditor/FolderEditorWidget/' + (id | 0) + '/' + (parentid | 0) + '/';
                 },
                 view: function(id){
-                    return this.getURL('ws') + 'folderview/FolderViewWidget/' + (id | 0) + '/';
+                    return this.getURL('ws') + 'folderView/FolderViewWidget/' + (id | 0) + '/';
                 }
             },
             project: {
@@ -215,10 +215,10 @@ Component.entryPoint = function(NS){
                     return this.getURL('task.edit', 0, parentid | 0);
                 },
                 edit: function(id, parentid){
-                    return this.getURL('ws') + 'taskeditor/TaskEditorWidget/' + (id | 0) + '/' + (parentid | 0) + '/';
+                    return this.getURL('ws') + 'taskEditor/TaskEditorWidget/' + (id | 0) + '/' + (parentid | 0) + '/';
                 },
                 view: function(id){
-                    return this.getURL('ws') + 'taskview/TaskViewWidget/' + (id | 0) + '/';
+                    return this.getURL('ws') + 'taskView/TaskViewWidget/' + (id | 0) + '/';
                 }
             },
             item: {

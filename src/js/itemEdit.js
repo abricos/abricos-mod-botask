@@ -59,6 +59,20 @@ Component.entryPoint = function(NS){
                 toolbar: SYS.Editor.TOOLBAR_MINIMAL
             }));
 
+            if (tp.one('deadlineWidget')){
+                this.addWidget('deadline', new Brick.mod.widget.DateInputWidget(tp.gel('deadlineWidget'), {
+                    date: task.get('deadline'),
+                    showTime: task.get('deadlineTime')
+                }));
+            }
+
+            if (tp.one('priorityWidget')){
+                this.addWidget('priority', new NS.PrioritySelectWidget({
+                    srcNode: tp.one('priorityWidget'),
+                    initValue: task.get('priority')
+                }));
+            }
+
             if (tp.one('checkListWidget')){
                 this.addWidget('checkList', new NS.CheckListWidget({
                     srcNode: tp.one('checkListWidget'),
@@ -78,7 +92,7 @@ Component.entryPoint = function(NS){
             }
 
             var FMNS = Brick.mod.filemanager;
-            if (FMNS.roles.isWrite){
+            if (FMNS.roles.isWrite && tp.one('fileListWidget')){
                 var arr = [];
                 task.get('files').each(function(file){
                     arr[arr.length] = file.getAttrs();
@@ -119,11 +133,16 @@ Component.entryPoint = function(NS){
                 pictabWidget = this.getWidget('pictab'),
                 filesWidget = this.getWidget('fileList'),
                 usersWidget = this.getWidget('users'),
+                deadlineWidget = this.getWidget('deadline'),
+                priorityWidget = this.getWidget('priority'),
                 data = {
                     id: task.get('id'),
                     type: this.get('itemType'),
                     title: tp.getValue('title'),
                     parentid: parentSelectWidget.getValue(),
+                    priority: priorityWidget ? priorityWidget.getValue() : 3,
+                    deadline: deadlineWidget ? deadlineWidget.getValue() : 0,
+                    deadlineTime: deadlineWidget ? deadlineWidget.getTimeVisible() : false,
                     body: editorWidget.get('content'),
                     checks: checkListWidget ? checkListWidget.toJSON() : null,
                     images: pictabWidget ? pictabWidget.toJSON() : null,

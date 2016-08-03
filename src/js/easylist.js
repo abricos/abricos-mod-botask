@@ -1,7 +1,7 @@
 var Component = new Brick.Component();
 Component.requires = {
     mod: [
-        {name: '{C#MODNAME}', files: ['tasklist.js']}
+        {name: '{C#MODNAME}', files: ['taskList.js']}
     ]
 };
 Component.entryPoint = function(NS){
