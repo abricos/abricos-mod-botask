@@ -235,6 +235,9 @@ class BotaskApp extends AbricosApplication {
         // сохранить картинки
         $this->ImageListSave($d->id, $d->images, $history);
 
+        // сохранить файлы
+        $this->FileListSave($d->id, $d->files, $history);
+
         BotaskQuery::HistoryAppend($this->db, $history);
 
         $this->CacheClear();
@@ -242,10 +245,6 @@ class BotaskApp extends AbricosApplication {
         $ret = new stdClass();
         $ret->taskid = $taskid;
         return $ret; //////////////////////////
-
-
-        // обновить информацию по файлам, если есть на это роль
-        $this->TaskSaveFilesUpdate($d, $history);
 
 
         $history->Save();
@@ -523,6 +522,50 @@ class BotaskApp extends AbricosApplication {
         $fmanager->RolesEnable();
     }
 
+    private function FileListSave($taskid, $d, $history = null){
+        if (!$this->ItemAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        /** @var FileManagerModule $mod */
+        $fmModule = Abricos::GetModule('filemanager');
+        if (empty($fmModule)){
+            return AbricosResponse::ERR_BAD_REQUEST;
+        }
+        /** @var FileManager $fmManager */
+        $fmManager = $fmModule->GetManager();
+        if (!$fmManager->IsFileUploadRole()){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        $curFileList = $this->FileList($taskid);
+        $checker = array();
+
+        for ($i = 0; $i < count($d); $i++){
+            $dFile = $d[$i];
+            $checker[$dFile->id] = true;
+            $curFile = $curFileList->Get($dFile->id);
+
+            if (empty($curFile)){
+                BotaskQuery::FileAppend($this->db, $taskid, $dFile->id);
+            }
+        }
+
+        for ($i = 0; $i < $curFileList->Count(); $i++){
+            $curFile = $curFileList->GetByIndex($i);
+            if (!isset($checker[$curFile->id])){
+                BotaskQuery::FileRemove($this->db, $taskid, $curFile->id);
+            }
+        }
+
+        $this->CacheClear();
+
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
+        return $ret;
+    }
+
+
     /* * * * * * * * * * * * * * * * Images * * * * * * * * * * * * * * */
 
     public function ImageListToJSON($taskid){
@@ -575,7 +618,6 @@ class BotaskApp extends AbricosApplication {
 
         return $this->ResultToJSON('imageListSave', $res);
     }
-
 
     /**
      * @param $taskid
@@ -922,7 +964,7 @@ class BotaskApp extends AbricosApplication {
         $users = array();
         $rows = BotaskQuery::UserFriendList($this->db);
         while (($row = $this->db->fetch_array($rows))){
-            $users[] =  intval($row['id']);
+            $users[] = intval($row['id']);
         }
 
         return $users;
@@ -1104,42 +1146,6 @@ class BotaskApp extends AbricosApplication {
             }
         }
         $this->CacheClear();
-    }
-
-    private function TaskSaveFilesUpdate($tk, $history){
-        $mod = Abricos::GetModule('filemanager');
-        if (empty($mod) || !FileManagerModule::$instance->GetManager()->IsFileUploadRole()){
-            return;
-        }
-        $files = $this->TaskFiles($tk->id, true);
-        $arr = $tk->files;
-
-        foreach ($files as $rFileId => $cfile){
-            $find = false;
-            foreach ($arr as $file){
-                if ($file->id == $rFileId){
-                    $find = true;
-                    break;
-                }
-            }
-            if (!$find){
-                BotaskQuery::TaskFileRemove($this->db, $tk->id, $rFileId);
-                // $history->FileRemove($rFileId);
-            }
-        }
-        foreach ($arr as $file){
-            $find = false;
-            foreach ($files as $rFileId => $cfile){
-                if ($file->id == $rFileId){
-                    $find = true;
-                    break;
-                }
-            }
-            if (!$find){
-                BotaskQuery::TaskFileAppend($this->db, $tk->id, $file->id, Abricos::$user->id);
-                // $history->FileAdd($uid);
-            }
-        }
     }
 
     public function TaskSetExecToJSON($taskid){

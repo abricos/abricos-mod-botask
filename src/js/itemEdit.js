@@ -77,11 +77,18 @@ Component.entryPoint = function(NS){
                 tp.hide('pictabPanel');
             }
 
-            if (Brick.mod.filemanager.roles.isWrite){
-                this.addWidget('files', new Brick.mod.filemanager.AttachmentWidget(tp.gel('fileListWidget'), task.files));
+            var FMNS = Brick.mod.filemanager;
+            if (FMNS.roles.isWrite){
+                var arr = [];
+                task.get('files').each(function(file){
+                    arr[arr.length] = file.getAttrs();
+                }, this);
+
+                this.addWidget('fileList', new FMNS.AttachmentWidget(
+                    tp.gel('fileListWidget'), arr
+                ));
             } else {
-                this.filesWidget = null;
-                tp.hide('rfiles');
+                tp.hide('filesPanel');
             }
 
             if (tp.one('usersWidget')){
@@ -110,7 +117,7 @@ Component.entryPoint = function(NS){
                 parentSelectWidget = this.getWidget('parentSelect'),
                 checkListWidget = this.getWidget('checkList'),
                 pictabWidget = this.getWidget('pictab'),
-                filesWidget = this.getWidget('files'),
+                filesWidget = this.getWidget('fileList'),
                 usersWidget = this.getWidget('users'),
                 data = {
                     id: task.get('id'),
@@ -120,6 +127,7 @@ Component.entryPoint = function(NS){
                     body: editorWidget.get('content'),
                     checks: checkListWidget ? checkListWidget.toJSON() : null,
                     images: pictabWidget ? pictabWidget.toJSON() : null,
+                    files: filesWidget ? filesWidget.files : null,
                     users: usersWidget ? usersWidget.toJSON() : null,
                 };
 

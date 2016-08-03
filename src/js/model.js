@@ -525,10 +525,23 @@ Component.entryPoint = function(NS){
 
     NS.File = Y.Base.create('file', SYS.AppModel, [], {
         structureName: 'File'
+    }, {
+        ATTRS: {
+            nm: {
+                getter: function(){
+                    return this.get('name');
+                }
+            },
+            sz: {
+                getter: function(){
+                    return this.get('size');
+                }
+            },
+        }
     });
 
     NS.FileList = Y.Base.create('fileList', SYS.AppModelList, [], {
-        appItem: NS.File,
+        appItem: NS.File
     });
 
     NS.Image = Y.Base.create('image', SYS.AppModel, [], {

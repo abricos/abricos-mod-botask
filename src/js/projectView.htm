@@ -126,9 +126,9 @@
             <div id="{i#pictabWidget}"></div>
         </div>
 
-        <div id="{i#files}" class="dfiles row" style="display: none">
+        <div id="{i#fileListPanel}" class="row hide">
             <div class="col-md-2">
-                {#mod.botask.projectview.panel.14}
+                Файлы
             </div>
             <div id="{i#attacheFiles}" class="col-md-6"></div>
         </div>
@@ -180,25 +180,3 @@
 </div>
 
 <!--{user}--><a href="#" class="show-user-profile user-{v#uid}">{v#unm}</a>
-
-<!--{tkremovepanel}-->
-<div class='hd'>{#mod.botask.projectview.tkremovepanel.1}</div>
-<div class='bd aw-botask'>
-    <div id="{i#dialogremove}" class="field">
-        <h4>{#mod.botask.projectview.tkremovepanel.2}</h4>
-
-        <p>
-            {#mod.botask.projectview.tkremovepanel.3}
-        </p>
-
-        <div class="buttons right">
-			<span id="{i#btns}">
-				<input id="{i#bremove}" value="{#mod.botask.projectview.tkremovepanel.4}" type="button"/>
-				<input id="{i#bcancel}" value="{#mod.botask.projectview.tkremovepanel.5}" type="button"/>
-			</span>
-            <span id="{i#bloading}" style="display: none">
-				<img src="/images/loading.gif"/> {#mod.botask.projectview.tkremovepanel.6}
-			</span>
-        </div>
-    </div>
-</div>

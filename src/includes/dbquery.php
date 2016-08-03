@@ -252,13 +252,13 @@ class BotaskQuery {
         return $db->query_read($sql);
     }
 
-    public static function FileAppend(Ab_Database $db, $taskid, $filehash, $userid){
+    public static function FileAppend(Ab_Database $db, $taskid, $filehash){
         $sql = "
 			INSERT INTO ".$db->prefix."btk_file (taskid, filehash, userid) VALUES
 			(
 				".intval($taskid).",
 				'".bkstr($filehash)."',
-				".intval($userid)."
+				".intval(Abricos::$user->id)."
 			)
 		";
         $db->query_write($sql);

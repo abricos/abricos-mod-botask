@@ -93,10 +93,17 @@ Component.entryPoint = function(NS){
                 }));
             }
 
-            if (tp.one('attacheFiles')){
-                this.addWidget('attacheFiles', new Brick.mod.filemanager.AttachmentListWidget(tp.gel('attacheFiles')));
-            }
+            if (tp.one('attacheFiles') && task.get('files').size() > 0){
+                tp.show('fileListPanel');
+                var arr = [];
+                task.get('files').each(function(file){
+                    arr[arr.length] = file.getAttrs();
+                }, this);
 
+                this.addWidget('attacheFiles', new Brick.mod.filemanager.AttachmentListWidget(
+                    tp.gel('attacheFiles'), arr
+                ));
+            }
 
             var images = task.get('images');
 
