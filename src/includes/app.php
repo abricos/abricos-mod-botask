@@ -267,15 +267,15 @@ class BotaskApp extends AbricosApplication {
             $brick = Brick::$builder->LoadBrickS('botask', 'templates', null, null);
             $v = $brick->param->var;
             $host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_ENV['HTTP_HOST'];
-            $plnk = "http://".$host."/bos/#app=botask/taskview/showTaskViewPanel/".$task['id']."/";
+            $plnk = "http://".$host."/bos/#app=botask/taskview/showTaskViewPanel/".$task->id."/";
 
             $tppfx = "";
             if ($task['tp'] == 2){
                 $tppfx = "proj";
-                $plnk = "http://".$host."/bos/#app=botask/ws/showWorkspacePanel/projectview/".$task['id']."/";
+                $plnk = "http://".$host."/bos/#app=botask/ws/showWorkspacePanel/projectview/".$task->id."/";
             } else if ($task['tp'] == 3){
                 $tppfx = "task";
-                $plnk = "http://".$host."/bos/#app=botask/ws/showWorkspacePanel/taskview/".$task['id']."/";
+                $plnk = "http://".$host."/bos/#app=botask/ws/showWorkspacePanel/taskview/".$task->id."/";
             } else {
                 return;
             }
@@ -292,11 +292,11 @@ class BotaskApp extends AbricosApplication {
                 }
 
                 $subject = Brick::ReplaceVarByData($v[$tppfx.'newprojectsubject'], array(
-                    "tl" => $task['tl']
+                    "tl" => $task->title
                 ));
                 $body = Brick::ReplaceVarByData($v[$tppfx.'newprojectbody'], array(
                     "email" => $email,
-                    "tl" => $task['tl'],
+                    "tl" => $task->title,
                     "plnk" => $plnk,
                     "unm" => $this->UserNameBuild($this->user->info),
                     "prj" => $task['bd'],
@@ -1409,9 +1409,9 @@ class BotaskApp extends AbricosApplication {
 
 
     private function UserNameBuild($user){
-        $firstname = !empty($user['fnm']) ? $user['fnm'] : $user['firstname'];
-        $lastname = !empty($user['lnm']) ? $user['lnm'] : $user['lastname'];
-        $username = !empty($user['unm']) ? $user['unm'] : $user['username'];
+        $firstname = isset($user['fnm']) ? $user['fnm'] : $user['firstname'];
+        $lastname = isset($user['lnm']) ? $user['lnm'] : $user['lastname'];
+        $username = isset($user['unm']) ? $user['unm'] : $user['username'];
         return (!empty($firstname) && !empty($lastname)) ? $firstname." ".$lastname : $username;
     }
 
@@ -1433,14 +1433,6 @@ class BotaskApp extends AbricosApplication {
         return $this->ItemAccess($ownerid);
     }
 
-    private function TaskUserListForNotify($taskid, $retarray = false){
-        $rows = BotaskQuery::TaskUserListForNotify($this->db, $taskid);
-        if (!$retarray){
-            return $rows;
-        }
-        return $this->ToArrayById($rows);
-    }
-
     /**
      * @param string $type
      * @param Comment $comment
@@ -1452,43 +1444,43 @@ class BotaskApp extends AbricosApplication {
         }
 
         $task = $this->Task($ownerid);
-        $host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_ENV['HTTP_HOST'];
+        $host = Ab_URI::Site();
 
         /** @var NotifyApp $notifyApp */
         $notifyApp = Abricos::GetApp('notify');
-
-        if ($task['tp'] == 2){
-            $templateSuffix = "Proj";
-            $itemLink = "http://".$host."/bos/#app=botask/wspace/ws/projectview/ProjectViewWidget/".$task['id']."/";
-        } else if ($task['tp'] == 3){
-            $templateSuffix = "Task";
-            $itemLink = "http://".$host."/bos/#app=botask/wspace/ws/taskview/TaskViewWidget/".$task['id']."/";
-        } else {
-            return;
+        switch ($task->iType){
+            case BotaskType::PROJECT:
+                $templateSuffix = "Proj";
+                $itemLink = $host."/bos/#app=botask/wspace/ws/projectView/ProjectViewWidget/".$task->id."/";
+                break;
+            case BotaskType::TASK:
+                $templateSuffix = "Task";
+                $itemLink = "http://".$host."/bos/#app=botask/wspace/ws/taskView/TaskViewWidget/".$task->id."/";
+                break;
+            default:
+                return;
         }
 
         $emails = array();
 
         // уведомление "комментарий на комментарий"
         if (!empty($parentComment) && $parentComment->userid != Abricos::$user->id){
-
             $brick = Brick::$builder->LoadBrickS('botask', 'notifyCmtAns'.$templateSuffix, null, null);
             $v = &$brick->param->var;
 
-            $user = UserQuery::User($this->db, $parentComment->userid);
-            $email = $user['email'];
+            $email = $parentComment->user->email;
             if (!empty($email)){
                 $emails[$email] = true;
 
                 $mail = $notifyApp->MailByFields(
                     $email,
-                    Brick::ReplaceVarByData($v['subject'], array("tl" => $task['tl'])),
+                    Brick::ReplaceVarByData($v['subject'], array("tl" => $task->title)),
                     Brick::ReplaceVarByData($brick->content, array(
                         "sitename" => SystemModule::$instance->GetPhrases()->Get('site_name'),
                         "email" => $email,
-                        "unm" => $this->UserNameBuild($user),
+                        "unm" => $comment->user->GetViewName(),
                         "plnk" => $itemLink,
-                        "tl" => $task['tl'],
+                        "tl" => $task->title,
                         "parentComment" => $parentComment->body." ",
                         "comment" => $comment->body." ",
                     ))
@@ -1498,13 +1490,16 @@ class BotaskApp extends AbricosApplication {
             }
         }
 
-        $users = $this->TaskUserListForNotify($task['id'], true);
-
         // уведомление автору и подписчикам
-        foreach ($users as $user){
+        $rows = BotaskQuery::TaskUserListForNotify($this->db, $task->id);
+        while (($user = $this->db->fetch_array($rows))){
+            if ($user['id'] == Abricos::$user->id){
+                continue;
+            }
+
             $email = $user['email'];
 
-            if (empty($email) || $emails[$email]){
+            if (empty($email) || isset($emails[$email])){
                 continue;
             }
             $emails[$email] = true;
@@ -1514,13 +1509,13 @@ class BotaskApp extends AbricosApplication {
 
             $mail = $notifyApp->MailByFields(
                 $email,
-                Brick::ReplaceVarByData($v['subject'], array("tl" => $task['tl'])),
+                Brick::ReplaceVarByData($v['subject'], array("tl" => $task->title)),
                 Brick::ReplaceVarByData($brick->content, array(
                     "sitename" => SystemModule::$instance->GetPhrases()->Get('site_name'),
                     "email" => $email,
-                    "unm" => $this->UserNameBuild($user),
+                    "unm" => $comment->user->GetViewName(),
                     "plnk" => $itemLink,
-                    "tl" => $task['tl'],
+                    "tl" => $task->title,
                     "comment" => $comment->body." ",
                 ))
             );

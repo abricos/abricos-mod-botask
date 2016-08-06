@@ -7,10 +7,14 @@
  * @license http://opensource.org/licenses/mit-license.php MIT License
  * @author Alexander Kuzmin <roosit@abricos.org>
  */
+
+/**
+ * Class BotaskType
+ */
 class BotaskType {
-    const TASK = 0;
+    const FOLDER = 0;
     const PROJECT = 1;
-    const FOLDER = 2;
+    const TASK = 2;
 }
 
 
