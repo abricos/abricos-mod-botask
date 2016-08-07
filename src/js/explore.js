@@ -128,7 +128,7 @@ Component.entryPoint = function(NS){
                         tl: user.get('viewName'),
                         child: userChildsVisible[item.userid] ? this._buildRows(item.childs, level + 1, true) : '',
                         clst: isLast ? 'ln' : 'tn',
-                        chdicon: 'chdexpd'
+                        chdicon: userChildsVisible[item.userid] ? 'chdcls' : 'chdexpd',
                     });
                 } else {
                     childs = item.get('childs');
