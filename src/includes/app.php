@@ -242,70 +242,66 @@ class BotaskApp extends AbricosApplication {
 
         $this->CacheClear();
 
-        $ret = new stdClass();
-        $ret->taskid = $taskid;
-        return $ret; //////////////////////////
-
-
-        $history->Save();
-
-        $this->CacheClear();
-        $taskid = $d->id;
-
         $task = $this->Task($taskid);
+        $host = Ab_URI::Site();
 
-        /*
-        $tppfx = "";
-        if ($task['tp'] == 2){
-            $tppfx = "proj";
-        } else if ($task['tp'] == 3){
-            $tppfx = "task";
+        switch ($task->iType){
+            case BotaskType::PROJECT:
+                $templateSuffix = "Proj";
+                $itemLink = $host."/bos/#app=botask/wspace/ws/projectView/ProjectViewWidget/".$task->id."/";
+                break;
+            case BotaskType::TASK:
+                $templateSuffix = "Task";
+                $itemLink = "http://".$host."/bos/#app=botask/wspace/ws/taskView/TaskViewWidget/".$task->id."/";
+                break;
         }
 
-        if ($sendNewNotify && !empty($tppfx)){
+        if ($history->isNewTask && !empty($templateSuffix)){
 
-            $brick = Brick::$builder->LoadBrickS('botask', 'templates', null, null);
-            $v = $brick->param->var;
-            $host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_ENV['HTTP_HOST'];
-            $plnk = "http://".$host."/bos/#app=botask/taskview/showTaskViewPanel/".$task->id."/";
+            $brick = Brick::$builder->LoadBrickS('botask', 'notifyNew'.$templateSuffix, null, null);
+            $v = &$brick->param->var;
 
-            $tppfx = "";
-            if ($task['tp'] == 2){
-                $tppfx = "proj";
-                $plnk = "http://".$host."/bos/#app=botask/ws/showWorkspacePanel/projectview/".$task->id."/";
-            } else if ($task['tp'] == 3){
-                $tppfx = "task";
-                $plnk = "http://".$host."/bos/#app=botask/ws/showWorkspacePanel/taskview/".$task->id."/";
-            } else {
-                return;
-            }
+            /** @var NotifyApp $notifyApp */
+            $notifyApp = Abricos::GetApp('notify');
 
-            $users = $this->TaskUserListForNotify($taskid, true);
-            foreach ($users as $user){
-                if ($user['id'] == Abricos::$user->id){
+            /** @var UProfileApp $uprofileApp */
+            $uprofileApp = Abricos::GetApp('uprofile');
+
+            $userids = $task->users->ToArray('userid');
+
+            $userList = $uprofileApp->UserListByIds($userids);
+
+            $author = $uprofileApp->User(Abricos::$user->id);
+            for ($i = 0; $i < $userList->Count(); $i++){
+                $user = $userList->GetByIndex($i);
+                if ($user->id == Abricos::$user->id){
                     continue;
                 }
-
-                $email = $user['email'];
+                $email = $user->email;
                 if (empty($email)){
                     continue;
                 }
 
-                $subject = Brick::ReplaceVarByData($v[$tppfx.'newprojectsubject'], array(
-                    "tl" => $task->title
-                ));
-                $body = Brick::ReplaceVarByData($v[$tppfx.'newprojectbody'], array(
-                    "email" => $email,
-                    "tl" => $task->title,
-                    "plnk" => $plnk,
-                    "unm" => $this->UserNameBuild($this->user->info),
-                    "prj" => $task['bd'],
-                    "sitename" => SystemModule::$instance->GetPhrases()->Get('site_name')
-                ));
-                Abricos::Notify()->SendMail($email, $subject, $body);
+                $mail = $notifyApp->MailByFields(
+                    $email,
+                    Brick::ReplaceVarByData($v['subject'], array("tl" => $task->title)),
+                    Brick::ReplaceVarByData($brick->content, array(
+                        "sitename" => SystemModule::$instance->GetPhrases()->Get('site_name'),
+                        "email" => $email,
+                        "unm" => $author->GetViewName(),
+                        "plnk" => $itemLink,
+                        "tl" => $task->title,
+                        "prj" => $task->descript,
+                    ))
+                );
+
+                $notifyApp->MailSend($mail);
             }
         }
-        /**/
+
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
+        return $ret;
     }
 
     /**

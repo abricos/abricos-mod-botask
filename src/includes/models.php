@@ -12,9 +12,9 @@
  * Class BotaskType
  */
 class BotaskType {
-    const FOLDER = 0;
-    const PROJECT = 1;
-    const TASK = 2;
+    const FOLDER = 1;
+    const PROJECT = 2;
+    const TASK = 3;
 }
 
 
