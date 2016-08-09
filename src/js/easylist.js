@@ -37,6 +37,13 @@ Component.entryPoint = function(NS){
                         return task.isNew();
                     });
                     break;
+                case 'isChanged':
+                    this.set('boxTitle', i18n.get('boxTitle.' + mode));
+                    this.set('columns', 'title,favorite');
+                    this.set('filterFn', function(task){
+                        return task.isChanged();
+                    });
+                    break;
                 case 'isNewComment':
                     this.set('boxTitle', i18n.get('boxTitle.' + mode));
                     this.set('columns', 'title,favorite');

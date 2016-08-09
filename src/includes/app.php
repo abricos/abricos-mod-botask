@@ -682,6 +682,7 @@ class BotaskApp extends AbricosApplication {
                     "imageDataChanged" => true
                 ));
                 BotaskQuery::HistoryAppend($this->db, $history);
+                BotaskQuery::TaskUpdateDate($this->db, $taskid);
             } else if (!$history->isNewTask){
                 $history->imageData = json_encode($d);
                 $history->imageDataChanged = true;
@@ -811,6 +812,7 @@ class BotaskApp extends AbricosApplication {
                     "checksChanged" => true
                 ));
                 BotaskQuery::HistoryAppend($this->db, $history);
+                BotaskQuery::TaskUpdateDate($this->db, $taskid);
             } else if (!$history->isNewTask){
                 $history->checks = json_encode($data);
                 $history->checksChanged = true;

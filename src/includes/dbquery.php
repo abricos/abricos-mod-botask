@@ -558,6 +558,16 @@ class BotaskQuery {
         $db->query_write($sql);
     }
 
+    public static function TaskUpdateDate(Ab_Database $db, $taskid){
+        $sql = "
+			UPDATE ".$db->prefix."btk_task
+			SET updatedate=".TIMENOW."
+			WHERE taskid=".intval($taskid)."
+			LIMIT 1
+		";
+        $db->query_write($sql);
+    }
+
     public static function TaskSetStatus(Ab_Database $db, $taskid, $iStatus, $statusUserId){
         $sql = "
 			UPDATE ".$db->prefix."btk_task

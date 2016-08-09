@@ -59,6 +59,7 @@ Component.entryPoint = function(NS){
 
             this.get('appInstance').get('taskList').each(function(task){
                 newCount += task.isNew() ? 1 : 0;
+                changedCount += task.isChanged() ? 1 : 0;
                 newCommentCount += task.isNewComment() ? 1 : 0;
                 favoriteCount += task.isFavorite() ? 1 : 0;
             }, this);

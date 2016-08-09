@@ -176,7 +176,18 @@ Component.entryPoint = function(NS){
                 return false;
             }
             return stat.get('lastid') > stat.get('viewid');
-        }
+        },
+        isChanged: function(){
+            if (this.get('type') === 'folder'){
+                return false;
+            }
+            var role = this.get('userRole'),
+                viewdate = role.get('viewdate');
+            if (!viewdate){
+                return;
+            }
+            return viewdate < this.get('updateDate');
+        },
     }, {
         ATTRS: {
             author: {

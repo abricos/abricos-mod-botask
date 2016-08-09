@@ -181,7 +181,7 @@ Component.entryPoint = function(NS){
                 isNew: function(){
                     return this.getURL('boxList.filter', 'isNew');
                 },
-                isChnaged: function(){
+                isChanged: function(){
                     return this.getURL('boxList.filter', 'isChanged');
                 },
                 isNewComment: function(){
