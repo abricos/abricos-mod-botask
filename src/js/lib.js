@@ -91,6 +91,9 @@ Component.entryPoint = function(NS){
             taskFavorite: {
                 args: ['taskid', 'value']
             },
+            taskReaded: {
+                args: ['taskid', 'value']
+            },
             taskRemove: {
                 args: ['taskid'],
                 onResponse: function(result){
@@ -186,6 +189,9 @@ Component.entryPoint = function(NS){
                 },
                 isNewComment: function(){
                     return this.getURL('boxList.filter', 'isNewComment');
+                },
+                isNotReaded: function(){
+                    return this.getURL('boxList.filter', 'isNotReaded');
                 },
             },
             folder: {

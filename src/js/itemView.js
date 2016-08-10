@@ -9,10 +9,6 @@ Component.requires = {
     ]
 };
 Component.entryPoint = function(NS){
-    var Y = Brick.YUI,
-        COMPONENT = this,
-        SYS = Brick.mod.sys;
-
     var PicTabWidget = Brick.mod.pictab ? Brick.mod.pictab.PicTabWidget : null;
 
     var aTargetBlank = function(el){
@@ -128,9 +124,8 @@ Component.entryPoint = function(NS){
         renderItem: function(){
             var tp = this.template,
                 taskid = this.get('taskid'),
-                task = this.get('appInstance').get('taskList').getById(taskid);
-
-            var author = task.get('author');
+                task = this.get('appInstance').get('taskList').getById(taskid),
+                author = task.get('author');
 
             tp.setHTML({
                 status: task.get('statusTitle'),
@@ -147,6 +142,7 @@ Component.entryPoint = function(NS){
             tp.one('date').set('title', Brick.dateExt.convert(task.get('date'), 4));
 
             tp.toggleView(task.isFavorite(), 'removeFromFavoriteButton', 'addToFavoriteButton');
+            tp.toggleView(!task.isReaded(), 'setReadedButton');
         },
         showRemovePanel: function(){
             this.template.show('removePanel');
@@ -178,6 +174,10 @@ Component.entryPoint = function(NS){
         onClick: function(e){
             var task = this.get('task');
             switch (e.dataClick) {
+                case 'setReaded':
+                    task.setReaded();
+                    this.renderItem();
+                    return true;
                 case 'addToFavorite':
                     task.addToFavorite();
                     this.renderItem();

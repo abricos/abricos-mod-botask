@@ -152,6 +152,14 @@ Component.entryPoint = function(NS){
         removeFromFavorite: function(){
             this._favoriteChange(false);
         },
+        setReaded: function(){
+            var appInstance = this.appInstance,
+                role = this.get('userRole');
+
+            role.set('readed', true);
+
+            appInstance.taskReaded(this.get('id'));
+        },
         isExpired: function(){
 
         },
@@ -188,6 +196,22 @@ Component.entryPoint = function(NS){
             }
             return viewdate < this.get('updateDate');
         },
+        isChanged: function(){
+            if (this.get('type') === 'folder'){
+                return false;
+            }
+            var viewdate = this.get('userRole').get('viewdate');
+            if (!viewdate){
+                return;
+            }
+            return viewdate < this.get('updateDate');
+        },
+        isReaded: function(){
+            if (this.get('type') === 'folder'){
+                return false;
+            }
+            return this.get('userRole').get('readed');
+        }
     }, {
         ATTRS: {
             author: {

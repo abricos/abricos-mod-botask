@@ -60,9 +60,7 @@ if ($updateManager->isInstall()){
 		  ord int(5) NOT NULL DEFAULT 0 COMMENT 'Вес этой задачи по мнению пользователя',
 		  favorite tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Избранное',
 		  expanded tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Развернуты подзадачи',
-		  showcomments tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Показать комментарии',
-		  meilhistory tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Уведомлять о всех изменениях',
-		  meilcomment tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Уведомлять о всех комментариях',
+		  readed tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT '',
 		  deldate int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата удаления',
 		  PRIMARY KEY  (userroleid), 
 		  UNIQUE KEY task (taskid,userid)
@@ -210,18 +208,6 @@ if ($updateManager->isUpdate('0.3.1')){
 
 if ($updateManager->isUpdate('0.3.1') && !$updateManager->isInstall()){
 
-    /* Old table
-    $db->query_write("
-		CREATE TABLE IF NOT EXISTS ".$pfx."btk_custatus (
-			taskid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор',
-		  	userid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор',
-		  	title varchar(250) NOT NULL DEFAULT '' COMMENT '',
-			dateline int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время',
-		UNIQUE KEY custatus (taskid,userid)
-		)".$charset
-    );
-    /**/
-
     $db->query_write("
         INSERT INTO ".$pfx."btk_resolution (userid, title)
         SELECT DISTINCT userid, title
@@ -276,5 +262,18 @@ if ($updateManager->isUpdate('0.3.1') && !$updateManager->isInstall()){
     $db->query_write("
 		ALTER TABLE ".$pfx."btk_task
 		DROP contentid
+	");
+
+    $db->query_write("
+		ALTER TABLE ".$pfx."btk_userrole
+		DROP showcomments,
+		DROP meilhistory,
+		DROP meilcomment,
+		ADD readed tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT ''
+	");
+
+    $db->query_write("
+		UPDATE ".$pfx."btk_userrole
+		SET readed=1
 	");
 }

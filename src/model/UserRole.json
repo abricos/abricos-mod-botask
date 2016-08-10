@@ -8,14 +8,15 @@
     },
     "taskid": {
       "type": "int",
-      "json": "tid"
+      "json": "t"
     },
     "userid": {
       "type": "int",
-      "json": "uid"
+      "json": "u"
     },
     "viewdate": {
-      "type": "date"
+      "type": "date",
+      "json": "v"
     },
     "favorite": {
       "type": "bool",
@@ -24,6 +25,10 @@
     "expanded": {
       "type": "bool",
       "json": "e"
+    },
+    "readed": {
+      "type": "bool",
+      "json": "r"
     }
   }
 }

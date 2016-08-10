@@ -85,6 +85,27 @@ class BotaskQuery {
         $db->query_write($sql);
     }
 
+    public static function TaskReadedUpdate(Ab_Database $db, $taskid){
+        $sql = "
+			UPDATE ".$db->prefix."btk_userrole
+			SET readed=1
+			WHERE taskid=".intval($taskid)." AND userid=".intval(Abricos::$user->id)."
+			LIMIT 1
+		";
+        $db->query_write($sql);
+    }
+
+    public static function TaskReadedUsersClean(Ab_Database $db, $taskid){
+        $sql = "
+			UPDATE ".$db->prefix."btk_userrole
+			SET readed=0
+			WHERE taskid=".intval($taskid)." AND userid<>".intval(Abricos::$user->id)."
+			LIMIT 1
+		";
+        $db->query_write($sql);
+    }
+
+
     /* * * * * * * * * * * * * * * * Users * * * * * * * * * * * * * * */
 
     public static function UserRole(Ab_Database $db, $taskid){

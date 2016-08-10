@@ -50,6 +50,8 @@ class BotaskApp extends AbricosApplication {
 
             case 'taskFavorite':
                 return $this->TaskFavoriteToJSON($d->taskid, $d->value);
+            case 'taskReaded':
+                return $this->TaskReadedToJSON($d->taskid);
             case 'taskSetExec':
                 return $this->TaskSetExecToJSON($d->taskid);
             case 'taskUnsetExec':
@@ -238,7 +240,7 @@ class BotaskApp extends AbricosApplication {
         // сохранить файлы
         $this->FileListSave($d->id, $d->files, $history);
 
-        BotaskQuery::HistoryAppend($this->db, $history);
+        $this->HistoryAppend($history);
 
         $this->CacheClear();
 
@@ -426,6 +428,23 @@ class BotaskApp extends AbricosApplication {
         $ret = new stdClass();
         $ret->taskid = $taskid;
         $ret->value = $value;
+        return $ret;
+    }
+
+    public function TaskReadedToJSON($taskid){
+        $res = $this->TaskReaded($taskid);
+        return $this->ResultToJSON('taskReaded', $res);
+    }
+
+    public function TaskReaded($taskid){
+        if (!$this->ItemAccess($taskid)){
+            return AbricosResponse::ERR_FORBIDDEN;
+        }
+
+        BotaskQuery::TaskReadedUpdate($this->db, $taskid);
+
+        $ret = new stdClass();
+        $ret->taskid = $taskid;
         return $ret;
     }
 
@@ -681,8 +700,7 @@ class BotaskApp extends AbricosApplication {
                     "imageData" => json_encode($d),
                     "imageDataChanged" => true
                 ));
-                BotaskQuery::HistoryAppend($this->db, $history);
-                BotaskQuery::TaskUpdateDate($this->db, $taskid);
+                $this->HistoryAppend($history);
             } else if (!$history->isNewTask){
                 $history->imageData = json_encode($d);
                 $history->imageDataChanged = true;
@@ -811,8 +829,7 @@ class BotaskApp extends AbricosApplication {
                     "checks" => json_encode($data),
                     "checksChanged" => true
                 ));
-                BotaskQuery::HistoryAppend($this->db, $history);
-                BotaskQuery::TaskUpdateDate($this->db, $taskid);
+                $this->HistoryAppend($history);
             } else if (!$history->isNewTask){
                 $history->checks = json_encode($data);
                 $history->checksChanged = true;
@@ -947,9 +964,20 @@ class BotaskApp extends AbricosApplication {
             "iParentStatus" => $task->iStatus
         ));
 
-        BotaskQuery::HistoryAppend($this->db, $history);
+        $this->HistoryAppend($history);
 
         BotaskQuery::TaskSetStatus($this->db, $taskid, BotaskStatus::TASK_REMOVE, Abricos::$user->id);
+    }
+
+    private function HistoryAppend(BotaskHistory $history){
+        BotaskQuery::HistoryAppend($this->db, $history);
+        $this->TaskReadedClean($history->taskid);
+    }
+
+    private function TaskReadedClean($taskid){
+        BotaskQuery::TaskUpdateDate($this->db, $taskid);
+        BotaskQuery::TaskReadedUpdate($this->db, $taskid);
+        BotaskQuery::TaskReadedUsersClean($this->db, $taskid);
     }
 
     /* * * * * * * * * * * * * * * * * Friends * * * * * * * * * * * * * * */
@@ -980,96 +1008,6 @@ class BotaskApp extends AbricosApplication {
             $this->TaskRemovedClear($row);
         }
     }
-
-
-    /**
-     * Получить структуру доски задач
-     */
-    public function BoardData($lastHId = 0){
-        if (!$this->IsViewRole()){
-            return AbricosResponse::ERR_FORBIDDEN;
-        }
-
-        // очистить корзину
-        $this->RecycleClear();
-
-        $ret = new stdClass();
-        $ret->hst = array();
-        $ret->board = array();
-        $ret->users = array();
-
-        // авторы
-        $autors = array();
-
-        $nusers = array();
-
-        $lastupdate = 0;
-        // история изменений, последнии 15 записей, если не указан $lastHId
-        $rows = BotaskQuery::BoardHistory($this->db, Abricos::$user->id, $lastHId);
-        while (($row = $this->db->fetch_array($rows))){
-            if ($lastupdate == 0){
-                $lastupdate = $row['dl'];
-            }
-            $lastupdate = min($lastupdate, $row['dl'] * 1);
-            $ret->hst[] = $row;
-            if ($lastHId > 0 && !empty($row['usad'])){
-                $urs = explode(",", $row['usad']);
-                foreach ($urs as $ur){
-                    $nusers[intval($ur)] = true;
-                }
-            }
-        }
-
-        if ($lastHId > 0 && count($ret->hst) == 0){ // нет изменений
-            return null;
-        }
-        if ($lastHId == 0){
-            $lastupdate = 0;
-        }
-
-        $rows = BotaskQuery::Board($this->db, Abricos::$user->id, $lastupdate);
-        while (($row = $this->db->fetch_array($rows))){
-            $row['users'] = array();
-            $ret->board[$row['id']] = $row;
-            $autors[$row['uid']] = true;
-        }
-
-        $rows = BotaskQuery::BoardTaskUsers($this->db, Abricos::$user->id, $lastupdate);
-        while (($row = $this->db->fetch_array($rows))){
-            $ret->board[$row['tid']]['users'][] = $row['uid'];
-            $autors[$row['uid']] = true;
-        }
-
-        foreach ($autors as $uid => $v){
-            $ret->users[] = $uid;
-        }
-
-        /*
-
-        $rows = BotaskQuery::BoardUsers($this->db, Abricos::$user->id, $lastupdate, $autors);
-        while (($row = $this->db->fetch_array($rows))){
-            $userid = $row['id'];
-            if ($userid == Abricos::$user->id && $lastHId > 0){
-                // нет смыслка каждый раз к списку пользователей добавлять информацию
-                // этого пользователя, лучше это сделать один раз при инициализации данных
-                continue;
-            }
-            if ($lastHId == 0 || ($lastHId > 0 && $nusers[intval($userid)])){
-                $ret->users[$userid] = $row;
-            }
-        }
-        /*
-        if ($lastHId == 0 && count($ret->users) == 0){
-            // если доска не содержит задач, то и таблица пользователей будет пуста
-            // при создании новой задачи, список пользователей в истории придет без информации
-            // по текущему пользователю что приведет к ошибкам
-            // этот запрос исключает эти ошибки
-            $ret->users[Abricos::$user->id] = BotaskQuery::MyUserData($this->db, Abricos::$user->id, true);
-        }
-        /**/
-        return $ret;
-    }
-
 
     private function TaskRemovedClear($task){
         $taskid = $task['taskid'];
@@ -1405,15 +1343,6 @@ class BotaskApp extends AbricosApplication {
 
     }
 
-
-    private function UserNameBuild($user){
-        $firstname = isset($user['fnm']) ? $user['fnm'] : $user['firstname'];
-        $lastname = isset($user['lnm']) ? $user['lnm'] : $user['lastname'];
-        $username = isset($user['unm']) ? $user['unm'] : $user['username'];
-        return (!empty($firstname) && !empty($lastname)) ? $firstname." ".$lastname : $username;
-    }
-
-
     ////////////////////////////// Comments /////////////////////////////
 
     public function Comment_IsList($type, $ownerid){
@@ -1444,6 +1373,8 @@ class BotaskApp extends AbricosApplication {
         $task = $this->Task($ownerid);
         $host = Ab_URI::Site();
 
+        $this->TaskReadedClean($task->id);
+
         /** @var NotifyApp $notifyApp */
         $notifyApp = Abricos::GetApp('notify');
         switch ($task->iType){
@@ -1453,7 +1384,7 @@ class BotaskApp extends AbricosApplication {
                 break;
             case BotaskType::TASK:
                 $templateSuffix = "Task";
-                $itemLink = "http://".$host."/bos/#app=botask/wspace/ws/taskView/TaskViewWidget/".$task->id."/";
+                $itemLink = $host."/bos/#app=botask/wspace/ws/taskView/TaskViewWidget/".$task->id."/";
                 break;
             default:
                 return;

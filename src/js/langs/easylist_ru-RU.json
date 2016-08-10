@@ -2,6 +2,8 @@
   "boxTitle": {
     "isNew": "Новые",
     "isNewComment": "Новые комментарии",
-    "isFavorite": "Избранное"
+    "isFavorite": "Избранное",
+    "isChanged": "Измененные",
+    "isNotReaded": "Без ответа"
   }
 }

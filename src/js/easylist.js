@@ -51,6 +51,13 @@ Component.entryPoint = function(NS){
                         return task.isNewComment();
                     });
                     break;
+                case 'isNotReaded':
+                    this.set('boxTitle', i18n.get('boxTitle.' + mode));
+                    this.set('columns', 'title,favorite');
+                    this.set('filterFn', function(task){
+                        return !task.isReaded();
+                    });
+                    break;
             }
 
             tp.setHTML({

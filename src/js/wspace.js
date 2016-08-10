@@ -53,6 +53,7 @@ Component.entryPoint = function(NS){
 
             var tp = this.template,
                 favoriteCount = 0,
+                notReadedCount = 0,
                 newCount = 0,
                 changedCount = 0,
                 newCommentCount = 0;
@@ -60,6 +61,7 @@ Component.entryPoint = function(NS){
             this.get('appInstance').get('taskList').each(function(task){
                 newCount += task.isNew() ? 1 : 0;
                 changedCount += task.isChanged() ? 1 : 0;
+                notReadedCount += !task.isReaded() ? 1 : 0;
                 newCommentCount += task.isNewComment() ? 1 : 0;
                 favoriteCount += task.isFavorite() ? 1 : 0;
             }, this);
@@ -67,6 +69,7 @@ Component.entryPoint = function(NS){
             tp.setHTML({
                 favoriteCount: favoriteCount,
                 newCount: newCount,
+                notReadedCount: notReadedCount,
                 changedCount: changedCount,
                 newCommentCount: newCommentCount
             });
