@@ -55,6 +55,9 @@ Component.entryPoint = function(NS){
                     this.set('boxTitle', i18n.get('boxTitle.' + mode));
                     this.set('columns', 'title,favorite');
                     this.set('filterFn', function(task){
+                        if (task.isNew()){
+                            return false;
+                        }
                         return !task.isReaded();
                     });
                     break;
@@ -110,7 +113,7 @@ Component.entryPoint = function(NS){
     NS.EasyListWidget = Y.Base.create('EasyListWidget', SYS.AppWidget, [
         NS.ContainerWidgetExt
     ], {
-        onInitAppWidget: function(err, appInstance, options){
+        onInitAppWidget: function(err, appInstance){
             var tp = this.template,
                 taskList = appInstance.get('taskList');
 
@@ -121,10 +124,10 @@ Component.entryPoint = function(NS){
                 mode: 'isNew',
             }));
 
-            this.addWidget('isNewCommentList', new NS.TaskListBoxWidget({
-                srcNode: tp.gel('isNewCommentList'),
+            this.addWidget('isNotReadedList', new NS.TaskListBoxWidget({
+                srcNode: tp.gel('isNotReadedList'),
                 taskList: taskList,
-                mode: 'isNewComment',
+                mode: 'isNotReaded',
             }));
         },
     }, {
@@ -135,5 +138,4 @@ Component.entryPoint = function(NS){
         },
         CLICKS: {}
     });
-
 };

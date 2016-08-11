@@ -27,12 +27,6 @@ Component.entryPoint = function(NS){
                     srcNode: tp.gel('explore')
                 }));
 
-                /*w
-                 this.addWidget('teamUsers', new NS.TeamUserListWidget({
-                 srcNode: tp.gel('teamusers')
-                 }));
-                 /**/
-
                 appInstance.on('appResponses', this._onAppResponses, this);
 
                 this.showWorkspacePage(!wsPage.isEmpty() ? wsPage : null);
@@ -61,7 +55,7 @@ Component.entryPoint = function(NS){
             this.get('appInstance').get('taskList').each(function(task){
                 newCount += task.isNew() ? 1 : 0;
                 changedCount += task.isChanged() ? 1 : 0;
-                notReadedCount += !task.isReaded() ? 1 : 0;
+                notReadedCount += !task.isNew() && !task.isReaded() ? 1 : 0;
                 newCommentCount += task.isNewComment() ? 1 : 0;
                 favoriteCount += task.isFavorite() ? 1 : 0;
             }, this);
