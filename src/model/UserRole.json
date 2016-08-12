@@ -29,6 +29,10 @@
     "readed": {
       "type": "bool",
       "json": "r"
+    },
+    "readdate": {
+      "type": "date",
+      "json": "rd"
     }
   }
 }

@@ -111,7 +111,8 @@ Component.entryPoint = function(NS){
                 var pictabWidget = this.addWidget('pictab', new PicTabWidget({
                     srcNode: tp.one('pictabWidget'),
                     imageList: images,
-                    editMode: false
+                    editMode: false,
+                    userActivity: task.get('users').getUserActivity()
                 }));
 
                 pictabWidget.on('canvasChanged', function(){

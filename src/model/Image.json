@@ -3,15 +3,21 @@
   "type": "model",
   "fields": {
     "id": {
+      "type": "int",
+      "dbField": "imageid"
+    },
+    "userid": {
       "type": "int"
     },
     "title": {
-      "type": "string",
-      "dbField": "tl"
+      "type": "string"
     },
     "data": {
-      "type": "object",
-      "dbField": "d"
+      "type": "object"
+    },
+    "date": {
+      "type": "date",
+      "dbField": "dateline"
     }
   }
 }

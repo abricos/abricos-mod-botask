@@ -514,8 +514,29 @@ Component.entryPoint = function(NS){
 
     NS.UserRoleList = Y.Base.create('userRoleList', SYS.AppModelList, [], {
         appItem: NS.UserRole,
-    });
+        getUserActivity: function(){
+            var ret = {
+                list: [],
+                date: new Date(1970, 1, 1),
+                userid: 0
+            };
+            this.each(function(role){
+                var userid = role.get('userid'),
+                    date = role.get('readdate');
 
+                ret.list[ret.list.length] = {
+                    uerid: userid,
+                    date: date
+                };
+
+                if (userid !== UID && date && ret.date.getTime() < date.getTime()){
+                    ret.date = date;
+                    ret.userid = userid;
+                }
+            }, this);
+            return ret;
+        }
+    });
 
     NS.Resolution = Y.Base.create('resolution', SYS.AppModel, [], {
         structureName: 'Resolution'

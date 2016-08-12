@@ -88,7 +88,8 @@ class BotaskQuery {
     public static function TaskReadedUpdate(Ab_Database $db, $taskid){
         $sql = "
 			UPDATE ".$db->prefix."btk_userrole
-			SET readed=1
+			SET readed=1,
+			    readdate=".intval(TIMENOW)."
 			WHERE taskid=".intval($taskid)." AND userid=".intval(Abricos::$user->id)."
 			LIMIT 1
 		";
@@ -297,10 +298,7 @@ class BotaskQuery {
 
     public static function ImageList(Ab_Database $db, $taskid){
         $sql = "
-			SELECT
-				imageid as id,
-				title as tl,
-				data as d
+			SELECT *
 			FROM ".$db->prefix."btk_image
 			WHERE taskid=".intval($taskid)."
 			ORDER BY imageid
@@ -310,9 +308,11 @@ class BotaskQuery {
 
     public static function ImageAppend(Ab_Database $db, $taskid, $title, $data){
         $sql = "
-			INSERT INTO ".$db->prefix."btk_image (taskid, title, data) VALUES (
+			INSERT INTO ".$db->prefix."btk_image (taskid, title, userid, dateline, data) VALUES (
 				".intval($taskid).",
 				'".bkstr($title)."',
+				".intval(Abricos::$user->id).",
+				".intval(TIMENOW).",
 				'".bkstr($data)."'
 			)
 		";

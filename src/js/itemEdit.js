@@ -85,7 +85,8 @@ Component.entryPoint = function(NS){
                 this.addWidget('pictab', new PicTabWidget({
                     srcNode: tp.one('pictabWidget'),
                     imageList: task.get('images'),
-                    editMode: true
+                    editMode: true,
+                    userActivity: task.get('users').getUserActivity()
                 }));
             } else {
                 tp.hide('pictabPanel');

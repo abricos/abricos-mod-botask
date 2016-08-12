@@ -154,6 +154,8 @@ class BotaskTaskList extends AbricosModelList {
  * @property int $viewdate
  * @property bool $favorite
  * @property bool $expanded
+ * @property bool $readed
+ * @property int $readdate
  */
 class BotaskUserRole extends AbricosModel {
     protected $_structModule = 'botask';
@@ -222,8 +224,10 @@ class BotaskFileList extends AbricosModelList {
 /**
  * Class BotaskImage
  *
+ * @property int $userid
  * @property string $title
  * @property string $data
+ * @property int $date
  */
 class BotaskImage extends AbricosModel {
     protected $_structModule = 'botask';

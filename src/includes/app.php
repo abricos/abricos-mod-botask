@@ -598,15 +598,15 @@ class BotaskApp extends AbricosApplication {
 
         $rows = BotaskQuery::ImageList($this->db, $taskid);
         while (($d = $this->db->fetch_array($rows))){
-            $d['d'] = json_decode($d['d']);
+            $d['data'] = json_decode($d['data']);
             $list->Add($this->InstanceClass('Image', $d));
         }
 
         return $list;
     }
 
-    public function ImageRemove($taskid, $image){
-        $d = json_decode($image['d']);
+    private function ImageRemove($taskid, $image){
+        $d = json_decode($image['data']);
         foreach ($d->canvas->ls as $lr){
             foreach ($lr->fs as $fe){
                 if ($fe->tp == 'image'){
@@ -618,7 +618,7 @@ class BotaskApp extends AbricosApplication {
                 }
             }
         }
-        BotaskQuery::ImageRemove($this->db, $image['id']);
+        BotaskQuery::ImageRemove($this->db, $image['imageid']);
     }
 
     public function ImageListSaveToJSON($taskid, $d){

@@ -61,6 +61,7 @@ if ($updateManager->isInstall()){
 		  favorite tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Избранное',
 		  expanded tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT 'Развернуты подзадачи',
 		  readed tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT '',
+		  readdate int(10) unsigned NOT NULL DEFAULT 0 COMMENT '',
 		  deldate int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата удаления',
 		  PRIMARY KEY  (userroleid), 
 		  UNIQUE KEY task (taskid,userid)
@@ -138,11 +139,9 @@ if ($updateManager->isUpdate('0.1.1')){
 		  PRIMARY KEY  (checklistid)
 		)".$charset
     );
-
 }
 
 if ($updateManager->isUpdate('0.1.2')){
-
     // Файлы задачи
     $db->query_write("
 		CREATE TABLE IF NOT EXISTS ".$pfx."btk_file (
@@ -154,7 +153,6 @@ if ($updateManager->isUpdate('0.1.2')){
 		  UNIQUE KEY file (taskid,filehash)
 		)".$charset
     );
-
 }
 
 if ($updateManager->isUpdate('0.2.2') && !$updateManager->isInstall()){
@@ -172,14 +170,15 @@ if ($updateManager->isUpdate('0.2.2') && !$updateManager->isInstall()){
 
 }
 if ($updateManager->isUpdate('0.2.2')){
-
     $db->query_write("
 		CREATE TABLE IF NOT EXISTS ".$pfx."btk_image (
 			imageid int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор',
 			taskid int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Идентификатор',
+		  	userid int(10) unsigned NOT NULL DEFAULT 0 COMMENT '',
 			title varchar(250) NOT NULL DEFAULT '' COMMENT 'Название',
+			dateline int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время',
 			data TEXT NOT NULL  COMMENT '',
-		PRIMARY KEY  (imageid)
+		    PRIMARY KEY  (imageid)
 		)".$charset
     );
 }
@@ -249,6 +248,15 @@ if ($updateManager->isUpdate('0.3.1') && !$updateManager->isInstall()){
 	");
 
     $db->query_write("
+		UPDATE ".$pfx."comment_userview o
+		INNER JOIN ".$pfx."btk_task t ON t.contentid=o.ownerid
+		    AND o.ownerModule='botask' AND o.ownerType='content'
+		SET
+		    o.ownerid=t.taskid,
+		    o.ownerType='task'
+	");
+
+    $db->query_write("
 		UPDATE ".$pfx."comment_ownerstat o
 		INNER JOIN ".$pfx."btk_task t ON t.contentid=o.ownerid
 		    AND o.ownerModule='botask' AND o.ownerType='content'
@@ -269,11 +277,27 @@ if ($updateManager->isUpdate('0.3.1') && !$updateManager->isInstall()){
 		DROP showcomments,
 		DROP meilhistory,
 		DROP meilcomment,
-		ADD readed tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT ''
+		ADD readed tinyint(1) unsigned NOT NULL DEFAULT 0 COMMENT '',
+        ADD readdate int(10) unsigned NOT NULL DEFAULT 0 COMMENT ''
 	");
 
     $db->query_write("
-		UPDATE ".$pfx."btk_userrole
-		SET readed=1
+		UPDATE ".$pfx."btk_userrole u
+		INNER JOIN ".$pfx."btk_task t ON u.taskid=t.taskid
+		SET u.readed=IF(u.viewdate>t.updatedate, 1, 0),
+		    u.readdate=u.viewdate
+	");
+
+    $db->query_write("
+		ALTER TABLE ".$pfx."btk_image
+        ADD userid int(10) unsigned NOT NULL DEFAULT 0 COMMENT '',
+        ADD dateline int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата/время'
+	");
+
+    $db->query_write("
+		UPDATE ".$pfx."btk_image i
+		INNER JOIN ".$pfx."btk_task t ON i.taskid=t.taskid
+		SET i.userid=t.userid,
+		    i.dateline=t.dateline
 	");
 }
