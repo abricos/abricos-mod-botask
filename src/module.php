@@ -37,7 +37,7 @@ class BotaskAction {
 
 class BotaskPermission extends Ab_UserPermission {
 
-    public function BotaskPermission(BotaskModule $module){
+    public function __construct(BotaskModule $module){
 
         $defRoles = array(
             new Ab_UserRole(BotaskAction::VIEW, Ab_UserGroup::REGISTERED),
