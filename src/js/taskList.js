@@ -22,7 +22,7 @@ Component.entryPoint = function(NS){
         destructor: function(){
         },
         _eachColumn: function(fn){
-            var aviable = 'title,deadline,priority,favorite'.split(','),
+            var aviable = 'title,deadline,priority,favorite,updateDate'.split(','),
                 columns = this.get('columns'),
                 name, isSort;
 
@@ -59,7 +59,7 @@ Component.entryPoint = function(NS){
             var filterFn = this.get('filterFn');
             filterFn = Y.Lang.isFunction(filterFn) ? filterFn : function(){
                 return true;
-            }
+            };
 
             this.get('taskList').each(function(task){
                 if (!filterFn.call(this, task)){
@@ -84,6 +84,7 @@ Component.entryPoint = function(NS){
 
             var tp = this.template,
                 author = task.get('author'),
+                val,
                 lst = "";
 
             this._eachColumn(function(name, isSort, isDesc){
@@ -99,6 +100,11 @@ Component.entryPoint = function(NS){
                 } else if (name === 'deadline'){
                     lst += tp.replace('rcol' + name, {
                         'ddl': this.get('deadline') ? Brick.dateExt.convert(task.get('deadline').getTime() / 1000, 0, !task.get('deadlineTime')) : ""
+                    });
+                } else if (name === 'updateDate'){
+                    val = task.get('updateDate');
+                    lst += tp.replace('rcol' + name, {
+                        'updateDate': val ? Brick.dateExt.convert(val.getTime() / 1000) : ""
                     });
                 } else if (name === 'priority'){
                     lst += tp.replace('rcol' + name, {
@@ -219,31 +225,41 @@ Component.entryPoint = function(NS){
             component: {value: COMPONENT},
             templateBlockName: {
                 value: 'widget,table,row' +
-                ',hcoltitle,hcoldeadline,hcolpriority,hcolfavorite,hcolvoting,hcolwork,hcolexec' +
-                ',rcoltitle,rcoldeadline,rcolpriority,rcolfavorite,rcolvoting,rcolwork,rcolexec'
+                ',hcoltitle,hcoldeadline,hcolpriority,hcolfavorite,hcolvoting,hcolwork,hcolexec,hcolupdateDate' +
+                ',rcoltitle,rcoldeadline,rcolpriority,rcolfavorite,rcolvoting,rcolwork,rcolexec,rcolupdateDate'
             },
             taskList: {value: null},
             filterFn: {value: null},
             columns: {
-                value: 'title,deadline,priority,favorite,voting', // executant
+                value: 'title|sort=asc,deadline,priority,favorite,voting', // executant
                 setter: function(val){
                     if (!Y.Lang.isString(val)){
                         return val;
                     }
                     var a = val.split(','),
                         ret = {
-                            sort: 'date',
+                            sort: 'title',
                             desc: false,
                             list: {}
                         };
 
-                    for (var i = 0, name; i < a.length; i++){
+                    for (var i = 0, name, pa, paa, ii; i < a.length; i++){
                         name = Y.Lang.trim(a[i]);
                         if (name === ''){
                             continue;
                         }
+                        pa = name.split('|');
+                        name = pa[0];
                         ret.list[name] = {
                             visible: true
+                        };
+                        for (ii = 1; ii < pa.length; ii++){
+                            paa = pa[ii].split('=');
+                            if (paa.length > 1 && paa[0] === 'sort'){
+                                if (paa[0] === 'sort'){
+                                    ret.sort = name;
+                                }
+                            }
                         }
                     }
                     return ret;
@@ -277,6 +293,11 @@ Component.entryPoint = function(NS){
             sortFavorite: {
                 event: function(){
                     this._setSortByClick('favorite');
+                }
+            },
+            sortUpdateDate: {
+                event: function(){
+                    this._setSortByClick('updateDate');
                 }
             },
             favorite: {

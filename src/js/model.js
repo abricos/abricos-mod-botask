@@ -121,6 +121,22 @@ Component.entryPoint = function(NS){
         return sortDate(tk1.stDate, tk2.stDate);
     };
 
+    var sortUpdateDate = function(item1, item2){
+        var v1 = item1.get('updateDate').getTime(),
+            v2 = item2.get('updateDate').getTime();
+
+        if (v1 > v2){
+            return 1;
+        } else if (v1 < v2){
+            return -1;
+        }
+        return 0;
+    };
+
+    var sortUpdateDateDesc = function(item1, item2){
+        return sortUpdateDate(item2, item1);
+    };
+
     NS.Task = Y.Base.create('task', SYS.AppModel, [], {
         structureName: 'Task',
         isNew: function(){
@@ -184,17 +200,6 @@ Component.entryPoint = function(NS){
                 return false;
             }
             return stat.get('lastid') > stat.get('viewid');
-        },
-        isChanged: function(){
-            if (this.get('type') === 'folder'){
-                return false;
-            }
-            var role = this.get('userRole'),
-                viewdate = role.get('viewdate');
-            if (!viewdate){
-                return;
-            }
-            return viewdate < this.get('updateDate');
         },
         isChanged: function(){
             if (this.get('type') === 'folder'){
