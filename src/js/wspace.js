@@ -44,7 +44,6 @@ Component.entryPoint = function(NS){
             this.renderWidget();
         },
         renderWidget: function(){
-
             var tp = this.template,
                 favoriteCount = 0,
                 notReadedCount = 0,
@@ -55,7 +54,7 @@ Component.entryPoint = function(NS){
             this.get('appInstance').get('taskList').each(function(task){
                 newCount += task.isNew() ? 1 : 0;
                 changedCount += task.isChanged() ? 1 : 0;
-                notReadedCount += !task.isNew() && !task.isReaded() ? 1 : 0;
+                notReadedCount += !task.isReaded() ? 1 : 0;
                 newCommentCount += task.isNewComment() ? 1 : 0;
                 favoriteCount += task.isFavorite() ? 1 : 0;
             }, this);

@@ -131,9 +131,24 @@
     </ul>
 </th>
 
+<!--{hcolreadDate}-->
+<th class="texec">
+    <ul class="{v#sort}">
+        <li class="tl">
+            <a data-click="sortReadDate" href="#" title="Дата вашего ответа">Ответ</a>
+        </li>
+        <li>
+            <div class="sort sort-asc"></div>
+        </li>
+        <li>
+            <div class="sort sort-desc"></div>
+        </li>
+    </ul>
+</th>
+
 <!--{row}-->
 <tr id="{i#id}-{v#id}"
-    class="trrow {v#tnew} {v#tchnew} priority{v#prt} {v#expired} {v#closed} {v#removed}">
+    class="trrow priority{v#prt} {v#expired} {v#closed} {v#removed}">
     {v#cols}
 </tr>
 
@@ -165,7 +180,7 @@
 
 <!--{rcolfavorite}-->
 <td class="tfav">
-	<span data-click="favorite" data-id="{v#id}" class="fav-icon-normal" title="{#mod.botask.tasklist.rcolfav.1}">
+	<span data-click="favorite" data-id="{v#id}" title="{#mod.botask.tasklist.rcolfav.1}">
 		<img id="{i#favi}-{v#id}" class="{v#fav}" src="/images/empty.gif">
 	</span>
 </td>
@@ -187,3 +202,6 @@
 
 <!--{rcolupdateDate}-->
 <td class="texec">{v#updateDate}</td>
+
+<!--{rcolreadDate}-->
+<td class="texec">{v#readDate}</td>

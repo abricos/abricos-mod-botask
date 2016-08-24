@@ -6,6 +6,7 @@ Brick.util.Language.add('ru',{'mod': {'{C#MODNAME}':{
 			'3': 'Архив',
 			'4': 'Удаленные'
 		},
+        'notReaded': 'без ответа',
 		'hcolname': {
 			'1': 'Заголовок'
 		},

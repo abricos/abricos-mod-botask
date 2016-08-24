@@ -19,10 +19,8 @@ Component.entryPoint = function(NS){
 
             this.renderList();
         },
-        destructor: function(){
-        },
         _eachColumn: function(fn){
-            var aviable = 'title,deadline,priority,favorite,updateDate'.split(','),
+            var aviable = 'title,deadline,priority,updateDate,readDate,favorite'.split(','),
                 columns = this.get('columns'),
                 name, isSort;
 
@@ -81,7 +79,6 @@ Component.entryPoint = function(NS){
             this.appURLUpdate();
         },
         _buildRow: function(task){
-
             var tp = this.template,
                 author = task.get('author'),
                 val,
@@ -105,6 +102,11 @@ Component.entryPoint = function(NS){
                     val = task.get('updateDate');
                     lst += tp.replace('rcol' + name, {
                         'updateDate': val ? Brick.dateExt.convert(val.getTime() / 1000) : ""
+                    });
+                } else if (name === 'readDate'){
+                    val = task.get('userRole').get('readdate');
+                    lst += tp.replace('rcol' + name, {
+                        'readDate': val ? Brick.dateExt.convert(val) : LNG.tasklist.notReaded
                     });
                 } else if (name === 'priority'){
                     lst += tp.replace('rcol' + name, {
@@ -225,8 +227,8 @@ Component.entryPoint = function(NS){
             component: {value: COMPONENT},
             templateBlockName: {
                 value: 'widget,table,row' +
-                ',hcoltitle,hcoldeadline,hcolpriority,hcolfavorite,hcolvoting,hcolwork,hcolexec,hcolupdateDate' +
-                ',rcoltitle,rcoldeadline,rcolpriority,rcolfavorite,rcolvoting,rcolwork,rcolexec,rcolupdateDate'
+                ',hcoltitle,hcoldeadline,hcolpriority,hcolfavorite,hcolvoting,hcolwork,hcolexec,hcolupdateDate,hcolreadDate' +
+                ',rcoltitle,rcoldeadline,rcolpriority,rcolfavorite,rcolvoting,rcolwork,rcolexec,rcolupdateDate,rcolreadDate'
             },
             taskList: {value: null},
             filterFn: {value: null},
@@ -274,6 +276,7 @@ Component.entryPoint = function(NS){
                     if (columns.desc){
                         compareName += 'Desc';
                     }
+
                     return NS.TaskList.COMPARE[compareName];
                 }
             },
@@ -298,6 +301,11 @@ Component.entryPoint = function(NS){
             sortUpdateDate: {
                 event: function(){
                     this._setSortByClick('updateDate');
+                }
+            },
+            sortReadDate: {
+                event: function(){
+                    this._setSortByClick('readDate');
                 }
             },
             favorite: {

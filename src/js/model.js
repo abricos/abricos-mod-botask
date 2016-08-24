@@ -121,21 +121,6 @@ Component.entryPoint = function(NS){
         return sortDate(tk1.stDate, tk2.stDate);
     };
 
-    var sortUpdateDate = function(item1, item2){
-        var v1 = item1.get('updateDate').getTime(),
-            v2 = item2.get('updateDate').getTime();
-
-        if (v1 > v2){
-            return 1;
-        } else if (v1 < v2){
-            return -1;
-        }
-        return 0;
-    };
-
-    var sortUpdateDateDesc = function(item1, item2){
-        return sortUpdateDate(item2, item1);
-    };
 
     NS.Task = Y.Base.create('task', SYS.AppModel, [], {
         structureName: 'Task',
@@ -388,6 +373,27 @@ Component.entryPoint = function(NS){
             },
             updateDateDesc: function(tk1, tk2){
                 return sortDateDesc(tk1.get('updateDate'), tk2.get('updateDate'));
+            },
+            readDate: function(item1, item2){
+                var v1 = item1.get('userRole').get('readdate') || item1.get('date'),
+                    v2 = item2.get('userRole').get('readdate') || item2.get('date');
+
+                if (item1.isRemoved()){
+                    v1 = new Date();
+                }
+                if (item2.isRemoved()){
+                    v2 = new Date();
+                }
+                if (v1 > v2){
+                    return 1;
+                } else if (v1 < v2){
+                    return -1;
+                }
+                return 0;
+
+            },
+            readDateDesc: function(item1, item2){
+                return NS.TaskList.COMPARE.readDate(item2, item1);
             },
 
             deadline: function(tk1, tk2){
