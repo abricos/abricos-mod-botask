@@ -12,7 +12,7 @@
  */
 class BotaskQuery {
 
-    public static function TaskList(Ab_Database $db){
+    public static function TaskList(Ab_Database $db, $lastUpdateDate = 0){
         $sql = "
 			SELECT
 			    p.taskid as id,
@@ -33,6 +33,11 @@ class BotaskQuery {
 			INNER JOIN ".$db->prefix."btk_task p ON p.taskid=ur.taskid
 			WHERE ur.userid=".intval(Abricos::$user->id)." AND p.deldate=0
 		";
+        if ($lastUpdateDate > 0){
+            $sql .= "
+                AND p.updatedate>".intval($lastUpdateDate)."            
+            ";
+        }
         return $db->query_read($sql);
     }
 

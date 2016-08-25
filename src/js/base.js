@@ -118,9 +118,18 @@ Component.entryPoint = function(NS){
     var AppResponsesHelperExt = function(){
 
     };
+    AppResponsesHelperExt.ATTRS = {
+        lastUpdateDate: {
+            value: new Date(1970, 1, 1)
+        }
+    };
     AppResponsesHelperExt.prototype = {
         bindResponsesEvent: function(){
-            var appInstance = this.get('appInstance');
+            var appInstance = this.get('appInstance'),
+                lastUpdateDate = appInstance.get('taskList').get('lastUpdateDate');
+
+            this.set('lastUpdateDate', lastUpdateDate);
+
             if (appInstance){
                 appInstance.on('appResponses', this._helperOnAppResponses, this);
             }
@@ -136,12 +145,24 @@ Component.entryPoint = function(NS){
                 return;
             }
 
-            var r = e.result;
+            var app = this.get('appInstance'),
+                lastUpdateDate = app.get('taskList').get('lastUpdateDate'),
+                r = e.result;
+
             if (r.taskRemove){
                 this.onTaskRemoved();
             }
+
+            if (r.sync
+                && this.get('lastUpdateDate').getTime() !== lastUpdateDate.getTime()){
+
+                this.set('lastUpdateDate', lastUpdateDate);
+                this.onTaskUpdated();
+            }
         },
         onTaskRemoved: function(){
+        },
+        onTaskUpdated: function(){
         }
     };
     NS.AppResponsesHelperExt = AppResponsesHelperExt;

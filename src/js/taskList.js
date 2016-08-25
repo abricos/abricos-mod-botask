@@ -13,10 +13,17 @@ Component.entryPoint = function(NS){
 
     var LNG = this.language;
 
-    NS.TaskTableWidget = Y.Base.create('TaskTableWidget', SYS.AppWidget, [], {
+    NS.TaskTableWidget = Y.Base.create('TaskTableWidget', SYS.AppWidget, [
+        NS.AppResponsesHelperExt
+    ], {
         onInitAppWidget: function(err, appInstance, options){
             this.publish('renderList');
 
+            this.renderList();
+
+            this.bindResponsesEvent();
+        },
+        onTaskUpdated: function(){
             this.renderList();
         },
         _eachColumn: function(fn){

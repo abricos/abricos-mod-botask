@@ -41,6 +41,9 @@ class BotaskApp extends AbricosApplication {
 
     public function ResponseToJSON($d){
         switch ($d->do){
+            case 'sync':
+                return $this->SyncToJSON($d->lastUpdateDate);
+
             case 'itemSave':
                 return $this->ItemSaveToJSON($d->data);
             case 'taskList':
@@ -111,6 +114,23 @@ class BotaskApp extends AbricosApplication {
         $d = BotaskQuery::UserRole($this->db, $taskid);
 
         return $this->_cache['ItemAccess'][$taskid] = !empty($d);
+    }
+
+    public function SyncToJSON($lastUpdateDate){
+        $res = $this->Sync();
+
+        return $this->ImplodeJSON(array(
+            $this->ResultToJSON('sync', $res),
+            $this->TaskListToJSON($lastUpdateDate)
+        ));
+
+        return $this->ResultToJSON('sync', $res);
+    }
+
+    public function Sync(){
+        $ret = new stdClass();
+        $ret->date = TIMENOW;
+        return $ret;
     }
 
     public function ItemSaveToJSON($d){
@@ -325,12 +345,12 @@ class BotaskApp extends AbricosApplication {
         return $list;
     }
 
-    public function TaskListToJSON(){
-        $res = $this->TaskList();
+    public function TaskListToJSON($lastUpdateDate = 0){
+        $res = $this->TaskList($lastUpdateDate);
         return $this->ResultToJSON('taskList', $res);
     }
 
-    public function TaskList(){
+    public function TaskList($lastUpdateDate = 0){
         if (!$this->manager->IsViewRole()){
             return AbricosResponse::ERR_FORBIDDEN;
         }
@@ -342,9 +362,11 @@ class BotaskApp extends AbricosApplication {
         /** @var BotaskTaskList $list */
         $list = $this->InstanceClass('TaskList');
 
-        $rows = BotaskQuery::TaskList($this->db);
+        $rows = BotaskQuery::TaskList($this->db, $lastUpdateDate);
         while (($d = $this->db->fetch_array($rows))){
-            $list->Add($this->InstanceClass('Task', $d));
+            /** @var BotaskTask $item */
+            $item = $this->InstanceClass('Task', $d);
+            $list->Add($item);
         }
 
         /** @var CommentApp $commentApp */

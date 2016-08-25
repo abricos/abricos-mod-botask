@@ -49,14 +49,60 @@ Component.entryPoint = function(NS){
             CheckList: {value: NS.CheckList},
             History: {value: NS.History},
             HistoryList: {value: NS.HistoryList},
+            lastUpdateDate: {
+                value: new Date(1970, 1, 1)
+            },
+            taskList: {
+                readOnly: true,
+                getter: function(){
+                    if (!this._taskList){
+                        this._taskList = new NS.TaskList({appInstance: this});
+                    }
+                    return this._taskList;
+                }
+            }
+        },
+        CRONS: {
+            sync: {
+                interval: 5 * 60,
+                event: function(){
+                    var lastUpdateDate = this.get('lastUpdateDate').getTime() / 1000;
+                    this.sync(lastUpdateDate);
+                }
+            }
         },
         REQS: {
+            sync: {
+                args: ['lastUpdateDate'],
+                onResponse: function(data){
+                    this.set('lastUpdateDate', new Date(data.date * 1000));
+                }
+            },
+
             taskList: {
-                attribute: true,
+                attribute: false,
                 attach: 'resolutionList',
                 type: 'modelList:TaskList',
-                onResponse: function(taskList, data){
-                    taskList.set('lastHistoryId', data.lastHistoryId | 0);
+                onResponse: function(taskList){
+                    var cacheTaskList = this.get('taskList'),
+                        lastUpdateDate = this.get('lastUpdateDate');
+
+                    taskList.each(function(task){
+                        var taskid = task.get('id'),
+                            taskUpdateDate = task.get('updateDate');
+
+                        if (taskUpdateDate.getTime() > lastUpdateDate.getTime()){
+                            lastUpdateDate = taskUpdateDate;
+                        }
+
+                        if (cacheTaskList.getById(taskid)){
+                            cacheTaskList.removeById(taskid);
+                        }
+                        cacheTaskList.add(task);
+                    }, this);
+
+                    this.set('lastUpdateDate', lastUpdateDate);
+
                     var userIds = taskList.get('userIds');
 
                     return function(callback, context){

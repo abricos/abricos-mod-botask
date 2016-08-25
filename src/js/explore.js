@@ -51,6 +51,9 @@ Component.entryPoint = function(NS){
         onTaskRemoved: function(){
             this.renderWidget();
         },
+        onTaskUpdated: function(){
+            this.renderWidget();
+        },
         renderWidget: function(){
             var tp = this.template,
                 appInstance = this.get('appInstance'),

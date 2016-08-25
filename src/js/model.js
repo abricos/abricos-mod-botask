@@ -351,7 +351,20 @@ Component.entryPoint = function(NS){
                     return ret;
                 }
             },
-            lastHistoryId: {value: 0}
+            lastUpdateDate: {
+                readOnly: true,
+                getter: function(){
+                    var lud = new Date(1970, 1, 1),
+                        tud;
+                    this.each(function(task){
+                        tud = task.get('updateDate');
+                        if (tud.getTime() > lud.getTime()){
+                            lud = tud;
+                        }
+                    }, this);
+                    return lud;
+                }
+            }
         },
         COMPARE: {
             'default': function(tk1, tk2){ // сортировка: Наименьший срок, наивысший приоритет
