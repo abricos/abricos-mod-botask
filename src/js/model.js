@@ -375,6 +375,20 @@ Component.entryPoint = function(NS){
 
                 return sortDCPD(tk1, tk2);
             },
+            isNew: function(item1, item2){
+                var v1 = item1.isNew() ? 1 : 0,
+                    v2 = item2.isNew() ? 1 : 0;
+
+                if (v1 > v2){
+                    return -1;
+                } else if (v1 < v2){
+                    return 1;
+                }
+                return NS.TaskList.COMPARE.readDate(item2, item1);
+            },
+            isNewDesc: function(item1, item2){
+                return NS.TaskList.COMPARE.isNew(item2, item1);
+            },
             date: function(tk1, tk2){
                 return sortDate(tk1.get('date'), tk2.get('date'));
             },
@@ -428,7 +442,6 @@ Component.entryPoint = function(NS){
                 return NS.TaskList.COMPARE.title(tk2, tk1);
             },
             priority: function(tk1, tk2){
-
                 var v = sortClosed(tk1, tk2);
                 if (v != 0){
                     return v;
@@ -459,27 +472,19 @@ Component.entryPoint = function(NS){
                 }
                 return 0;
             },
-            favorite: function(tk1, tk2){
-                var v = sortClosed(tk1, tk2);
-                if (v != 0){
-                    return v;
+            favorite: function(item1, item2){
+                var v1 = item1.isFavorite() ? 1 : 0,
+                    v2 = item2.isFavorite() ? 1 : 0;
+
+                if (v1 > v2){
+                    return -1;
+                } else if (v1 < v2){
+                    return 1;
                 }
-                v = sortFavorite(tk1, tk2);
-                if (v != 0){
-                    return v;
-                }
-                return sortDCPD(tk1, tk2);
+                return NS.TaskList.COMPARE.readDate(item2, item1);
             },
-            favoriteDesc: function(tk1, tk2){
-                var v = sortClosed(tk1, tk2);
-                if (v != 0){
-                    return v;
-                }
-                v = sortFavorite(tk2, tk1);
-                if (v != 0){
-                    return v;
-                }
-                return sortDCPD(tk2, tk1);
+            favoriteDesc: function(item1, item2){
+                return NS.TaskList.COMPARE.favorite(item2, item1);
             },
             voting: function(tk1, tk2){
                 var v = sortClosed(tk1, tk2);

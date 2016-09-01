@@ -53,8 +53,11 @@ Component.entryPoint = function(NS){
                     break;
                 case 'isNotReaded':
                     this.set('boxTitle', i18n.get('boxTitle.' + mode));
-                    this.set('columns', 'title,readDate|sort=asc');
+                    this.set('columns', 'isNew,title,readDate|sort=asc,favorite');
                     this.set('filterFn', function(task){
+                        if (task.isRemoved()){
+                            return false;
+                        }
                         return !task.isReaded();
                     });
                     break;

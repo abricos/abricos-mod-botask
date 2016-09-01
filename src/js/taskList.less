@@ -1,311 +1,70 @@
-.aw-botask {
+.aw-botask .taskList {
+  th, td {
+    white-space: nowrap;
+    padding: 5px;
+  }
 
-  .tlist {
+  thead {
+    background-color: #F4F4EE;
+    font-weight: normal;
+    padding: 0;
+    white-space: nowrap;
+    text-align: left;
 
-    table {
-      table-layout: fixed;
-      border-collapse: collapse;
-      width: 100%;
-    }
-    table th {
-      background-color: #F4F4EE;
-      font-weight: normal;
-      padding: 0;
-      white-space: nowrap;
-      text-align: left;
-    }
-
-    th a {
+    a {
       color: #000;
       text-decoration: none;
+      font-weight: normal;
     }
-    th a:hover {
+    a:hover {
       text-decoration: underline;
     }
 
-    th ul {
-      height: 24px;
-      padding: 0;
-      margin: 0;
-      list-style: none;
-    }
-    th li {
-      padding: 0;
-      margin: 0;
-      float: left;
-    }
-    th .sort-asc,
-    th .sort-desc,
-    th .sortstr-asc,
-    th .sortstr-desc,
-    th .sortdate-asc,
-    th .sortdate-desc {
+    .sort-asc, .sort-desc {
       display: none;
-      margin-top: 2px;
-      margin-left: 2px;
-      height: 13px;
-      background: url("/modules/botask/images/icons001.png") no-repeat 0 0 transparent;
     }
-    th .sort-asc,
-    th .sort-desc {
-      width: 3px;
-      background-position: 0 -11px;
-    }
-    th .sort-desc {
-      background-position: -4px -11px;
-    }
-    th .sortstr-asc {
-      width: 9px;
-      background-position: -7px -11px;
-    }
-    th .sortstr-desc {
-      width: 9px;
-      background-position: -16px -11px;
-    }
-    th .sortdate-asc {
-      width: 22px;
-      background-position: -25px -11px;
-    }
-    th .sortdate-desc {
-      width: 22px;
-      background-position: -47px -11px;
-    }
-    th ul.sa .sort-asc,
-    th ul.sa .sortstr-asc,
-    th ul.sa .sortdate-asc {
+    .sa .sort-asc {
       display: inherit;
     }
-    th ul.sb .sort-desc,
-    th ul.sb .sortstr-desc,
-    th ul.sb .sortdate-desc {
+    .sb .sort-desc {
       display: inherit;
     }
-
-    tr.trrow td {
-      padding: 3px 0.3em 4px 3px;
+    .sa .sort-title-hide,
+    .sb .sort-title-hide {
+      display: none;
     }
-
-    table th.tname {
-      width: 75%;
-    }
-    table th.tname .tl {
-      margin-left: 30px;
-    }
-    .tname .ch-ico {
-      float: left;
-      height: 15px;
-    }
-    .tname .ch-tl {
-      margin-left: 20px;
-      white-space: nowrap;
-      overflow: hidden;
-      position: relative;
-    }
-    .tname .ch-tl .shadow {
-      background: url("/modules/botask/images/shadow.png") repeat-y scroll 0 0 transparent;
-      height: 1.3em;
-      position: absolute;
-      right: 0;
-      top: 0;
-      width: 16px;
-    }
-
-    tr.trrow:hover .tname .ch-tl .shadow,
-    tr.trrow-hover .tname .ch-tl .shadow {
-      background: url("/modules/botask/images/shadow-row.png") repeat-y scroll 0 0 transparent;
-    }
-
-    div.ch-btn {
-      background: url("/modules/botask/images/expd.gif") no-repeat scroll 0 0 transparent;
-      cursor: pointer;
-      margin-top: 0.25em;
-      margin-left: 4px;
-      width: 20px;
-    }
-    .expanded div.ch-btn {
-      background-image: url("/modules/botask/images/clps.gif");
-    }
-    .nochild div.ch-btn {
-      background-image: none;
-    }
-
-    table th.tddl {
-      width: 9em;
-    }
-
-    table td.tddl {
-      vertical-align: middle;
-      font-size: 0.9em;
-    }
-
-    table th.tautor,
-    table th.texec {
-      width: 150px;
-      padding-left: 10px;
-    }
-    table th.tfav {
-      width: 32px;
-    }
-    table th.tfav ul {
-      margin-left: 2px;
-    }
-
-    table th.tvot {
-      width: 60px;
-    }
-    table th.tvot ul {
-      margin-left: 15px;
-    }
-
-    table th.tprt {
-      width: 8em;
-      text-align: center;
-    }
-    table th.tprt ul {
-      margin-left: 10px;
-    }
-    table td.tprt .prtclr {
-      text-align: center;
-    }
-
-    table th.twork {
-      width: 7em;
-    }
-    table td.twork {
-      vertical-align: middle;
-    }
-
-    table th.texec {
-      text-align: center;
-    }
-    table td.texec {
-      white-space: nowrap;
-    }
-
-    table td a {
-      text-decoration: none;
-    }
-
-    table .expired td,
-    table .expired td a,
-    table .expired td.tprt .tl {
-      color: #C82100;
-    }
-
-    table .closed td,
-    table .closed td .prtclr,
-    table .closed td a,
-    table .closed td.tprt .tl {
-      color: #839097;
-    }
-
-    table .removed td,
-    table .removed td .prtclr,
-    table .removed td a,
-    table .removed td.tprt .tl {
-      color: #839097;
-      text-decoration: line-through;
-    }
-
-    tr.trrow:hover,
-    tr.trrow-hover {
-      background: none repeat scroll 0 0 #FFF0C6;
-    }
-
-    .tlmenu {
-      margin-left: 10px;
-    }
-    .tlitem {
-      cursor: pointer;
-      float: left;
-      background-color: #E3E3D7;
-      margin: 0 1px;
-      padding: 5px 15px;
-    }
-    .tlitem:hover {
-      text-decoration: underline;
-
-    }
-    .current {
-      background-color: #F4F4EE;
-    }
-    .ttable {
-      clear: both;
-    }
-
   }
 
-  .voting {
-    overflow: hidden;
-    height: 15px;
-    outline: medium none;
-  }
-  .voting .up,
-  .voting .down {
-    margin-top: 3px;
-    width: 10px;
-    height: 11px;
+  tbody tr {
     cursor: pointer;
-    float: left;
   }
-  .voting .res {
-    -moz-user-select: none;
-    -khtml-user-select: none;
-    user-select: none;
-    float: left;
-    margin-left: 2px;
-    color: #AAAAAA;
+  tr.removed {
+    text-decoration: line-through;
   }
 
-  tr.trrow:hover .voting .up {
-    background: url("/modules/botask/images/icons001.png") no-repeat scroll 0px 0 transparent;
+  th.isNew,
+  th.favorite {
+    width: 20px;
   }
-  tr.trrow:hover .voting .up:hover {
-    background: url("/modules/botask/images/icons001.png") no-repeat scroll -60px 0 transparent;
+  th.date {
+    width: 165px;
   }
-  tr.trrow:hover .voting .down {
-    background: url("/modules/botask/images/icons001.png") no-repeat scroll -10px 0 transparent;
-    margin-left: 2px;
+  th.title {
   }
-  tr.trrow:hover .voting .down:hover {
-    background: url("/modules/botask/images/icons001.png") no-repeat scroll -50px 0 transparent;
+  td.title {
+    white-space: normal;
   }
-  .voting-process tr.trrow:hover .voting .up,
-  .voting-process tr.trrow:hover .voting .down,
-  .voting-process .up,
-  .voting-process .up:hover,
-  .voting-process .down,
-  .voting-process .down:hover {
-    background: none;
-    cursor: inherit;
-  }
-
-  .tasklist-min {
-    /* * EasyList in left col * */
-    td.tname .ch-ico,
-    thead,
-    td.tddl,
-    td.tprt,
-    td.tvot,
-    td.tfav {
+  td.favorite {
+    .favoriteCheck {
       display: none;
     }
-
-    td.tname .ch-tl {
-      margin-left: 3px;
-    }
-
-    td.tname .ch-tl {
-      font-size: 1.2em;
-    }
-    td.tname .ch-tl {
-      font-size: 1em;
-    }
-
-    .boxitem,
-    .explore {
-      margin-bottom: 5px;
+    .favorited {
+      .favoriteCheck{
+        display: inherit;
+      }
+      .favoriteUnCheck {
+        display: none;
+      }
     }
   }
-
 }

@@ -27,7 +27,7 @@ Component.entryPoint = function(NS){
             this.renderList();
         },
         _eachColumn: function(fn){
-            var aviable = 'title,deadline,priority,updateDate,readDate,favorite'.split(','),
+            var aviable = 'isNew,title,deadline,priority,updateDate,readDate,favorite'.split(','),
                 columns = this.get('columns'),
                 name, isSort;
 
@@ -95,25 +95,25 @@ Component.entryPoint = function(NS){
                 if (name === 'title'){
                     lst += tp.replace('rcol' + name, {
                         id: task.get('id'),
-                        type: task.get('type'),
-                        aunm: !author ? 'null' : author.get('viewName'),
                         tl: task.get('title') == "" ? LNG['nottitle'] : task.get('title'),
-                        dl: Brick.dateExt.convert(task.get('date')),
-                        udl: Brick.dateExt.convert(task.get('updateDate'))
+                    });
+                } else if (name === 'isNew'){
+                    lst += tp.replace('rcol' + name, {
+                        isNew: task.isNew() ? '*' : ''
                     });
                 } else if (name === 'deadline'){
                     lst += tp.replace('rcol' + name, {
-                        'ddl': this.get('deadline') ? Brick.dateExt.convert(task.get('deadline').getTime() / 1000, 0, !task.get('deadlineTime')) : ""
+                        ddl: this.get('deadline') ? Brick.dateExt.convert(task.get('deadline').getTime() / 1000, 0, !task.get('deadlineTime')) : ""
                     });
                 } else if (name === 'updateDate'){
                     val = task.get('updateDate');
                     lst += tp.replace('rcol' + name, {
-                        'updateDate': val ? Brick.dateExt.convert(val.getTime() / 1000) : ""
+                        updateDate: val ? Brick.dateExt.convert(val.getTime() / 1000) : ""
                     });
                 } else if (name === 'readDate'){
                     val = task.get('userRole').get('readdate');
                     lst += tp.replace('rcol' + name, {
-                        'readDate': val ? Brick.dateExt.convert(val) : LNG.tasklist.notReaded
+                        readDate: val ? Brick.dateExt.convert(val) : LNG.tasklist.notReaded
                     });
                 } else if (name === 'priority'){
                     lst += tp.replace('rcol' + name, {
@@ -122,19 +122,21 @@ Component.entryPoint = function(NS){
                 } else if (name === 'favorite'){
                     lst += tp.replace('rcol' + name, {
                         id: task.get('id'),
-                        fav: task.get('favorite') ? 'fav-checked' : ''
+                        favorited: task.isFavorite() ? 'favorited' : ''
                     });
                 } else if (name === 'voting'){
                     lst += tp.replace('rcol' + name, {
                         id: task.get('id'),
                         fav: task.favorite ? 'fav-checked' : '',
-                        // ord: n != 0 ? ((n > 0 ? '+' : '') + n) : '&mdash;'
                     });
                 }
             });
 
-            return tp.replace('row', {
+            return tp.replace('row', [{
+                cols: lst
+            }, {
                 id: task.get('id'),
+                type: task.get('type'),
                 prt: task.get('priority'),
                 expired: task.isExpired() ? 'expired' : '',
                 closed: task.isClosed() ? 'closed' : '',
@@ -142,63 +144,9 @@ Component.entryPoint = function(NS){
                 tl: task.get('title') == "" ? LNG['nottitle'] : task.get('title'),
                 aunm: !author ? 'null' : author.get('viewName'),
                 auid: !author ? 'null' : author.get('id'),
-                cols: lst
-            });
-
-            /*
-             if (enCols['executant']){
-             var sExec = "";
-             if (task.get('isInWorked') && task.stUserId * 1 > 0){
-             var exec = NS.taskManager.users.get(task.stUserId);
-             sExec = exec.getUserName();
-             }
-             sCols += tp.replace('rcolexec', {
-             'exec': sExec
-             });
-             }
-
-             if (enCols['work']){
-             var hr = '';
-
-             if (!Y.Lang.isNull(task.work)){
-             if (cfg['workuserid'] * 1 > 0){
-             var ti = task.work.users[cfg['workuserid']];
-             if (ti){
-             hr = ti['sm'];
-             }
-             } else {
-             hr = task.work.seconds;
-             }
-             }
-
-             var shr = '',
-             ahr = [];
-             if (hr != ''){
-             var d = Math.floor(hr / (60 * 60 * 24));
-             if (d > 0){
-             hr = hr - d * 60 * 60 * 24;
-             ahr[ahr.length] = d + 'д';
-             }
-             var h = Math.floor(hr / (60 * 60));
-             if (h > 0){
-             hr = hr - h * 60 * 60;
-             ahr[ahr.length] = h + 'ч';
-             }
-             var m = Math.floor(hr / 60);
-             if (m > 0){
-             hr = hr - m * 60;
-             ahr[ahr.length] = m + 'м';
-             }
-             shr = ahr.join(' ');
-             }
-
-             sCols += tp.replace('rcolwork', {
-             'work': shr
-             });
-             }
-
-             return sRow;
-             /**/
+                dl: Brick.dateExt.convert(task.get('date')),
+                udl: Brick.dateExt.convert(task.get('updateDate')),
+            }]);
         },
 
         _isHistoryChanged: function(list, ids){
@@ -234,13 +182,13 @@ Component.entryPoint = function(NS){
             component: {value: COMPONENT},
             templateBlockName: {
                 value: 'widget,table,row' +
-                ',hcoltitle,hcoldeadline,hcolpriority,hcolfavorite,hcolvoting,hcolwork,hcolexec,hcolupdateDate,hcolreadDate' +
-                ',rcoltitle,rcoldeadline,rcolpriority,rcolfavorite,rcolvoting,rcolwork,rcolexec,rcolupdateDate,rcolreadDate'
+                ',hcolisNew,hcoltitle,hcoldeadline,hcolpriority,hcolfavorite,hcolvoting,hcolwork,hcolexec,hcolupdateDate,hcolreadDate' +
+                ',rcolisNew,rcoltitle,rcoldeadline,rcolpriority,rcolfavorite,rcolvoting,rcolwork,rcolexec,rcolupdateDate,rcolreadDate'
             },
             taskList: {value: null},
             filterFn: {value: null},
             columns: {
-                value: 'title|sort=asc,deadline,priority,favorite,voting', // executant
+                value: 'isNew,title|sort=asc,deadline,priority,favorite,voting', // executant
                 setter: function(val){
                     if (!Y.Lang.isString(val)){
                         return val;
@@ -295,6 +243,20 @@ Component.entryPoint = function(NS){
             }
         },
         CLICKS: {
+            itemView: {
+                event: function(e){
+                    var node = e.defineTarget,
+                        id = node.getData('id'),
+                        type = node.getData('type');
+
+                    this.go('item.view', type, id);
+                }
+            },
+            sortIsNew: {
+                event: function(){
+                    this._setSortByClick('isNew');
+                }
+            },
             sortTitle: {
                 event: function(){
                     this._setSortByClick('title');

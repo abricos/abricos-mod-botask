@@ -1,8 +1,8 @@
 <!--{widget}-->
-<div id="{i#table}" class="tasklist"></div>
+<div id="{i#table}" class="taskList"></div>
 
 <!--{table}-->
-<table>
+<table class="table table-hover">
     <thead>
     <tr>
         {v#cols}
@@ -11,19 +11,22 @@
     <tbody>{v#rows}</tbody>
 </table>
 
+<!--{hcolisNew}-->
+<th class="isNew {v#sort}" title="Новые">
+    <a href="#" data-click="sortIsNew">
+        <span class="sort-title-hide">Н</span>
+        <i class="sort-asc fa fa-sort-alpha-asc" aria-hidden="true"></i>
+        <i class="sort-desc fa fa-sort-alpha-desc" aria-hidden="true"></i>
+    </a>
+</th>
+
 <!--{hcoltitle}-->
-<th class="tname">
-    <ul class="{v#sort}">
-        <li class="tl">
-            <a data-click="sortTitle" href="#">Заголовок</a>
-        </li>
-        <li>
-            <div class="sort sortstr-asc"></div>
-        </li>
-        <li>
-            <div class="sort sortstr-desc"></div>
-        </li>
-    </ul>
+<th class="title {v#sort}">
+    <a href="#" data-click="sortTitle">
+        Заголовок
+        <i class="sort-asc fa fa-sort-alpha-asc" aria-hidden="true"></i>
+        <i class="sort-desc fa fa-sort-alpha-desc" aria-hidden="true"></i>
+    </a>
 </th>
 
 <!--{hcoldeadline}-->
@@ -57,20 +60,14 @@
 </th>
 
 <!--{hcolfavorite}-->
-<th class="tfav">
-    <ul class="{v#sort}">
-        <li class="tl">
-			<span class="fav-icon-normal">
-				<img data-click="sortFavorite" class="fav-checked" src="/images/empty.gif">
-			</span>
-        </li>
-        <li>
-            <div class="sort sort-asc"></div>
-        </li>
-        <li>
-            <div class="sort sort-desc"></div>
-        </li>
-    </ul>
+<th class="favorite {v#sort}">
+    <a href="#" data-click="sortFavorite">
+        <span class="sort-title-hide">
+            <i class="fa fa-star-o" aria-hidden="true"></i>
+        </span>
+        <i class="sort-asc fa fa-sort-alpha-asc" aria-hidden="true"></i>
+        <i class="sort-desc fa fa-sort-alpha-desc" aria-hidden="true"></i>
+    </a>
 </th>
 
 <!--{hcolvoting}-->
@@ -132,40 +129,38 @@
 </th>
 
 <!--{hcolreadDate}-->
-<th class="texec">
-    <ul class="{v#sort}">
-        <li class="tl">
-            <a data-click="sortReadDate" href="#" title="Дата вашего ответа">Ответ</a>
-        </li>
-        <li>
-            <div class="sort sort-asc"></div>
-        </li>
-        <li>
-            <div class="sort sort-desc"></div>
-        </li>
-    </ul>
+<th class="readDate date {v#sort}" title="Дата вашего ответа">
+    <a href="#" data-click="sortReadDate">
+        Ответ
+        <i class="sort-asc fa fa-sort-numeric-asc" aria-hidden="true"></i>
+        <i class="sort-desc fa fa-sort-numeric-desc" aria-hidden="true"></i>
+    </a>
 </th>
 
 <!--{row}-->
-<tr id="{i#id}-{v#id}"
-    class="trrow priority{v#prt} {v#expired} {v#closed} {v#removed}">
+<tr data-click="itemView"
+    class="trrow priority{v#prt} {v#expired} {v#closed} {v#removed}"
+    data-type="{v#type}"
+    data-id="{v#id}"
+    title="{v#tl} (Автор: {v#aunm}; Создан: {v#dl}; Изменен: {v#udl})">
     {v#cols}
 </tr>
 
-<!--{rcoltitle}-->
-<td class="tname">
-    <div class="ch-tl">
-        <a data-click="itemView"
-           data-url="item.view({v#type},{v#id})"
-           data-type="{v#type}"
-           data-id="{v#id}"
-           title="{v#tl} (Автор: {v#aunm}; Создан: {v#dl}; Изменен: {v#udl})"
-           href="#">
-            {v#tl}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        </a>
+<!--{rcolisNew}-->
+<td class="isNew text-danger">
+    <span title="Новый">{v#isNew}</span>
+</td>
 
-        <div class="shadow"></div>
-    </div>
+<!--{rcoltitle}-->
+<td class="title">
+    <a data-click="itemView"
+       data-url="item.view({v#type},{v#id})"
+       data-type="{v#type}"
+       data-id="{v#id}"
+       title="{v#tl} (Автор: {v#aunm}; Создан: {v#dl}; Изменен: {v#udl})"
+       href="#">
+        {v#tl}
+    </a>
 </td>
 
 <!--{rcoldeadline}-->
@@ -179,10 +174,11 @@
 </td>
 
 <!--{rcolfavorite}-->
-<td class="tfav">
-	<span data-click="favorite" data-id="{v#id}" title="{#mod.botask.tasklist.rcolfav.1}">
-		<img id="{i#favi}-{v#id}" class="{v#fav}" src="/images/empty.gif">
-	</span>
+<td class="favorite">
+    <span class="{v#favorited}" data-click="favorite" data-id="{v#id}">
+        <i class="favoriteUnCheck fa fa-star-o" aria-hidden="true"></i>
+        <i class="favoriteCheck fa fa-star" aria-hidden="true"></i>
+    </span>
 </td>
 
 <!--{rcolvoting}-->
@@ -204,4 +200,4 @@
 <td class="texec">{v#updateDate}</td>
 
 <!--{rcolreadDate}-->
-<td class="texec">{v#readDate}</td>
+<td class="readDate date">{v#readDate}</td>
