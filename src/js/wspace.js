@@ -52,6 +52,9 @@ Component.entryPoint = function(NS){
                 newCommentCount = 0;
 
             this.get('appInstance').get('taskList').each(function(task){
+                if (task.isRemoved()){
+                    return;
+                }
                 newCount += task.isNew() ? 1 : 0;
                 changedCount += task.isChanged() ? 1 : 0;
                 notReadedCount += !task.isReaded() ? 1 : 0;
