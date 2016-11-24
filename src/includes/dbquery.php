@@ -402,8 +402,9 @@ class BotaskQuery {
 				deadlinebytime, deadlinebytimec,
 				status,prevstatus,statuserid,
 				priority,priorityc,
-				useradded, userremoved) VALUES (
-
+				useradded, userremoved,
+				hicomment
+			) VALUES (
 				".intval($h->taskid).",
 				".intval($h->userid).",
 				".intval(TIMENOW).",
@@ -433,7 +434,8 @@ class BotaskQuery {
 				".intval($h->priorityChanged).",
 
 				'".bkstr($h->userAdded)."',
-				'".bkstr($h->userRemoved)."'
+				'".bkstr($h->userRemoved)."',
+				''
 			)
 		";
         $db->query_write($sql);
