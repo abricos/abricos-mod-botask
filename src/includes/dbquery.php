@@ -54,7 +54,10 @@ class BotaskQuery {
         return $db->query_first($sql);
     }
 
-    public static function Task(Ab_Database $db, $taskid){
+    public static function Task(Ab_Database $db, $taskid, $userid = 0){
+        if (empty($userid)){
+            $userid = Abricos::$user->id;
+        }
         $sql = "
 			SELECT
                 p.taskid as id,
@@ -73,7 +76,7 @@ class BotaskQuery {
                 p.deldate as rdl,
 				p.body as bd
 			FROM ".$db->prefix."btk_task p
-			INNER JOIN ".$db->prefix."btk_userrole ur ON p.taskid=ur.taskid AND ur.userid=".intval(Abricos::$user->id)."
+			INNER JOIN ".$db->prefix."btk_userrole ur ON p.taskid=ur.taskid AND ur.userid=".intval($userid)."
 			WHERE p.taskid=".intval($taskid)."
 			LIMIT 1
 		";
@@ -114,11 +117,14 @@ class BotaskQuery {
 
     /* * * * * * * * * * * * * * * * Users * * * * * * * * * * * * * * */
 
-    public static function UserRole(Ab_Database $db, $taskid){
+    public static function UserRole(Ab_Database $db, $taskid, $userid = 0){
+        if (empty($userid)){
+            $userid = Abricos::$user->id;
+        }
         $sql = "
 			SELECT *
 			FROM ".$db->prefix."btk_userrole ur
-			WHERE ur.taskid=".intval($taskid)." AND ur.userid=".intval(Abricos::$user->id)."
+			WHERE ur.taskid=".intval($taskid)." AND ur.userid=".intval($userid)."
 			LIMIT 1
 		";
         return $db->query_first($sql);

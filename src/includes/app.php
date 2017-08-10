@@ -104,6 +104,10 @@ class BotaskApp extends AbricosApplication {
             return false;
         }
 
+        if ($this->IsAdminRole()){
+            return true;
+        }
+
         if (!isset($this->_cache['ItemAccess'])){
             $this->_cache['ItemAccess'] = array();
         }
@@ -405,9 +409,30 @@ class BotaskApp extends AbricosApplication {
             return AbricosResponse::ERR_FORBIDDEN;
         }
 
-        BotaskQuery::TaskUpdateLastView($this->db, $taskid, Abricos::$user->id);
+        $userRoleList = $this->TaskUserRoleList($taskid);
+        if ($userRoleList->Count() === 0){
+            return AbricosResponse::ERR_NOT_FOUND;
+        }
 
-        $d = BotaskQuery::Task($this->db, $taskid, Abricos::$user->id, true);
+        $userid = Abricos::$user->id;
+        $isAdminRequest = false;
+
+        if ($this->IsAdminRole()){
+            $d = BotaskQuery::UserRole($this->db, $taskid);
+            if (empty($d)){
+                // запрос админа, но он не в списке участников
+                $isAdminRequest = true;
+                $userRoleList = $this->TaskUserRoleList($taskid);
+                $userRole = $userRoleList->GetByIndex(0);
+                $userid = $userRole->userid;
+            }
+        }
+
+        if (!$isAdminRequest){
+            BotaskQuery::TaskUpdateLastView($this->db, $taskid, $userid);
+        }
+
+        $d = BotaskQuery::Task($this->db, $taskid, $userid);
 
         if (empty($d)){
             return AbricosResponse::ERR_NOT_FOUND;
@@ -420,7 +445,7 @@ class BotaskApp extends AbricosApplication {
         $commentApp = Abricos::GetApp('comment');
         $task->commentStatistic = $commentApp->Statistic($task->GetCommentOwner());
 
-        $task->users = $this->TaskUserRoleList($taskid);
+        $task->users = $userRoleList;
 
         $rows = BotaskQuery::ResolutionInTaskList($this->db, array($taskid));
         while (($d = $this->db->fetch_array($rows))){
